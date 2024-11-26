@@ -33,6 +33,8 @@
 namespace Antlr4.StringTemplate
 {
     using System.Linq;
+    using System.Reflection;
+    using System.Text.RegularExpressions;
     using System.Runtime.CompilerServices;
     using Antlr4.StringTemplate.Compiler;
     using Antlr4.StringTemplate.Extensions;
@@ -87,10 +89,20 @@ namespace Antlr4.StringTemplate
                 if (!fileName.EndsWith(GroupFileExtension))
                     throw new ArgumentException("Group file names must end in .stg: " + fileName);
 
-                if (!File.Exists(fileName))
-                    throw new FileNotFoundException(string.Format("No such group file: {0}", fileName));
+                if (!File.Exists(fileName)) {
+                    // try resource
+                    Assembly asm = ResourceAssembly ?? Assembly.GetExecutingAssembly();
+                    var resourceName = Regex.Replace(fileName, "/+", ".");
+                    var matching = asm.GetManifestResourceNames().FirstOrDefault(n => n.EndsWith(resourceName));
+                    if (matching != null) {
+                        _url = new Uri("resource://" + matching);
+                    }
+                    else {
+                        throw new FileNotFoundException(string.Format("No such group file: {0}", fileName));
+                    }
+                }
 
-                if (!Uri.TryCreate(Path.GetFullPath(fileName), UriKind.Absolute, out _url))
+                if ((_url == null || _url.IsFile) && !Uri.TryCreate(Path.GetFullPath(fileName), UriKind.Absolute, out _url))
                 {
                     _url = new Uri("file://" + fileName.Replace('\\', '/'));
                 }
@@ -179,7 +191,7 @@ namespace Antlr4.StringTemplate
             if (Verbose)
                 Console.WriteLine("loading group file " + _url.LocalPath);
 
-            LoadGroupFile("/", _url.LocalPath);
+            LoadGroupFile("/", _url);
 
             if (Verbose)
                 Console.WriteLine("found {0} templates in {1} = {2}", CompiledTemplates.Count, _url.ToString(), CompiledTemplates);

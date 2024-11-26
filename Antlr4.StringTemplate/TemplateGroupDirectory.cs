@@ -35,6 +35,9 @@ namespace Antlr4.StringTemplate
     using Antlr.Runtime;
     using Antlr4.StringTemplate.Compiler;
     using Antlr4.StringTemplate.Misc;
+    using System;
+    using System.Linq;
+    using System.Reflection;
 
     using ArgumentException = System.ArgumentException;
     using ArgumentNullException = System.ArgumentNullException;
@@ -80,7 +83,14 @@ namespace Antlr4.StringTemplate
                 }
                 else
                 {
-                    throw new NotImplementedException();
+                    var asm = ResourceAssembly ?? Assembly.GetExecutingAssembly();
+                    var res = ToResourceNameInAssembly(dirName, asm);
+                    var dirPrefix = res + ".";
+                    if (asm.GetManifestResourceNames()
+                            .Any(n => n.StartsWith(dirPrefix, StringComparison.OrdinalIgnoreCase))) {
+                        root = new Uri("resource://" + res);
+                    }
+
 #if false
                     ClassLoader cl = Thread.CurrentThread.getContextClassLoader();
                     root = cl.getResource(dirName);
@@ -205,7 +215,7 @@ namespace Antlr4.StringTemplate
             }
 #endif
 
-            LoadGroupFile(prefix, groupFileURL.LocalPath);
+            LoadGroupFile(prefix, groupFileURL);
 
             return RawGetTemplate(name);
         }
@@ -223,7 +233,9 @@ namespace Antlr4.StringTemplate
             Uri f;
             try
             {
-                f = new Uri(root.LocalPath + prefix + unqualifiedFileName);
+                var uriBuilder = new UriBuilder(root);
+                uriBuilder.Path += prefix + unqualifiedFileName;
+                f = uriBuilder.Uri;
             }
             catch (UriFormatException me)
             {
@@ -234,8 +246,16 @@ namespace Antlr4.StringTemplate
             ANTLRReaderStream fs = null;
             try
             {
-                fs = new ANTLRReaderStream(new StreamReader(File.OpenRead(f.LocalPath), Encoding));
-                fs.name = unqualifiedFileName;
+                if (TryOpenStream(f, out var inputStream, out _))
+                {
+                    fs = new ANTLRReaderStream(new StreamReader(inputStream, Encoding));
+                    fs.name = unqualifiedFileName;
+                }
+                else {
+                    if (Verbose)
+                        Console.WriteLine("{0}/{1} doesn't exist", root, unqualifiedFileName);
+                    return null;
+                }
             }
             catch (IOException)
             {

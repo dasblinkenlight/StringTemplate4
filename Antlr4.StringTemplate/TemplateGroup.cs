@@ -32,11 +32,14 @@
 
 namespace Antlr4.StringTemplate
 {
+    using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
+    using System.Reflection;
     using System.Runtime.CompilerServices;
     using System.Text;
+    using System.Text.RegularExpressions;
     using Antlr.Runtime;
     using Antlr4.StringTemplate.Compiler;
     using Antlr4.StringTemplate.Extensions;
@@ -867,16 +870,12 @@ namespace Antlr4.StringTemplate
             {
                 g = new TemplateGroup(delimiterStartChar, delimiterStopChar);
                 g.Listener = this.Listener;
-                Uri fileURL = null;
-                if (File.Exists(fileUnderRoot.LocalPath))
-                    fileURL = fileUnderRoot;
 
-                if (fileURL != null)
+                if (TryOpenStream(fileUnderRoot, out var stream, out var _))
                 {
                     try
                     {
-                        Stream s = File.OpenRead(fileURL.LocalPath);
-                        ANTLRInputStream templateStream = new ANTLRInputStream(s);
+                        ANTLRInputStream templateStream = new ANTLRInputStream(stream);
                         templateStream.name = fileName;
                         CompiledTemplate code = g.LoadTemplateFile("/", fileName, templateStream);
                         if (code == null)
@@ -884,7 +883,7 @@ namespace Antlr4.StringTemplate
                     }
                     catch (IOException ioe)
                     {
-                        ErrorManager.InternalError(null, string.Format("can't read from {0}", fileURL), ioe);
+                        ErrorManager.InternalError(null, string.Format("can't read from {0}", fileUnderRoot), ioe);
                         g = null;
                     }
                 }
@@ -923,7 +922,6 @@ namespace Antlr4.StringTemplate
                     g.Listener = this.Listener;
                 }
             }
-
             if (g == null)
             {
                 ErrorManager.CompiletimeError(ErrorType.CANT_IMPORT, null, fileNameToken, fileName);
@@ -935,8 +933,9 @@ namespace Antlr4.StringTemplate
         }
 
         /** Load a group file with full path fileName; it's relative to root by prefix. */
-        public virtual void LoadGroupFile(string prefix, string fileName)
+        public virtual void LoadGroupFile(string prefix, Uri fileUri)
         {
+            var fileName = fileUri.LocalPath;
             if (Verbose)
             {
                 Console.Out.WriteLine("{0}.LoadGroupFile(prefix={1}, fileName={2})",
@@ -946,8 +945,10 @@ namespace Antlr4.StringTemplate
             GroupParser parser = null;
             try
             {
-                Uri f = new Uri(fileName);
-                ANTLRReaderStream fs = new ANTLRReaderStream(new System.IO.StreamReader(File.OpenRead(f.LocalPath), Encoding));
+                if (!TryOpenStream(fileUri, out var stream, out var accessTime)) {
+                    throw new InvalidOperationException($"no such group: {fileUri}");
+                }
+                ANTLRReaderStream fs = new ANTLRReaderStream(new StreamReader(stream, Encoding));
 
                 var timer = System.Diagnostics.Stopwatch.StartNew();
 
@@ -967,7 +968,7 @@ namespace Antlr4.StringTemplate
                     System.Diagnostics.Debug.WriteLine(string.Format("Successfully loaded the group {0} in {1}ms.", Name, timer.ElapsedMilliseconds));
 
                     if (EnableCache)
-                        CacheCompiledGroup(cachePath, prefix, fileName, File.GetLastWriteTimeUtc(f.LocalPath));
+                        CacheCompiledGroup(cachePath, prefix, fileName, accessTime);
                 }
 
             }
@@ -1944,5 +1945,48 @@ namespace Antlr4.StringTemplate
 
             return result;
         }
+
+        protected bool TryOpenStream(Uri uri, out Stream inputStream, out DateTime lastModified)
+        {
+            if (uri.IsFile)
+            {
+                if (File.Exists(uri.LocalPath)) {
+                    inputStream = File.OpenRead(uri.LocalPath);
+                    lastModified = File.GetLastWriteTime(uri.LocalPath);
+                    return inputStream != null;
+                }
+            }
+            else {
+                var asm = ResourceAssembly ?? Assembly.GetExecutingAssembly();
+                var uriName = Regex.Replace(uri.Host + uri.LocalPath, "/+", ".").TrimEnd('.');
+                var resName = asm.GetManifestResourceNames().FirstOrDefault(
+                    str => str.EndsWith(uriName, StringComparison.OrdinalIgnoreCase));
+                if (resName != null) {
+                    inputStream = asm.GetManifestResourceStream(resName);
+                    lastModified = DateTime.MinValue;
+                    return inputStream != null;
+                }
+            }
+            inputStream = null;
+            lastModified = DateTime.MinValue;
+            return  false;
+        }
+        
+        public static Assembly ResourceAssembly { get; set; }
+
+        public static string ResourceRoot { get; set; } = "Resources";
+
+        protected string ToResourceNameInAssembly(string name, Assembly asm)
+        {
+            var res = new StringBuilder(asm.GetName().Name);
+            res.Append('.');
+            if (!string.IsNullOrEmpty(ResourceRoot)) {
+                res.Append(ResourceRoot);
+                res.Append('.');
+            }
+            res.Append(name.Replace("/", "."));
+            return res.ToString();
+        }
+
     }
 }

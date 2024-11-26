@@ -22,4 +22,9 @@
     <PackageReference Include="MSTest.TestFramework" Version="3.6.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\org\antlr\templates\dir1\testgroupfile.stg" />
+    <EmbeddedResource Include="Resources\org\antlr\templates\dir1\sample.st" />
+  </ItemGroup>
+
 </Project>
