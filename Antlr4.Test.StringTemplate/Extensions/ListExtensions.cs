@@ -30,30 +30,27 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.Test.StringTemplate.Extensions
-{
-    using Antlr4.StringTemplate;
-    using CultureInfo = System.Globalization.CultureInfo;
-    using IList = System.Collections.IList;
+namespace Antlr4.Test.StringTemplate.Extensions;
 
-    internal static class ListExtensions
-    {
-        public static string ToListString(this IList list)
-        {
-            TemplateGroup group = new TemplateGroup();
-            group.DefineTemplate("listTemplate", "[<list:{x|<x>}; separator=\", \">]", new string[] { "list" });
-            group.RegisterRenderer(typeof(IList), new CollectionRenderer());
-            Template st = group.GetInstanceOf("listTemplate");
-            st.Add("list", list);
-            return st.Render();
-        }
+using Antlr4.StringTemplate;
+using CultureInfo = System.Globalization.CultureInfo;
+using IList = System.Collections.IList;
 
-        private class CollectionRenderer : IAttributeRenderer
-        {
-            public string ToString(object o, string formatString, CultureInfo culture)
-            {
-                return ((IList)o).ToListString();
-            }
+internal static class ListExtensions {
+
+    public static string ToListString(this IList list) {
+        var group = new TemplateGroup();
+        group.DefineTemplate("listTemplate", "[<list:{x|<x>}; separator=\", \">]", ["list"]);
+        group.RegisterRenderer(typeof(IList), new CollectionRenderer());
+        var st = group.GetInstanceOf("listTemplate");
+        st.Add("list", list);
+        return st.Render();
+    }
+
+    private class CollectionRenderer : IAttributeRenderer {
+        public string ToString(object o, string formatString, CultureInfo culture) {
+            return ((IList)o).ToListString();
         }
     }
+
 }

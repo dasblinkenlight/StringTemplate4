@@ -30,314 +30,286 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.Test.StringTemplate
-{
-    using Antlr4.StringTemplate;
-    using Antlr4.Test.StringTemplate.Extensions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Environment = System.Environment;
-    using ErrorBuffer = Antlr4.StringTemplate.Misc.ErrorBuffer;
-    using Path = System.IO.Path;
+namespace Antlr4.Test.StringTemplate;
 
-    [TestClass]
-    public class TestGroupSyntax : BaseTest
-    {
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestSimpleGroup()
-        {
-            string templates =
-                "t() ::= <<foo>>" + Environment.NewLine;
+using Antlr4.StringTemplate;
+using Extensions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using ErrorBuffer = Antlr4.StringTemplate.Misc.ErrorBuffer;
+using Path = System.IO.Path;
 
-            writeFile(tmpdir, "t.stg", templates);
-            TemplateGroup group = new TemplateGroupFile(Path.Combine(tmpdir, "t.stg"));
-            string expected =
-                "t() ::= <<" + Environment.NewLine +
-                "foo" + Environment.NewLine +
-                ">>" + Environment.NewLine;
-            string result = group.Show();
-            Assert.AreEqual(expected, result);
-        }
+[TestClass]
+public class TestGroupSyntax : BaseTest {
 
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestEscapedQuote()
-        {
-            // setTest(ranges) ::= "<ranges; separator=\"||\">"
-            // has to unescape the strings.
-            string templates =
-                "setTest(ranges) ::= \"<ranges; separator=\\\"||\\\">\"" + Environment.NewLine;
+    [TestMethod]
+    public void TestSimpleGroup() {
+        var templates = $"t() ::= <<foo>>{newline}";
 
-            writeFile(tmpdir, "t.stg", templates);
-            TemplateGroup group = new TemplateGroupFile(Path.Combine(tmpdir, "t.stg"));
-            string expected =
-                "setTest(ranges) ::= <<" + Environment.NewLine +
-                "<ranges; separator=\"||\">" + Environment.NewLine +
-                ">>" + Environment.NewLine;
-            string result = group.Show();
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestMultiTemplates()
-        {
-            string templates =
-                "ta(x) ::= \"[<x>]\"" + Environment.NewLine +
-                "duh() ::= <<hi there>>" + Environment.NewLine +
-                "wow() ::= <<last>>" + Environment.NewLine;
-
-            writeFile(tmpdir, "t.stg", templates);
-            TemplateGroup group = new TemplateGroupFile(Path.Combine(tmpdir, "t.stg"));
-            string expected =
-                "ta(x) ::= <<" + Environment.NewLine +
-                "[<x>]" + Environment.NewLine +
-                ">>" + Environment.NewLine +
-                "duh() ::= <<" + Environment.NewLine +
-                "hi there" + Environment.NewLine +
-                ">>" + Environment.NewLine +
-                "wow() ::= <<" + Environment.NewLine +
-                "last" + Environment.NewLine +
-                ">>" + Environment.NewLine;
-            string result = group.Show();
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestSetDefaultDelimiters()
-        {
-            string templates =
-                "delimiters \"<\", \">\"" + Environment.NewLine +
-                "ta(x) ::= \"[<x>]\"" + Environment.NewLine;
-
-            writeFile(tmpdir, "t.stg", templates);
-            TemplateGroup group = new TemplateGroupFile(Path.Combine(tmpdir, "t.stg"));
-            Template st = group.GetInstanceOf("ta");
-            st.Add("x", "hi");
-            string expected = "[hi]";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestSetNonDefaultDelimiters()
-        {
-            string templates =
-                "delimiters \"%\", \"%\"" + Environment.NewLine +
-                "ta(x) ::= \"[%x%]\"" + Environment.NewLine;
-
-            writeFile(tmpdir, "t.stg", templates);
-            TemplateGroup group = new TemplateGroupFile(Path.Combine(tmpdir, "t.stg"));
-            Template st = group.GetInstanceOf("ta");
-            st.Add("x", "hi");
-            string expected = "[hi]";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestSingleTemplateWithArgs()
-        {
-            string templates =
-                "t(a,b) ::= \"[<a>]\"" + Environment.NewLine;
-
-            writeFile(tmpdir, "t.stg", templates);
-            TemplateGroup group = new TemplateGroupFile(Path.Combine(tmpdir, "t.stg"));
-            string expected =
-                "t(a,b) ::= <<" + Environment.NewLine +
-                "[<a>]" + Environment.NewLine +
-                ">>" + Environment.NewLine;
-            string result = group.Show();
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestDefaultValues()
-        {
-            string templates =
-                "t(a={def1},b=\"def2\") ::= \"[<a>]\"" + Environment.NewLine;
-
-            writeFile(tmpdir, "t.stg", templates);
-            TemplateGroup group = new TemplateGroupFile(Path.Combine(tmpdir, "t.stg"));
-            string expected =
-                "t(a={def1},b=\"def2\") ::= <<" + Environment.NewLine +
-                "[<a>]" + Environment.NewLine +
-                ">>" + Environment.NewLine;
-            string result = group.Show();
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestDefaultValues2()
-        {
-            string templates =
-                "t(x, y, a={def1}, b=\"def2\") ::= \"[<a>]\"" + Environment.NewLine;
-
-            writeFile(tmpdir, "t.stg", templates);
-            TemplateGroup group = new TemplateGroupFile(Path.Combine(tmpdir, "t.stg"));
-            string expected =
-                "t(x,y,a={def1},b=\"def2\") ::= <<" + Environment.NewLine +
-                "[<a>]" + Environment.NewLine +
-                ">>" + Environment.NewLine;
-            string result = group.Show();
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestDefaultValueTemplateWithArg()
-        {
-            string templates =
-                "t(a={x | 2*<x>}) ::= \"[<a>]\"" + Environment.NewLine;
-
-            writeFile(tmpdir, "t.stg", templates);
-            TemplateGroup group = new TemplateGroupFile(Path.Combine(tmpdir, "t.stg"));
-            string expected =
-                "t(a={x | 2*<x>}) ::= <<" + Environment.NewLine +
-                "[<a>]" + Environment.NewLine +
-                ">>" + Environment.NewLine;
-            string result = group.Show();
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.ST4)]
-        public void TestDefaultValueBehaviorTrue()
-        {
-            string templates =
-                "t(a=true) ::= <<\n" +
-                "<a><if(a)>+<else>-<endif>\n" +
-                ">>\n";
-
-            writeFile(tmpdir, "t.stg", templates);
-            TemplateGroup group = new TemplateGroupFile(tmpdir + Path.DirectorySeparatorChar + "t.stg");
-            Template st = group.GetInstanceOf("t");
-            string expected = "true+";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.ST4)]
-        public void TestDefaultValueBehaviorFalse()
-        {
-            string templates =
-                "t(a=false) ::= <<\n" +
-                "<a><if(a)>+<else>-<endif>\n" +
-                ">>\n";
-
-            writeFile(tmpdir, "t.stg", templates);
-            TemplateGroup group = new TemplateGroupFile(tmpdir + Path.DirectorySeparatorChar + "t.stg");
-            Template st = group.GetInstanceOf("t");
-            string expected = "false-";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.ST4)]
-        public void TestDefaultValueBehaviorEmptyTemplate()
-        {
-            string templates =
-                "t(a={}) ::= <<\n" +
-                "<a><if(a)>+<else>-<endif>\n" +
-                ">>\n";
-
-            writeFile(tmpdir, "t.stg", templates);
-            TemplateGroup group = new TemplateGroupFile(tmpdir + Path.DirectorySeparatorChar + "t.stg");
-            Template st = group.GetInstanceOf("t");
-            string expected = "+";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.ST4)]
-        public void TestDefaultValueBehaviorEmptyList()
-        {
-            string templates =
-                "t(a=[]) ::= <<\n" +
-                "<a><if(a)>+<else>-<endif>\n" +
-                ">>\n";
-
-            writeFile(tmpdir, "t.stg", templates);
-            TemplateGroup group = new TemplateGroupFile(tmpdir + Path.DirectorySeparatorChar + "t.stg");
-            Template st = group.GetInstanceOf("t");
-            string expected = "-";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestNestedTemplateInGroupFile()
-        {
-            string templates =
-                "t(a) ::= \"<a:{x | <x:{y | <y>}>}>\"" + Environment.NewLine;
-
-            writeFile(tmpdir, "t.stg", templates);
-            TemplateGroup group = new TemplateGroupFile(Path.Combine(tmpdir, "t.stg"));
-            string expected =
-                "t(a) ::= <<" + Environment.NewLine +
-                "<a:{x | <x:{y | <y>}>}>" + Environment.NewLine +
-                ">>" + Environment.NewLine;
-            string result = group.Show();
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestNestedDefaultValueTemplate()
-        {
-            string templates =
-                "t(a={x | <x:{y|<y>}>}) ::= \"ick\"" + Environment.NewLine;
-
-            writeFile(tmpdir, "t.stg", templates);
-            TemplateGroup group = new TemplateGroupFile(Path.Combine(tmpdir, "t.stg"));
-            group.Load();
-            string expected =
-                "t(a={x | <x:{y|<y>}>}) ::= <<" + Environment.NewLine +
-                "ick" + Environment.NewLine +
-                ">>" + Environment.NewLine;
-            string result = group.Show();
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestNestedDefaultValueTemplateWithEscapes()
-        {
-            string templates =
-                "t(a={x | \\< <x:{y|<y>\\}}>}) ::= \"[<a>]\"" + Environment.NewLine;
-
-            writeFile(tmpdir, "t.stg", templates);
-            TemplateGroup group = new TemplateGroupFile(Path.Combine(tmpdir, "t.stg"));
-            string expected =
-                "t(a={x | \\< <x:{y|<y>\\}}>}) ::= <<" + Environment.NewLine +
-                "[<a>]" + Environment.NewLine +
-                ">>" + Environment.NewLine;
-            string result = group.Show();
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestMessedUpTemplateDoesntCauseRuntimeError()
-        {
-            string templates =
-                "main(p) ::= <<\n" +
-                "<f(x=\"abc\")>\n" +
-                ">>\n" +
-                "\n" +
-                "f() ::= <<\n" +
-                "<x>\n" +
-                ">>\n";
-            writeFile(tmpdir, "t.stg", templates);
-
-            TemplateGroupFile group;
-            ErrorBuffer errors = new ErrorBuffer();
-            group = new TemplateGroupFile(Path.Combine(tmpdir, "t.stg"));
-            group.Listener = errors;
-            Template st = group.GetInstanceOf("main");
-            st.Render();
-
-            string expected = "[context [/main] 1:1 attribute x isn't defined," +
-                              " context [/main] 1:1 passed 1 arg(s) to template /f with 0 declared arg(s)," +
-                              " context [/main /f] 1:1 attribute x isn't defined]";
-            string result = errors.Errors.ToListString();
-            Assert.AreEqual(expected, result);
-        }
+        WriteFile(TmpDir, "t.stg", templates);
+        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var expected =
+            "t() ::= <<" + newline +
+            "foo"        + newline +
+            ">>"         + newline;
+        var result = group.Show();
+        Assert.AreEqual(expected, result);
     }
+
+    [TestMethod]
+    public void TestEscapedQuote() {
+        // setTest(ranges) ::= "<ranges; separator=\"||\">"
+        // has to unescape the strings.
+        var templates = $"setTest(ranges) ::= \"<ranges; separator=\\\"||\\\">\"{newline}";
+
+        WriteFile(TmpDir, "t.stg", templates);
+        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var expected =
+            "setTest(ranges) ::= <<" + newline +
+            "<ranges; separator=\"||\">" + newline +
+            ">>" + newline;
+        var result = group.Show();
+        Assert.AreEqual(expected, result);
+    }
+
+    [TestMethod]
+    public void TestMultiTemplates() {
+        var templates =
+            "ta(x) ::= \"[<x>]\"" + newline +
+            "duh() ::= <<hi there>>" + newline +
+            "wow() ::= <<last>>" + newline;
+
+        WriteFile(TmpDir, "t.stg", templates);
+        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var expected =
+            "ta(x) ::= <<" + newline +
+            "[<x>]" + newline +
+            ">>" + newline +
+            "duh() ::= <<" + newline +
+            "hi there" + newline +
+            ">>" + newline +
+            "wow() ::= <<" + newline +
+            "last" + newline +
+            ">>" + newline;
+        var result = group.Show();
+        Assert.AreEqual(expected, result);
+    }
+
+    [TestMethod]
+    public void TestSetDefaultDelimiters() {
+        var templates =
+            "delimiters \"<\", \">\"" +     newline +
+            "ta(x) ::= \"[<x>]\"" +     newline;
+
+        WriteFile(TmpDir, "t.stg", templates);
+        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var st = group.GetInstanceOf("ta");
+        st.Add("x", "hi");
+        const string expected = "[hi]";
+        var result = st.Render();
+        Assert.AreEqual(expected, result);
+    }
+
+    [TestMethod]
+    public void TestSetNonDefaultDelimiters() {
+        var templates =
+            "delimiters \"%\", \"%\"" +     newline +
+            "ta(x) ::= \"[%x%]\"" +     newline;
+
+        WriteFile(TmpDir, "t.stg", templates);
+        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var st = group.GetInstanceOf("ta");
+        st.Add("x", "hi");
+        const string expected = "[hi]";
+        var result = st.Render();
+        Assert.AreEqual(expected, result);
+    }
+
+    [TestMethod]
+    public void TestSingleTemplateWithArgs() {
+        var templates =
+            "t(a,b) ::= \"[<a>]\"" + newline;
+
+        WriteFile(TmpDir, "t.stg", templates);
+        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var expected =
+            "t(a,b) ::= <<" + newline +
+            "[<a>]" + newline +
+            ">>" + newline;
+        var result = group.Show();
+        Assert.AreEqual(expected, result);
+    }
+
+    [TestMethod]
+    public void TestDefaultValues() {
+        var templates = $"t(a={{def1}},b=\"def2\") ::= \"[<a>]\"{newline}";
+
+        WriteFile(TmpDir, "t.stg", templates);
+        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var expected =
+            "t(a={def1},b=\"def2\") ::= <<" + newline +
+            "[<a>]" + newline +
+            ">>" + newline;
+        var result = group.Show();
+        Assert.AreEqual(expected, result);
+    }
+
+    [TestMethod]
+    public void TestDefaultValues2() {
+        var templates = $"t(x, y, a={{def1}}, b=\"def2\") ::= \"[<a>]\"{newline}";
+
+        WriteFile(TmpDir, "t.stg", templates);
+        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var expected =
+            "t(x,y,a={def1},b=\"def2\") ::= <<" + newline +
+            "[<a>]" + newline +
+            ">>" + newline;
+        var result = group.Show();
+        Assert.AreEqual(expected, result);
+    }
+
+    [TestMethod]
+    public void TestDefaultValueTemplateWithArg() {
+        var templates = $"t(a={{x | 2*<x>}}) ::= \"[<a>]\"{newline}";
+
+        WriteFile(TmpDir, "t.stg", templates);
+        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var expected =
+            "t(a={x | 2*<x>}) ::= <<" + newline +
+            "[<a>]" + newline +
+            ">>" + newline;
+        var result = group.Show();
+        Assert.AreEqual(expected, result);
+    }
+
+    [TestMethod]
+    public void TestDefaultValueBehaviorTrue() {
+        var templates =
+            "t(a=true) ::= <<\n" +
+            "<a><if(a)>+<else>-<endif>\n" +
+            ">>\n";
+
+        WriteFile(TmpDir, "t.stg", templates);
+        var group = new TemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg");
+        var st = group.GetInstanceOf("t");
+        const string expected = "true+";
+        var result = st.Render();
+        Assert.AreEqual(expected, result);
+    }
+
+    [TestMethod]
+    public void TestDefaultValueBehaviorFalse() {
+        const string templates =
+            "t(a=false) ::= <<\n" +
+            "<a><if(a)>+<else>-<endif>\n" +
+            ">>\n";
+
+        WriteFile(TmpDir, "t.stg", templates);
+        var group = new TemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg");
+        var st = group.GetInstanceOf("t");
+        const string expected = "false-";
+        var result = st.Render();
+        Assert.AreEqual(expected, result);
+    }
+
+    [TestMethod]
+    public void TestDefaultValueBehaviorEmptyTemplate() {
+        const string templates =
+            "t(a={}) ::= <<\n" +
+            "<a><if(a)>+<else>-<endif>\n" +
+            ">>\n";
+
+        WriteFile(TmpDir, "t.stg", templates);
+        var group = new TemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg");
+        var st = group.GetInstanceOf("t");
+        const string expected = "+";
+        var result = st.Render();
+        Assert.AreEqual(expected, result);
+    }
+
+    [TestMethod]
+    public void TestDefaultValueBehaviorEmptyList() {
+        const string templates =
+            "t(a=[]) ::= <<\n" +
+            "<a><if(a)>+<else>-<endif>\n" +
+            ">>\n";
+
+        WriteFile(TmpDir, "t.stg", templates);
+        var group = new TemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg");
+        var st = group.GetInstanceOf("t");
+        const string expected = "-";
+        var result = st.Render();
+        Assert.AreEqual(expected, result);
+    }
+
+    [TestMethod]
+    public void TestNestedTemplateInGroupFile() {
+        var templates = $"t(a) ::= \"<a:{{x | <x:{{y | <y>}}>}}>\"{newline}";
+
+        WriteFile(TmpDir, "t.stg", templates);
+        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var expected =
+            "t(a) ::= <<" +     newline +
+            "<a:{x | <x:{y | <y>}>}>" +     newline +
+            ">>" +     newline;
+        var result = group.Show();
+        Assert.AreEqual(expected, result);
+    }
+
+    [TestMethod]
+    public void TestNestedDefaultValueTemplate() {
+        var templates = "t(a={x | <x:{y|<y>}>}) ::= \"ick\"" + newline;
+
+        WriteFile(TmpDir, "t.stg", templates);
+        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        group.Load();
+        var expected =
+            "t(a={x | <x:{y|<y>}>}) ::= <<" + newline +
+            "ick" + newline +
+            ">>" + newline;
+        var result = group.Show();
+        Assert.AreEqual(expected, result);
+    }
+
+    [TestMethod]
+    public void TestNestedDefaultValueTemplateWithEscapes() {
+        var templates =
+            "t(a={x | \\< <x:{y|<y>\\}}>}) ::= \"[<a>]\"" + newline;
+
+        WriteFile(TmpDir, "t.stg", templates);
+        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var expected =
+            "t(a={x | \\< <x:{y|<y>\\}}>}) ::= <<" + newline +
+            "[<a>]" + newline +
+            ">>" + newline;
+        var result = group.Show();
+        Assert.AreEqual(expected, result);
+    }
+
+    [TestMethod]
+    public void TestMessedUpTemplateDoesntCauseRuntimeError() {
+        const string templates =
+            "main(p) ::= <<\n" +
+            "<f(x=\"abc\")>\n" +
+            ">>\n" +
+            "\n" +
+            "f() ::= <<\n" +
+            "<x>\n" +
+            ">>\n";
+        WriteFile(TmpDir, "t.stg", templates);
+
+        var errors = new ErrorBuffer();
+        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
+            Listener = errors
+        };
+        var st = group.GetInstanceOf("main");
+        st.Render();
+
+        const string expected =
+            "[context [/main] 1:1 attribute x isn't defined," +
+            " context [/main] 1:1 passed 1 arg(s) to template /f with 0 declared arg(s)," +
+            " context [/main /f] 1:1 attribute x isn't defined]";
+        var result = errors.Errors.ToListString();
+        Assert.AreEqual(expected, result);
+    }
+
 }

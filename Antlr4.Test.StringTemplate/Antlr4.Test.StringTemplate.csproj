@@ -10,6 +10,7 @@
     <FileVersion>$(STFileVersion)</FileVersion>
     <InformationalVersion>$(STInformationalVersion)</InformationalVersion>
     <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latestmajor</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

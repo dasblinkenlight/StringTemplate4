@@ -30,17 +30,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.Test.StringTemplate
-{
-    using Antlr4.StringTemplate;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Antlr4.StringTemplate.Misc;
+namespace Antlr4.Test.StringTemplate;
 
-    public class ErrorBufferAllErrors : ErrorBuffer
-    {
-        public override void RuntimeError(TemplateMessage msg)
-        {
-            ErrorList.Add(msg);
-        }
+using Antlr4.StringTemplate.Misc;
+
+public class ErrorBufferAllErrors : ErrorBuffer {
+
+    public override void RuntimeError(TemplateMessage msg) {
+        ErrorList.Add(msg);
     }
+
 }

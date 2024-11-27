@@ -19,158 +19,147 @@
  *  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
  *  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
  *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- *  NOT LIMITED TO, PROCUREMENT OF SUBTemplateITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
  *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- *  THEORY OF LIABILITY, WHETHER IN CONTRACT, TemplateRICT LIABILITY, OR TORT
+ *  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.Test.StringTemplate
-{
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Antlr4.StringTemplate;
-    using Path = System.IO.Path;
+namespace Antlr4.Test.StringTemplate;
 
-    [TestClass]
-    public class TestNoNewlineTemplates : BaseTest
-    {
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestNoNewlineTemplate()
-        {
-            string template =
-                "t(x) ::= <%" + newline +
-                "[  <if(!x)>" +
-                "<else>" +
-                "<x>" + newline +
-                "<endif>" +
-                "" + newline +
-                "" + newline +
-                "]" + newline +
-                "" + newline +
-                "%>" + newline;
-            TemplateGroup g = new TemplateGroupString(template);
-            Template st = g.GetInstanceOf("t");
-            st.Add("x", 99);
-            string expected = "[  99]";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
-        }
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Antlr4.StringTemplate;
+using Path = System.IO.Path;
 
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestWSNoNewlineTemplate()
-        {
-            string template =
-                "t(x) ::= <%" + newline +
-                "" + newline +
-                "%>" + newline;
-            TemplateGroup g = new TemplateGroupString(template);
-            Template st = g.GetInstanceOf("t");
-            st.Add("x", 99);
-            string expected = "";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
-        }
+[TestClass]
+public class TestNoNewlineTemplates : BaseTest {
 
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestEmptyNoNewlineTemplate()
-        {
-            string template =
-                "t(x) ::= <%%>" + newline;
-            TemplateGroup g = new TemplateGroupString(template);
-            Template st = g.GetInstanceOf("t");
-            st.Add("x", 99);
-            string expected = "";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestIgnoreIndent()
-        {
-            string template =
-                "t(x) ::= <%" + newline +
-                "	foo" + newline +
-                "	<x>" + newline +
-                "%>" + newline;
-            TemplateGroup g = new TemplateGroupString(template);
-            Template st = g.GetInstanceOf("t");
-            st.Add("x", 99);
-            string expected = "foo99";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestIgnoreIndentInIF()
-        {
-            string template =
-                "t(x) ::= <%" + newline +
-                "	<if(x)>" + newline +
-                "		foo" + newline +
-                "	<endif>" + newline +
-                "	<x>" + newline +
-                "%>" + newline;
-            TemplateGroup g = new TemplateGroupString(template);
-            Template st = g.GetInstanceOf("t");
-            st.Add("x", 99);
-            string expected = "foo99";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestKeepWS()
-        {
-            string template =
-                "t(x) ::= <%" + newline +
-                "	<x> <x> hi" + newline +
-                "%>" + newline;
-            TemplateGroup g = new TemplateGroupString(template);
-            Template st = g.GetInstanceOf("t");
-            st.Add("x", 99);
-            string expected = "99 99 hi";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestRegion()
-        {
-            string template =
-                "t(x) ::= <%\n" +
-                "<@r>\n" +
-                "	Ignore\n" +
-                "	newlines and indents\n" +
-                "<x>\n\n\n" +
-                "<@end>\n" +
-                "%>\n";
-            TemplateGroup g = new TemplateGroupString(template);
-            Template st = g.GetInstanceOf("t");
-            st.Add("x", 99);
-            string expected = "Ignorenewlines and indents99";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestDefineRegionInSubgroup()
-        {
-            string dir = tmpdir;
-            string g1 = "a() ::= <<[<@r()>]>>\n";
-            writeFile(dir, "g1.stg", g1);
-            string g2 = "@a.r() ::= <%\n" +
-            "	foo\n\n\n" +
-            "%>\n";
-            writeFile(dir, "g2.stg", g2);
-
-            TemplateGroup group1 = new TemplateGroupFile(Path.Combine(dir, "g1.stg"));
-            TemplateGroup group2 = new TemplateGroupFile(Path.Combine(dir, "g2.stg"));
-            group2.ImportTemplates(group1); // define r in g2
-            Template st = group2.GetInstanceOf("a");
-            string expected = "[foo]";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
-        }
+    [TestMethod]
+    public void TestNoNewlineTemplate() {
+        var template =
+            "t(x) ::= <%" + newline +
+            "[  <if(!x)>" +
+            "<else>" +
+            "<x>" + newline +
+            "<endif>" +
+            "" + newline +
+            "" + newline +
+            "]" + newline +
+            "" + newline +
+            "%>" + newline;
+        TemplateGroup g = new TemplateGroupString(template);
+        var st = g.GetInstanceOf("t");
+        st.Add("x", 99);
+        const string expected = "[  99]";
+        var result = st.Render();
+        Assert.AreEqual(expected, result);
     }
+
+    [TestMethod]
+    public void TestWSNoNewlineTemplate() {
+        var template =
+            "t(x) ::= <%" + newline +
+            "" + newline +
+            "%>" + newline;
+        TemplateGroup g = new TemplateGroupString(template);
+        var st = g.GetInstanceOf("t");
+        st.Add("x", 99);
+        var result = st.Render();
+        Assert.AreEqual(string.Empty, result);
+    }
+
+    [TestMethod]
+    public void TestEmptyNoNewlineTemplate() {
+        var template = "t(x) ::= <%%>" + newline;
+        TemplateGroup g = new TemplateGroupString(template);
+        var st = g.GetInstanceOf("t");
+        st.Add("x", 99);
+        var result = st.Render();
+        Assert.AreEqual(string.Empty, result);
+    }
+
+    [TestMethod]
+    public void TestIgnoreIndent() {
+        var template =
+            "t(x) ::= <%" + newline +
+            "	foo" + newline +
+            "	<x>" + newline +
+            "%>" + newline;
+        TemplateGroup g = new TemplateGroupString(template);
+        var st = g.GetInstanceOf("t");
+        st.Add("x", 99);
+        const string expected = "foo99";
+        var result = st.Render();
+        Assert.AreEqual(expected, result);
+    }
+
+    [TestMethod]
+    public void TestIgnoreIndentInIF() {
+        var template =
+            "t(x) ::= <%" + newline +
+            "	<if(x)>" + newline +
+            "		foo" + newline +
+            "	<endif>" + newline +
+            "	<x>" + newline +
+            "%>" + newline;
+        TemplateGroup g = new TemplateGroupString(template);
+        var st = g.GetInstanceOf("t");
+        st.Add("x", 99);
+        const string expected = "foo99";
+        var result = st.Render();
+        Assert.AreEqual(expected, result);
+    }
+
+    [TestMethod]
+    public void TestKeepWS() {
+        var template =
+            "t(x) ::= <%" + newline +
+            "	<x> <x> hi" + newline +
+            "%>" + newline;
+        TemplateGroup g = new TemplateGroupString(template);
+        var st = g.GetInstanceOf("t");
+        st.Add("x", 99);
+        const string expected = "99 99 hi";
+        var result = st.Render();
+        Assert.AreEqual(expected, result);
+    }
+
+    [TestMethod]
+    public void TestRegion() {
+        var template =
+            "t(x) ::= <%\n" +
+            "<@r>\n" +
+            "	Ignore\n" +
+            "	newlines and indents\n" +
+            "<x>\n\n\n" +
+            "<@end>\n" +
+            "%>\n";
+        TemplateGroup g = new TemplateGroupString(template);
+        var st = g.GetInstanceOf("t");
+        st.Add("x", 99);
+        const string expected = "Ignorenewlines and indents99";
+        var result = st.Render();
+        Assert.AreEqual(expected, result);
+    }
+
+    [TestMethod]
+    public void TestDefineRegionInSubgroup() {
+        var dir = TmpDir;
+        const string g1 = "a() ::= <<[<@r()>]>>\n";
+        WriteFile(dir, "g1.stg", g1);
+        const string g2 = "@a.r() ::= <%\n" +
+                          "	foo\n\n\n" +
+                          "%>\n";
+        WriteFile(dir, "g2.stg", g2);
+
+        TemplateGroup group1 = new TemplateGroupFile(Path.Combine(dir, "g1.stg"));
+        TemplateGroup group2 = new TemplateGroupFile(Path.Combine(dir, "g2.stg"));
+        group2.ImportTemplates(group1); // define r in g2
+        var st = group2.GetInstanceOf("a");
+        const string expected = "[foo]";
+        var result = st.Render();
+        Assert.AreEqual(expected, result);
+    }
+
 }

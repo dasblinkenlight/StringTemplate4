@@ -30,94 +30,86 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.Test.StringTemplate
-{
-    using System.Collections.Generic;
-    using Antlr4.StringTemplate;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+namespace Antlr4.Test.StringTemplate;
 
-    [TestClass]
-    public class TestEarlyEvaluation : BaseTest
-    {
-        [TestMethod]
-        [TestCategory(TestCategories.ST4)]
-        public void TestEarlyEvalInIfExpr()
-        {
-            string templates = "main(x) ::= << <if((x))>foo<else>bar<endif> >>";
-            writeFile(tmpdir, "t.stg", templates);
+using System.Collections.Generic;
+using Antlr4.StringTemplate;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-            TemplateGroup group = new TemplateGroupFile(tmpdir + "/t.stg");
+[TestClass]
+public class TestEarlyEvaluation : BaseTest {
 
-            Template st = group.GetInstanceOf("main");
+    [TestMethod]
+    public void TestEarlyEvalInIfExpr() {
+        var templates = "main(x) ::= << <if((x))>foo<else>bar<endif> >>";
+        WriteFile(TmpDir, "t.stg", templates);
 
-            string s = st.Render();
-            Assert.AreEqual(" bar ", s);
+        var group = new TemplateGroupFile(TmpDir + "/t.stg");
 
-            st.Add("x", "true");
-            s = st.Render();
-            Assert.AreEqual(" foo ", s);
-        }
+        var st = group.GetInstanceOf("main");
 
-        [TestMethod]
-        [TestCategory(TestCategories.ST4)]
-        public void TestEarlyEvalOfSubtemplateInIfExpr()
-        {
-            string templates = "main(x) ::= << <if(({a<x>b}))>foo<else>bar<endif> >>";
-            writeFile(tmpdir, "t.stg", templates);
+        var s = st.Render();
+        Assert.AreEqual(" bar ", s);
 
-            TemplateGroup group = new TemplateGroupFile(tmpdir + "/t.stg");
-
-            Template st = group.GetInstanceOf("main");
-
-            string s = st.Render();
-            Assert.AreEqual(" foo ", s);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.ST4)]
-        public void TestEarlyEvalOfMapInIfExpr()
-        {
-            string templates =
-                    "m ::= [\n" +
-                    "	\"parrt\": \"value\",\n" +
-                    "	default: \"other\"\n" +
-                    "]\n" +
-                    "main(x) ::= << p<x>t: <m.({p<x>t})>, <if(m.({p<x>t}))>if<else>else<endif> >>\n";
-            writeFile(tmpdir, "t.stg", templates);
-
-            TemplateGroup group = new TemplateGroupFile(tmpdir + "/t.stg");
-
-            Template st = group.GetInstanceOf("main");
-
-            st.Add("x", null);
-            string s = st.Render();
-            Assert.AreEqual(" pt: other, if ", s);
-
-            st.Add("x", "arr");
-            s = st.Render();
-            Assert.AreEqual(" parrt: value, if ", s);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.ST4)]
-        public void TestEarlyEvalOfMapInIfExprPassInHashMap()
-        {
-            string templates =
-                    "main(m,x) ::= << p<x>t: <m.({p<x>t})>, <if(m.({p<x>t}))>if<else>else<endif> >>\n";
-            writeFile(tmpdir, "t.stg", templates);
-
-            TemplateGroup group = new TemplateGroupFile(tmpdir + "/t.stg");
-
-            Template st = group.GetInstanceOf("main");
-            st.Add("m", new Dictionary<string, string> { { "parrt", "value" } });
-
-            st.Add("x", null);
-            string s = st.Render();
-            Assert.AreEqual(" pt: , else ", s); // m[null] has no default value so else clause
-
-            st.Add("x", "arr");
-            s = st.Render();
-            Assert.AreEqual(" parrt: value, if ", s);
-        }
+        st.Add("x", "true");
+        s = st.Render();
+        Assert.AreEqual(" foo ", s);
     }
+
+    [TestMethod]
+    public void TestEarlyEvalOfSubtemplateInIfExpr() {
+        var templates = "main(x) ::= << <if(({a<x>b}))>foo<else>bar<endif> >>";
+        WriteFile(TmpDir, "t.stg", templates);
+
+        var group = new TemplateGroupFile(TmpDir + "/t.stg");
+
+        var st = group.GetInstanceOf("main");
+
+        var s = st.Render();
+        Assert.AreEqual(" foo ", s);
+    }
+
+    [TestMethod]
+    public void TestEarlyEvalOfMapInIfExpr() {
+        var templates =
+            "m ::= [\n" +
+            "	\"parrt\": \"value\",\n" +
+            "	default: \"other\"\n" +
+            "]\n" +
+            "main(x) ::= << p<x>t: <m.({p<x>t})>, <if(m.({p<x>t}))>if<else>else<endif> >>\n";
+        WriteFile(TmpDir, "t.stg", templates);
+
+        var group = new TemplateGroupFile(TmpDir + "/t.stg");
+
+        var st = group.GetInstanceOf("main");
+
+        st.Add("x", null);
+        var s = st.Render();
+        Assert.AreEqual(" pt: other, if ", s);
+
+        st.Add("x", "arr");
+        s = st.Render();
+        Assert.AreEqual(" parrt: value, if ", s);
+    }
+
+    [TestMethod]
+    public void TestEarlyEvalOfMapInIfExprPassInHashMap() {
+        var templates =
+            "main(m,x) ::= << p<x>t: <m.({p<x>t})>, <if(m.({p<x>t}))>if<else>else<endif> >>\n";
+        WriteFile(TmpDir, "t.stg", templates);
+
+        var group = new TemplateGroupFile(TmpDir + "/t.stg");
+
+        var st = group.GetInstanceOf("main");
+        st.Add("m", new Dictionary<string, string> { { "parrt", "value" } });
+
+        st.Add("x", null);
+        var s = st.Render();
+        Assert.AreEqual(" pt: , else ", s); // m[null] has no default value so else clause
+
+        st.Add("x", "arr");
+        s = st.Render();
+        Assert.AreEqual(" parrt: value, if ", s);
+    }
+
 }

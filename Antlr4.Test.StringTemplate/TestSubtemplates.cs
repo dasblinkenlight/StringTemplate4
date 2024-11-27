@@ -30,268 +30,256 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.Test.StringTemplate
-{
-    using System.Collections.Generic;
-    using Antlr4.StringTemplate;
-    using Antlr4.StringTemplate.Misc;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Path = System.IO.Path;
+namespace Antlr4.Test.StringTemplate;
 
-    [TestClass]
-    public class TestSubtemplates : BaseTest
-    {
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestSimpleIteration()
-        {
-            TemplateGroup group = new TemplateGroup();
-            group.DefineTemplate("test", "<names:{n|<n>}>!", new string[] { "names" });
-            Template st = group.GetInstanceOf("test");
-            st.Add("names", "Ter");
-            st.Add("names", "Tom");
-            st.Add("names", "Sumana");
-            string expected = "TerTomSumana!";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
-        }
+using System.Collections.Generic;
+using Antlr4.StringTemplate;
+using Antlr4.StringTemplate.Misc;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Path = System.IO.Path;
 
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestMapIterationIsByKeys()
-        {
-            TemplateGroup group = new TemplateGroup();
-            group.DefineTemplate("test", "<emails:{n|<n>}>!", new string[] { "emails" });
-            Template st = group.GetInstanceOf("test");
-            IDictionary<string, string> emails = new Dictionary<string, string>();
-            emails["parrt"] = "Ter";
-            emails["tombu"] = "Tom";
-            emails["dmose"] = "Dan";
-            st.Add("emails", emails);
-            string expected = "parrttombudmose!";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
-        }
+[TestClass]
+public class TestSubtemplates : BaseTest {
 
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestSimpleIterationWithArg()
-        {
-            TemplateGroup group = new TemplateGroup();
-            group.DefineTemplate("test", "<names:{n | <n>}>!", new string[] { "names" });
-            Template st = group.GetInstanceOf("test");
-            st.Add("names", "Ter");
-            st.Add("names", "Tom");
-            st.Add("names", "Sumana");
-            string expected = "TerTomSumana!";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
-        }
+    [TestMethod]
+    public void TestSimpleIteration() {
+        var group = new TemplateGroup();
+        group.DefineTemplate("test", "<names:{n|<n>}>!", ["names"]);
+        var st = group.GetInstanceOf("test");
+        st.Add("names", "Ter");
+        st.Add("names", "Tom");
+        st.Add("names", "Sumana");
+        const string expected = "TerTomSumana!";
+        var result = st.Render();
+        Assert.AreEqual(expected, result);
+    }
 
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestNestedIterationWithArg()
-        {
-            TemplateGroup group = new TemplateGroup();
-            group.DefineTemplate("test", "<users:{u | <u.id:{id | <id>=}><u.name>}>!", new string[] { "users" });
-            Template st = group.GetInstanceOf("test");
-            st.Add("users", new TestCoreBasics.User(1, "parrt"));
-            st.Add("users", new TestCoreBasics.User(2, "tombu"));
-            st.Add("users", new TestCoreBasics.User(3, "sri"));
-            string expected = "1=parrt2=tombu3=sri!";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
-        }
+    [TestMethod]
+    public void TestMapIterationIsByKeys() {
+        var group = new TemplateGroup();
+        group.DefineTemplate("test", "<emails:{n|<n>}>!", ["emails"]);
+        var st = group.GetInstanceOf("test");
+        var emails = new Dictionary<string, string> {
+            ["parrt"] = "Ter",
+            ["tombu"] = "Tom",
+            ["dmose"] = "Dan"
+        };
+        st.Add("emails", emails);
+        const string expected = "parrttombudmose!";
+        var result = st.Render();
+        Assert.AreEqual(expected, result);
+    }
 
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestSubtemplateAsDefaultArg()
-        {
-            string templates =
-                "t(x,y={<x:{s|<s><s>}>}) ::= <<\n" +
-                "x: <x>\n" +
-                "y: <y>\n" +
-                ">>" + newline
-                ;
-            writeFile(tmpdir, "group.stg", templates);
-            TemplateGroup group = new TemplateGroupFile(Path.Combine(tmpdir, "group.stg"));
-            Template b = group.GetInstanceOf("t");
-            b.Add("x", "a");
-            string expecting =
-                "x: a" + newline +
-                "y: aa";
-            string result = b.Render();
-            Assert.AreEqual(expecting, result);
-        }
+    [TestMethod]
+    public void TestSimpleIterationWithArg() {
+        var group = new TemplateGroup();
+        group.DefineTemplate("test", "<names:{n | <n>}>!", ["names"]);
+        var st = group.GetInstanceOf("test");
+        st.Add("names", "Ter");
+        st.Add("names", "Tom");
+        st.Add("names", "Sumana");
+        const string expected = "TerTomSumana!";
+        var result = st.Render();
+        Assert.AreEqual(expected, result);
+    }
 
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestParallelAttributeIteration()
-        {
-            Template e = new Template(
-                    "<names,phones,salaries:{n,p,s | <n>@<p>: <s>\n}>"
-                );
-            e.Add("names", "Ter");
-            e.Add("names", "Tom");
-            e.Add("phones", "1");
-            e.Add("phones", "2");
-            e.Add("salaries", "big");
-            e.Add("salaries", "huge");
-            string expecting = "Ter@1: big" + newline + "Tom@2: huge" + newline;
-            Assert.AreEqual(expecting, e.Render());
-        }
+    [TestMethod]
+    public void TestNestedIterationWithArg() {
+        var group = new TemplateGroup();
+        group.DefineTemplate("test", "<users:{u | <u.id:{id | <id>=}><u.name>}>!", ["users"]);
+        var st = group.GetInstanceOf("test");
+        st.Add("users", new User(1, "parrt"));
+        st.Add("users", new User(2, "tombu"));
+        st.Add("users", new User(3, "sri"));
+        const string expected = "1=parrt2=tombu3=sri!";
+        var result = st.Render();
+        Assert.AreEqual(expected, result);
+    }
 
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestParallelAttributeIterationWithNullValue()
-        {
-            Template e = new Template(
-                    "<names,phones,salaries:{n,p,s | <n>@<p>: <s>\n}>"
-                );
-            e.Add("names", "Ter");
-            e.Add("names", "Tom");
-            e.Add("names", "Sriram");
-            e.Add("phones", new List<string>() { "1", null, "3" });
-            e.Add("salaries", "big");
-            e.Add("salaries", "huge");
-            e.Add("salaries", "enormous");
-            string expecting = "Ter@1: big" + newline +
-                               "Tom@: huge" + newline +
-                               "Sriram@3: enormous" + newline;
-            Assert.AreEqual(expecting, e.Render());
-        }
+    [TestMethod]
+    public void TestSubtemplateAsDefaultArg() {
+        var templates =
+            "t(x,y={<x:{s|<s><s>}>}) ::= <<\n" +
+            "x: <x>\n" +
+            "y: <y>\n" +
+           $">>{newline}";
+        WriteFile(TmpDir, "group.stg", templates);
+        var group = new TemplateGroupFile(Path.Combine(TmpDir, "group.stg"));
+        var b = group.GetInstanceOf("t");
+        b.Add("x", "a");
+        var expecting = $"x: a{newline}y: aa";
+        var result = b.Render();
+        Assert.AreEqual(expecting, result);
+    }
 
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestParallelAttributeIterationHasI()
-        {
-            Template e = new Template(
-                    "<names,phones,salaries:{n,p,s | <i0>. <n>@<p>: <s>\n}>"
-                );
-            e.Add("names", "Ter");
-            e.Add("names", "Tom");
-            e.Add("phones", "1");
-            e.Add("phones", "2");
-            e.Add("salaries", "big");
-            e.Add("salaries", "huge");
-            string expecting =
-                "0. Ter@1: big" + newline +
-                "1. Tom@2: huge" + newline;
-            Assert.AreEqual(expecting, e.Render());
-        }
+    [TestMethod]
+    public void TestParallelAttributeIteration() {
+        var e = new Template(
+            "<names,phones,salaries:{n,p,s | <n>@<p>: <s>\n}>"
+        );
+        e.Add("names", "Ter");
+        e.Add("names", "Tom");
+        e.Add("phones", "1");
+        e.Add("phones", "2");
+        e.Add("salaries", "big");
+        e.Add("salaries", "huge");
+        var expecting = $"Ter@1: big{newline}Tom@2: huge{newline}";
+        Assert.AreEqual(expecting, e.Render());
+    }
 
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestParallelAttributeIterationWithDifferentSizes()
-        {
-            Template e = new Template(
-                    "<names,phones,salaries:{n,p,s | <n>@<p>: <s>}; separator=\", \">"
-                );
-            e.Add("names", "Ter");
-            e.Add("names", "Tom");
-            e.Add("names", "Sriram");
-            e.Add("phones", "1");
-            e.Add("phones", "2");
-            e.Add("salaries", "big");
-            string expecting = "Ter@1: big, Tom@2: , Sriram@: ";
-            Assert.AreEqual(expecting, e.Render());
-        }
+    [TestMethod]
+    public void TestParallelAttributeIterationWithNullValue() {
+        var e = new Template(
+            "<names,phones,salaries:{n,p,s | <n>@<p>: <s>\n}>"
+        );
+        e.Add("names", "Ter");
+        e.Add("names", "Tom");
+        e.Add("names", "Sriram");
+        e.Add("phones", new List<string> { "1", null, "3" });
+        e.Add("salaries", "big");
+        e.Add("salaries", "huge");
+        e.Add("salaries", "enormous");
+        var expecting =
+           $"Ter@1: big{newline}" +
+           $"Tom@: huge{newline}" +
+           $"Sriram@3: enormous{newline}";
+        Assert.AreEqual(expecting, e.Render());
+    }
 
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestParallelAttributeIterationWithSingletons()
-        {
-            Template e = new Template(
-                    "<names,phones,salaries:{n,p,s | <n>@<p>: <s>}; separator=\", \">"
-                );
-            e.Add("names", "Ter");
-            e.Add("phones", "1");
-            e.Add("salaries", "big");
-            string expecting = "Ter@1: big";
-            Assert.AreEqual(expecting, e.Render());
-        }
+    [TestMethod]
+    public void TestParallelAttributeIterationHasI() {
+        var e = new Template(
+            "<names,phones,salaries:{n,p,s | <i0>. <n>@<p>: <s>\n}>"
+        );
+        e.Add("names", "Ter");
+        e.Add("names", "Tom");
+        e.Add("phones", "1");
+        e.Add("phones", "2");
+        e.Add("salaries", "big");
+        e.Add("salaries", "huge");
+        var expecting =
+           $"0. Ter@1: big{newline}" +
+           $"1. Tom@2: huge{newline}";
+        Assert.AreEqual(expecting, e.Render());
+    }
 
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestParallelAttributeIterationWithDifferentSizesTemplateRefInsideToo()
-        {
-            string templates =
-                    "page(names,phones,salaries) ::= " + newline +
-                    "	<< <names,phones,salaries:{n,p,s | <value(n)>@<value(p)>: <value(s)>}; separator=\", \"> >>" + newline +
-                    "value(x) ::= \"<if(!x)>n/a<else><x><endif>\"" + newline;
-            writeFile(tmpdir, "g.stg", templates);
+    [TestMethod]
+    public void TestParallelAttributeIterationWithDifferentSizes() {
+        var e = new Template(
+            "<names,phones,salaries:{n,p,s | <n>@<p>: <s>}; separator=\", \">"
+        );
+        e.Add("names", "Ter");
+        e.Add("names", "Tom");
+        e.Add("names", "Sriram");
+        e.Add("phones", "1");
+        e.Add("phones", "2");
+        e.Add("salaries", "big");
+        const string expecting = "Ter@1: big, Tom@2: , Sriram@: ";
+        Assert.AreEqual(expecting, e.Render());
+    }
 
-            TemplateGroup group = new TemplateGroupFile(Path.Combine(tmpdir, "g.stg"));
-            Template p = group.GetInstanceOf("page");
-            p.Add("names", "Ter");
-            p.Add("names", "Tom");
-            p.Add("names", "Sriram");
-            p.Add("phones", "1");
-            p.Add("phones", "2");
-            p.Add("salaries", "big");
-            string expecting = " Ter@1: big, Tom@2: n/a, Sriram@n/a: n/a ";
-            Assert.AreEqual(expecting, p.Render());
-        }
+    [TestMethod]
+    public void TestParallelAttributeIterationWithSingletons() {
+        var e = new Template(
+            "<names,phones,salaries:{n,p,s | <n>@<p>: <s>}; separator=\", \">"
+        );
+        e.Add("names", "Ter");
+        e.Add("phones", "1");
+        e.Add("salaries", "big");
+        const string expecting = "Ter@1: big";
+        Assert.AreEqual(expecting, e.Render());
+    }
 
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestEvalSTIteratingSubtemplateInSTFromAnotherGroup()
-        {
-            ErrorBuffer errors = new ErrorBuffer();
-            TemplateGroup innerGroup = new TemplateGroup();
-            innerGroup.Listener = errors;
-            innerGroup.DefineTemplate("test", "<m:samegroup()>", new string[] { "m" });
-            innerGroup.DefineTemplate("samegroup", "hi ", new string[] { "x" });
-            Template st = innerGroup.GetInstanceOf("test");
-            st.Add("m", new int[] { 1, 2, 3 });
+    [TestMethod]
+    public void TestParallelAttributeIterationWithDifferentSizesTemplateRefInsideToo() {
+        var templates =
+           $"page(names,phones,salaries) ::= {newline}" +
+            "	<< <names,phones,salaries:{n,p,s | <value(n)>@<value(p)>: <value(s)>}; separator=\", \"> >>" + newline +
+           $"value(x) ::= \"<if(!x)>n/a<else><x><endif>\"{newline}";
+        WriteFile(TmpDir, "g.stg", templates);
 
-            TemplateGroup outerGroup = new TemplateGroup();
-            outerGroup.DefineTemplate("errorMessage", "<x>", new string[] { "x" });
-            Template outerST = outerGroup.GetInstanceOf("errorMessage");
-            outerST.Add("x", st);
+        var group = new TemplateGroupFile(Path.Combine(TmpDir, "g.stg"));
+        var p = group.GetInstanceOf("page");
+        p.Add("names", "Ter");
+        p.Add("names", "Tom");
+        p.Add("names", "Sriram");
+        p.Add("phones", "1");
+        p.Add("phones", "2");
+        p.Add("salaries", "big");
+        var expecting = " Ter@1: big, Tom@2: n/a, Sriram@n/a: n/a ";
+        Assert.AreEqual(expecting, p.Render());
+    }
 
-            string expected = "hi hi hi ";
-            string result = outerST.Render();
+    [TestMethod]
+    public void TestEvalSTIteratingSubtemplateInSTFromAnotherGroup() {
+        var errors = new ErrorBuffer();
+        var innerGroup = new TemplateGroup {
+            Listener = errors
+        };
+        innerGroup.DefineTemplate("test", "<m:samegroup()>", ["m"]);
+        innerGroup.DefineTemplate("samegroup", "hi ", ["x"]);
+        var st = innerGroup.GetInstanceOf("test");
+        st.Add("m", new[] { 1, 2, 3 });
 
-            Assert.AreEqual(errors.Errors.Count, 0); // ignores no such prop errors
+        var outerGroup = new TemplateGroup();
+        outerGroup.DefineTemplate("errorMessage", "<x>", ["x"]);
+        var outerST = outerGroup.GetInstanceOf("errorMessage");
+        outerST.Add("x", st);
 
-            Assert.AreEqual(expected, result);
-        }
+        const string expected = "hi hi hi ";
+        var result = outerST.Render();
 
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestEvalSTIteratingSubtemplateInSTFromAnotherGroupSingleValue()
-        {
-            ErrorBuffer errors = new ErrorBuffer();
-            TemplateGroup innerGroup = new TemplateGroup();
-            innerGroup.Listener = errors;
-            innerGroup.DefineTemplate("test", "<m:samegroup()>", new string[] { "m" });
-            innerGroup.DefineTemplate("samegroup", "hi ", new string[] { "x" });
-            Template st = innerGroup.GetInstanceOf("test");
-            st.Add("m", 10);
+        Assert.AreEqual(errors.Errors.Count, 0); // ignores no such prop errors
 
-            TemplateGroup outerGroup = new TemplateGroup();
-            outerGroup.DefineTemplate("errorMessage", "<x>", new string[] { "x" });
-            Template outerST = outerGroup.GetInstanceOf("errorMessage");
-            outerST.Add("x", st);
+        Assert.AreEqual(expected, result);
+    }
 
-            string expected = "hi ";
-            string result = outerST.Render();
+    [TestMethod]
+    public void TestEvalSTIteratingSubtemplateInSTFromAnotherGroupSingleValue() {
+        var errors = new ErrorBuffer();
+        var innerGroup = new TemplateGroup {
+            Listener = errors
+        };
+        innerGroup.DefineTemplate("test", "<m:samegroup()>", ["m"]);
+        innerGroup.DefineTemplate("samegroup", "hi ", ["x"]);
+        var st = innerGroup.GetInstanceOf("test");
+        st.Add("m", 10);
 
-            Assert.AreEqual(errors.Errors.Count, 0); // ignores no such prop errors
+        var outerGroup = new TemplateGroup();
+        outerGroup.DefineTemplate("errorMessage", "<x>", ["x"]);
+        var outerST = outerGroup.GetInstanceOf("errorMessage");
+        outerST.Add("x", st);
 
-            Assert.AreEqual(expected, result);
-        }
+        const string expected = "hi ";
+        var result = outerST.Render();
 
-        [TestMethod][TestCategory(TestCategories.ST4)]
-        public void TestEvalSTFromAnotherGroup()
-        {
-            ErrorBuffer errors = new ErrorBuffer();
-            TemplateGroup innerGroup = new TemplateGroup();
-            innerGroup.Listener = errors;
-            innerGroup.DefineTemplate("bob", "inner");
-            Template st = innerGroup.GetInstanceOf("bob");
+        Assert.AreEqual(errors.Errors.Count, 0); // ignores no such prop errors
 
-            TemplateGroup outerGroup = new TemplateGroup();
-            outerGroup.Listener = errors;
-            outerGroup.DefineTemplate("errorMessage", "<x>", new string[] { "x" });
-            outerGroup.DefineTemplate("bob", "outer"); // should not be visible to test() in innerGroup
-            Template outerST = outerGroup.GetInstanceOf("errorMessage");
-            outerST.Add("x", st);
+        Assert.AreEqual(expected, result);
+    }
 
-            string expected = "inner";
-            string result = outerST.Render();
+    [TestMethod]
+    public void TestEvalSTFromAnotherGroup() {
+        var errors = new ErrorBuffer();
+        var innerGroup = new TemplateGroup {
+            Listener = errors
+        };
+        innerGroup.DefineTemplate("bob", "inner");
+        var st = innerGroup.GetInstanceOf("bob");
 
-            Assert.AreEqual(errors.Errors.Count, 0); // ignores no such prop errors
+        var outerGroup = new TemplateGroup {
+            Listener = errors
+        };
+        outerGroup.DefineTemplate("errorMessage", "<x>", ["x"]);
+        outerGroup.DefineTemplate("bob", "outer"); // should not be visible to test() in innerGroup
+        var outerST = outerGroup.GetInstanceOf("errorMessage");
+        outerST.Add("x", st);
 
-            Assert.AreEqual(expected, result);
-        }
+        var expected = "inner";
+        var result = outerST.Render();
+
+        Assert.AreEqual(errors.Errors.Count, 0); // ignores no such prop errors
+
+        Assert.AreEqual(expected, result);
     }
 }

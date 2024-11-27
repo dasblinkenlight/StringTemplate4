@@ -30,156 +30,138 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.Test.StringTemplate
-{
-    using Antlr4.StringTemplate;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using System.Collections.Generic;
+namespace Antlr4.Test.StringTemplate;
 
-    [TestClass]
-    public class TestTemplateRawGroupDirectory : BaseTest
-    {
-        [TestMethod]
-        [TestCategory(TestCategories.ST4)]
-        public void TestSimpleGroup()
-        {
-            string dir = tmpdir;
-            writeFile(dir, "a.st", "foo");
-            TemplateGroup group = new TemplateRawGroupDirectory(dir, '$', '$');
-            Template st = group.GetInstanceOf("a");
-            string expected = "foo";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
-        }
+using Antlr4.StringTemplate;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
 
-        [TestMethod]
-        [TestCategory(TestCategories.ST4)]
-        public void TestSimpleGroup2()
-        {
-            string dir = tmpdir;
-            writeFile(dir, "a.st", "foo");
-            writeFile(dir, "b.st", "$name$");
-            TemplateGroup group = new TemplateRawGroupDirectory(dir, '$', '$');
-            Template st = group.GetInstanceOf("a");
-            string expected = "foo";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
+[TestClass]
+public class TestTemplateRawGroupDirectory : BaseTest {
 
-            Template b = group.GetInstanceOf("b");
-            b.Add("name", "Bob");
-            Assert.AreEqual("Bob", b.Render());
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.ST4)]
-        public void TestSimpleGroupAngleBrackets()
-        {
-            string dir = tmpdir;
-            writeFile(dir, "a.st", "foo");
-            writeFile(dir, "b.st", "<name>");
-            TemplateGroup group = new TemplateRawGroupDirectory(dir);
-            Template st = group.GetInstanceOf("a");
-            string expected = "foo";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
-
-            Template b = group.GetInstanceOf("b");
-            b.Add("name", "Bob");
-            Assert.AreEqual("Bob", b.Render());
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.ST4)]
-        public void TestAnonymousTemplateInRawTemplate()
-        {
-            string dir = tmpdir;
-            writeFile(dir, "template.st", "$values:{foo|[$foo$]}$");
-            TemplateGroup group = new TemplateRawGroupDirectory(dir, '$', '$');
-            Template template = group.GetInstanceOf("template");
-            List<string> values = new List<string>();
-            values.Add("one");
-            values.Add("two");
-            values.Add("three");
-            template.Add("values", values);
-            Assert.AreEqual("[one][two][three]", template.Render());
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.ST4)]
-        public void TestMap()
-        {
-            string dir = tmpdir;
-            writeFile(dir, "a.st", "$names:bold()$");
-            writeFile(dir, "bold.st", "<b>$it$</b>");
-            TemplateGroup group = new TemplateRawGroupDirectory(dir, '$', '$');
-            Template st = group.GetInstanceOf("a");
-            List<string> names = new List<string>();
-            names.Add("parrt");
-            names.Add("tombu");
-            st.Add("names", names);
-            //string asmResult = st.impl.GetInstructions();
-            //Console.Out.WriteLine(asmResult);
-
-            //st.Visualize();
-            string expected = "<b>parrt</b><b>tombu</b>";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
-        }
-
-        [TestMethod]
-        [TestCategory(TestCategories.ST4)]
-        public void TestSuper()
-        {
-            string dir1 = tmpdir + "dir1011";
-            string a = "dir1 a";
-            string b = "dir1 b";
-            writeFile(dir1, "a.st", a);
-            writeFile(dir1, "b.st", b);
-            string dir2 = tmpdir + "dir0220";
-            a = "[<super.a()>]";
-            writeFile(dir2, "a.st", a);
-
-            TemplateGroup group1 = new TemplateRawGroupDirectory(dir1);
-            TemplateGroup group2 = new TemplateRawGroupDirectory(dir2);
-            group2.ImportTemplates(group1);
-            Template st = group2.GetInstanceOf("a");
-            string expected = "[dir1 a]";
-            string result = st.Render();
-            Assert.AreEqual(expected, result);
-        }
-
-        /// <summary>
-        /// This is a regression test for antlr/stringtemplate4#70
-        /// </summary>
-        /// <seealso href="https://github.com/antlr/stringtemplate4/issues/70">Argument initialisation for sub-template in template with STRawGroupDir doesn't recognize valid parameters</seealso>
-        [TestMethod]
-        [TestCategory(TestCategories.ST4)]
-        public void TestRawArgumentPassing()
-        {
-            string dir1 = tmpdir;
-            string mainRawTemplate = "Hello $name$" + newline +
-                "Then do the footer:" + newline +
-                "$footerRaw(lastLine=veryLastLineRaw())$" + newline;
-            string footerRawTemplate =
-                "Simple footer. And now a last line:" + newline +
-                "$lastLine$";
-            string veryLastLineTemplate =
-                "That's the last line.";
-            writeFile(dir1, "mainRaw.st", mainRawTemplate);
-            writeFile(dir1, "footerRaw.st", footerRawTemplate);
-            writeFile(dir1, "veryLastLineRaw.st", veryLastLineTemplate);
-
-            TemplateGroup group = new TemplateRawGroupDirectory(dir1, '$', '$');
-            Template st = group.GetInstanceOf("mainRaw");
-            Assert.IsNotNull(st);
-            st.Add("name", "John");
-            string result = st.Render();
-            string expected =
-                "Hello John" + newline +
-                "Then do the footer:" + newline +
-                "Simple footer. And now a last line:" + newline +
-                "That's the last line." + newline;
-            Assert.AreEqual(expected, result);
-        }
+    [TestMethod]
+    public void TestSimpleGroup() {
+        var dir = TmpDir;
+        WriteFile(dir, "a.st", "foo");
+        var group = new TemplateRawGroupDirectory(dir, '$', '$');
+        var st = group.GetInstanceOf("a");
+        const string expected = "foo";
+        var result = st.Render();
+        Assert.AreEqual(expected, result);
     }
+
+    [TestMethod]
+    public void TestSimpleGroup2() {
+        var dir = TmpDir;
+        WriteFile(dir, "a.st", "foo");
+        WriteFile(dir, "b.st", "$name$");
+        var group = new TemplateRawGroupDirectory(dir, '$', '$');
+        var st = group.GetInstanceOf("a");
+        const string expected = "foo";
+        var result = st.Render();
+        Assert.AreEqual(expected, result);
+
+        var b = group.GetInstanceOf("b");
+        b.Add("name", "Bob");
+        Assert.AreEqual("Bob", b.Render());
+    }
+
+    [TestMethod]
+    public void TestSimpleGroupAngleBrackets() {
+        var dir = TmpDir;
+        WriteFile(dir, "a.st", "foo");
+        WriteFile(dir, "b.st", "<name>");
+        var group = new TemplateRawGroupDirectory(dir);
+        var st = group.GetInstanceOf("a");
+        const string expected = "foo";
+        var result = st.Render();
+        Assert.AreEqual(expected, result);
+
+        var b = group.GetInstanceOf("b");
+        b.Add("name", "Bob");
+        Assert.AreEqual("Bob", b.Render());
+    }
+
+    [TestMethod]
+    public void TestAnonymousTemplateInRawTemplate() {
+        var dir = TmpDir;
+        WriteFile(dir, "template.st", "$values:{foo|[$foo$]}$");
+        var group = new TemplateRawGroupDirectory(dir, '$', '$');
+        var template = group.GetInstanceOf("template");
+        List<string> values = ["one", "two", "three"];
+        template.Add("values", values);
+        Assert.AreEqual("[one][two][three]", template.Render());
+    }
+
+    [TestMethod]
+    public void TestMap() {
+        var dir = TmpDir;
+        WriteFile(dir, "a.st", "$names:bold()$");
+        WriteFile(dir, "bold.st", "<b>$it$</b>");
+        var group = new TemplateRawGroupDirectory(dir, '$', '$');
+        var st = group.GetInstanceOf("a");
+        List<string> names = ["parrt", "tombu"];
+        st.Add("names", names);
+        //string asmResult = st.impl.GetInstructions();
+        //Console.Out.WriteLine(asmResult);
+
+        //st.Visualize();
+        const string expected = "<b>parrt</b><b>tombu</b>";
+        var result = st.Render();
+        Assert.AreEqual(expected, result);
+    }
+
+    [TestMethod]
+    public void TestSuper() {
+        var dir1 = $"{TmpDir}dir1011";
+        const string a1 = "dir1 a";
+        const string b1 = "dir1 b";
+        WriteFile(dir1, "a.st", a1);
+        WriteFile(dir1, "b.st", b1);
+        var dir2 = $"{TmpDir}dir0220";
+        var a2 = "[<super.a()>]";
+        WriteFile(dir2, "a.st", a2);
+
+        var group1 = new TemplateRawGroupDirectory(dir1);
+        var group2 = new TemplateRawGroupDirectory(dir2);
+        group2.ImportTemplates(group1);
+        var st = group2.GetInstanceOf("a");
+        const string expected = "[dir1 a]";
+        var result = st.Render();
+        Assert.AreEqual(expected, result);
+    }
+
+    /// <summary>
+    /// This is a regression test for antlr/stringtemplate4#70
+    /// </summary>
+    /// <seealso href="https://github.com/antlr/stringtemplate4/issues/70">Argument initialisation for sub-template in template with STRawGroupDir doesn't recognize valid parameters</seealso>
+    [TestMethod]
+    public void TestRawArgumentPassing() {
+        var dir1 = TmpDir;
+        var mainRawTemplate =
+            $"Hello $name${newline}" +
+            $"Then do the footer:{newline}" +
+            $"$footerRaw(lastLine=veryLastLineRaw())${newline}";
+        var footerRawTemplate =
+            $"Simple footer. And now a last line:{newline}"+
+            $"$lastLine$";
+        const string veryLastLineTemplate =
+            "That's the last line.";
+        WriteFile(dir1, "mainRaw.st", mainRawTemplate);
+        WriteFile(dir1, "footerRaw.st", footerRawTemplate);
+        WriteFile(dir1, "veryLastLineRaw.st", veryLastLineTemplate);
+
+        var group = new TemplateRawGroupDirectory(dir1, '$', '$');
+        var st = group.GetInstanceOf("mainRaw");
+        Assert.IsNotNull(st);
+        st.Add("name", "John");
+        var result = st.Render();
+        var expected =
+            $"Hello John{newline}" +
+            $"Then do the footer:{newline}" +
+            $"Simple footer. And now a last line:{newline}" +
+            $"That's the last line.{newline}";
+        Assert.AreEqual(expected, result);
+    }
+
 }
