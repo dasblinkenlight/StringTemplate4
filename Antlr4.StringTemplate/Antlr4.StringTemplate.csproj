@@ -15,6 +15,8 @@
     <PackageProjectUrl>https://github.com/kaby76/stringtemplate4cs</PackageProjectUrl>
     <RepositoryUrl>https://github.com/kaby76/stringtemplate4cs</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
+    <LangVersion>latestmajor</LangVersion>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -26,8 +28,16 @@
     <Compile Remove="Dbg\DebugTemplate.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Antlr3.Runtime\Antlr3.Runtime.csproj" />
+  </ItemGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <NoWarn>3021;1701;1702;1591;3001;3002;3003;3009;0436</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Antlr4.Test.StringTemplate" />
+  </ItemGroup>
 
 </Project>

@@ -30,21 +30,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate
-{
-    using TextWriter = System.IO.TextWriter;
+namespace Antlr4.StringTemplate;
 
-    /** Just pass through the text */
-    public class NoIndentWriter : AutoIndentWriter
-    {
-        public NoIndentWriter(TextWriter writer)
-            : base(writer)
-        {
-        }
+using TextWriter = System.IO.TextWriter;
 
-        protected override int Indent()
-        {
-            return 0;
-        }
+/** Just pass through the text */
+public class NoIndentWriter : AutoIndentWriter {
+    public NoIndentWriter(TextWriter writer) : base(writer) {
+    }
+    protected override int Indent() {
+        return 0;
     }
 }

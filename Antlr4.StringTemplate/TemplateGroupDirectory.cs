@@ -30,267 +30,170 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate
-{
-    using Antlr.Runtime;
-    using Antlr4.StringTemplate.Compiler;
-    using Antlr4.StringTemplate.Misc;
-    using System;
-    using System.Linq;
-    using System.Reflection;
+namespace Antlr4.StringTemplate;
 
-    using ArgumentException = System.ArgumentException;
-    using ArgumentNullException = System.ArgumentNullException;
-    using Console = System.Console;
-    using Directory = System.IO.Directory;
-    using Encoding = System.Text.Encoding;
-    using Exception = System.Exception;
-    using File = System.IO.File;
-    using IOException = System.IO.IOException;
-    using NotImplementedException = System.NotImplementedException;
-    using NotSupportedException = System.NotSupportedException;
-    using Path = System.IO.Path;
-    using StreamReader = System.IO.StreamReader;
-    using Uri = System.Uri;
-    using UriFormatException = System.UriFormatException;
+using Antlr.Runtime;
+using Compiler;
+using Misc;
+using System;
+using System.Linq;
+using System.Reflection;
 
-    // TODO: caching?
+using ArgumentException = System.ArgumentException;
+using ArgumentNullException = System.ArgumentNullException;
+using Console = System.Console;
+using Directory = System.IO.Directory;
+using Encoding = System.Text.Encoding;
+using Exception = System.Exception;
+using File = System.IO.File;
+using IOException = System.IO.IOException;
+using NotSupportedException = System.NotSupportedException;
+using Path = System.IO.Path;
+using StreamReader = System.IO.StreamReader;
+using Uri = System.Uri;
+using UriFormatException = System.UriFormatException;
 
-    /** A directory or directory tree full of templates and/or group files.
-     *  We load files on-demand. If we fail to find a file, we look for it via
-     *  the CLASSPATH as a resource.  I track everything with URLs not file names.
-     */
-    public class TemplateGroupDirectory : TemplateGroup
-    {
-        public readonly string groupDirName;
-        public readonly Uri root;
+// TODO: caching?
 
-        public TemplateGroupDirectory(string dirName)
-            : this(dirName, '<', '>')
-        {
-        }
+/** A directory or directory tree full of templates and/or group files.
+ *  We load files on-demand. If we fail to find a file, we look for it via
+ *  the CLASSPATH as a resource.  I track everything with URLs not file names.
+ */
+public class TemplateGroupDirectory : TemplateGroup {
+    private readonly string groupDirName;
+    private readonly Uri root;
 
-        public TemplateGroupDirectory(string dirName, char delimiterStartChar, char delimiterStopChar)
-            : base(delimiterStartChar, delimiterStopChar)
-        {
-            this.groupDirName = dirName;
-            try
-            {
-                if (Directory.Exists(dirName))
-                {
-                    // we found the directory and it'll be file based
-                    root = new Uri(dirName);
-                }
-                else
-                {
-                    var asm = ResourceAssembly ?? Assembly.GetExecutingAssembly();
-                    var res = ToResourceNameInAssembly(dirName, asm);
-                    var dirPrefix = res + ".";
-                    if (asm.GetManifestResourceNames()
-                            .Any(n => n.StartsWith(dirPrefix, StringComparison.OrdinalIgnoreCase))) {
-                        root = new Uri("resource://" + res);
-                    }
-
-#if false
-                    ClassLoader cl = Thread.CurrentThread.getContextClassLoader();
-                    root = cl.getResource(dirName);
-                    if (root == null)
-                    {
-                        cl = this.GetType().getClassLoader();
-                        root = cl.getResource(dirName);
-                    }
-                    if (root == null)
-                    {
-                        throw new ArgumentException("No such directory: " + dirName);
-                    }
-#endif
-                }
-
-                if (Verbose)
-                    Console.WriteLine("TemplateGroupDirectory({0}) found at {1}", dirName, root);
-            }
-            catch (Exception e)
-            {
-                ErrorManager.InternalError(null, "can't Load group dir " + dirName, e);
-            }
-        }
-
-        public TemplateGroupDirectory(string dirName, Encoding encoding)
-            : this(dirName, encoding, '<', '>')
-        {
-        }
-
-        public TemplateGroupDirectory(string dirName, Encoding encoding, char delimiterStartChar, char delimiterStopChar)
-            : this(dirName, delimiterStartChar, delimiterStopChar)
-        {
-            if (encoding == null)
-                throw new ArgumentNullException("encoding");
-
-            this.Encoding = encoding;
-        }
-
-        public TemplateGroupDirectory(Uri root, Encoding encoding, char delimiterStartChar, char delimiterStopChar)
-            : base(delimiterStartChar, delimiterStopChar)
-        {
-            if (encoding == null)
-                throw new ArgumentNullException("encoding");
-
-            this.groupDirName = Path.GetFileName(root.AbsolutePath);
-            this.root = root;
-            this.Encoding = encoding;
-        }
-
-        public override void ImportTemplates(IToken fileNameToken)
-        {
-            string msg =
-                "import illegal in group files embedded in TemplateGroupDirectory; " +
-                "import " + fileNameToken.Text + " in TemplateGroupDirectory " + this.Name;
-            throw new NotSupportedException(msg);
-        }
-
-        /** <summary>
-         * Load a template from dir or group file.  Group file is given
-         * precedence over dir with same name. <paramref name="name"/> is
-         * always fully qualified.
-         * </summary>
-         */
-        protected override CompiledTemplate Load(string name)
-        {
-            if (Verbose)
-                Console.WriteLine("STGroupDir.load(" + name + ")");
-
-            string parent = Utility.GetParent(name); // must have parent; it's fully-qualified
-            string prefix = Utility.GetPrefix(name);
-
-            //    	if (parent.isEmpty()) {
-            //    		// no need to check for a group file as name has no parent
-            //            return loadTemplateFile("/", name+TemplateFileExtension); // load t.st file
-            //    	}
-
-            if (!Path.IsPathRooted(parent))
-                throw new ArgumentException();
-
-            Uri groupFileURL;
-            try
-            {
-                // see if parent of template name is a group file
-                groupFileURL = new Uri(TemplateName.GetTemplatePath(root.LocalPath, parent) + GroupFileExtension);
-            }
-            catch (UriFormatException e)
-            {
-                ErrorManager.InternalError(null, "bad URL: " + TemplateName.GetTemplatePath(root.LocalPath, parent) + GroupFileExtension, e);
-                return null;
-            }
-
-            if (!File.Exists(groupFileURL.LocalPath))
-            {
-                string unqualifiedName = Path.GetFileName(name);
-                return LoadTemplateFile(prefix, unqualifiedName + TemplateFileExtension); // load t.st file
-            }
-#if false
-            InputStream @is = null;
-            try
-            {
-                @is = groupFileURL.openStream();
-            }
-            catch (FileNotFoundException fnfe)
-            {
-                // must not be in a group file
-                return loadTemplateFile(parent, name + TemplateFileExtension); // load t.st file
-            }
-            catch (IOException ioe)
-            {
-                errMgr.internalError(null, "can't load template file " + name, ioe);
-            }
-
-            try
-            {
-                // clean up
-                if (@is != null)
-                    @is.close();
-            }
-            catch (IOException ioe)
-            {
-                errMgr.internalError(null, "can't close template file stream " + name, ioe);
-            }
-#endif
-
-            LoadGroupFile(prefix, groupFileURL);
-
-            return RawGetTemplate(name);
-        }
-
-        /** Load full path name .st file relative to root by prefix */
-        public virtual CompiledTemplate LoadTemplateFile(string prefix, string unqualifiedFileName)
-        {
-            if (Path.IsPathRooted(unqualifiedFileName))
-                throw new ArgumentException();
-
-            if (Verbose)
-                Console.WriteLine("loadTemplateFile({0}) in groupdir from {1} prefix={2}", unqualifiedFileName, root, prefix);
-
-            string templateName = Path.ChangeExtension(unqualifiedFileName, null);
-            Uri f;
-            try
-            {
-                var uriBuilder = new UriBuilder(root);
-                uriBuilder.Path += prefix + unqualifiedFileName;
-                f = uriBuilder.Uri;
-            }
-            catch (UriFormatException me)
-            {
-                ErrorManager.RuntimeError(null, ErrorType.INVALID_TEMPLATE_NAME, me, Path.Combine(root.LocalPath, unqualifiedFileName));
-                return null;
-            }
-
-            ANTLRReaderStream fs = null;
-            try
-            {
-                if (TryOpenStream(f, out var inputStream, out _))
-                {
-                    fs = new ANTLRReaderStream(new StreamReader(inputStream, Encoding));
-                    fs.name = unqualifiedFileName;
-                }
-                else {
-                    if (Verbose)
-                        Console.WriteLine("{0}/{1} doesn't exist", root, unqualifiedFileName);
-                    return null;
+    public TemplateGroupDirectory(string dirName, char delimiterStartChar = '<', char delimiterStopChar =  '>')
+    : base(delimiterStartChar, delimiterStopChar) {
+        groupDirName = dirName;
+        try {
+            if (Directory.Exists(dirName)) {
+                // we found the directory and it'll be file based
+                root = new Uri(dirName);
+            } else {
+                var asm = ResourceAssembly ?? Assembly.GetExecutingAssembly();
+                var res = ToResourceNameInAssembly(dirName, asm);
+                var dirPrefix = res + ".";
+                if (asm.GetManifestResourceNames()
+                    .Any(n => n.StartsWith(dirPrefix, StringComparison.OrdinalIgnoreCase))) {
+                    root = new Uri("resource://" + res);
                 }
             }
-            catch (IOException)
-            {
-                if (Verbose)
-                    Console.WriteLine("{0}/{1} doesn't exist", root, unqualifiedFileName);
 
-                //errMgr.IOError(null, ErrorType.NO_SUCH_TEMPLATE, ioe, unqualifiedFileName);
-                return null;
+            if (Verbose) {
+                Console.WriteLine("TemplateGroupDirectory({0}) found at {1}", dirName, root);
             }
-
-            return LoadTemplateFile(prefix, unqualifiedFileName, fs);
-        }
-
-        public override string Name
-        {
-            get
-            {
-                return groupDirName;
-            }
-        }
-
-        public override string FileName
-        {
-            get
-            {
-                return Path.GetFileName(root.LocalPath);
-            }
-        }
-
-        public override Uri RootDirUri
-        {
-            get
-            {
-                return root;
-            }
+        } catch (Exception e) {
+            ErrorManager.InternalError(null, "can't Load group dir " + dirName, e);
         }
     }
+
+    protected TemplateGroupDirectory(string dirName, Encoding encoding, char delimiterStartChar = '<', char delimiterStopChar = '>')
+    : this(dirName, delimiterStartChar, delimiterStopChar) {
+        Encoding = encoding ?? throw new ArgumentNullException(nameof(encoding));
+    }
+
+    public TemplateGroupDirectory(Uri root, Encoding encoding, char delimiterStartChar, char delimiterStopChar)
+        : base(delimiterStartChar, delimiterStopChar) {
+        groupDirName = Path.GetFileName(root.AbsolutePath);
+        this.root = root;
+        Encoding = encoding ?? throw new ArgumentNullException(nameof(encoding));
+    }
+
+    public override void ImportTemplates(IToken fileNameToken) {
+        var msg =
+            "import illegal in group files embedded in TemplateGroupDirectory; " +
+            "import " + fileNameToken.Text + " in TemplateGroupDirectory " + Name;
+        throw new NotSupportedException(msg);
+    }
+
+    /** <summary>
+     * Load a template from dir or group file.  Group file is given
+     * precedence over dir with same name. <paramref name="name"/> is
+     * always fully qualified.
+     * </summary>
+     */
+    protected override CompiledTemplate Load(string name) {
+        if (Verbose) {
+            Console.WriteLine("STGroupDir.load(" + name + ")");
+        }
+
+        var parent = Utility.GetParent(name); // must have parent; it's fully-qualified
+        var prefix = Utility.GetPrefix(name);
+
+        //    	if (parent.isEmpty()) {
+        //    		// no need to check for a group file as name has no parent
+        //            return loadTemplateFile("/", name+TemplateFileExtension); // load t.st file
+        //    	}
+
+        if (!Path.IsPathRooted(parent)) {
+            throw new ArgumentException();
+        }
+
+        Uri groupFileURL;
+        try {
+            // see if parent of template name is a group file
+            groupFileURL = new Uri(TemplateName.GetTemplatePath(root.LocalPath, parent) + GroupFileExtension);
+        } catch (UriFormatException e) {
+            ErrorManager.InternalError(null, "bad URL: " + TemplateName.GetTemplatePath(root.LocalPath, parent) + GroupFileExtension, e);
+            return null;
+        }
+
+        if (!File.Exists(groupFileURL.LocalPath)) {
+            var unqualifiedName = Path.GetFileName(name);
+            return LoadTemplateFile(prefix, unqualifiedName + TemplateFileExtension); // load t.st file
+        }
+
+        LoadGroupFile(prefix, groupFileURL);
+        return RawGetTemplate(name);
+    }
+
+    /** Load full path name .st file relative to root by prefix */
+    private CompiledTemplate LoadTemplateFile(string prefix, string unqualifiedFileName) {
+        if (Path.IsPathRooted(unqualifiedFileName)) {
+            throw new ArgumentException();
+        }
+
+        if (Verbose) {
+            Console.WriteLine("loadTemplateFile({0}) in group dir from {1} prefix={2}", unqualifiedFileName, root, prefix);
+        }
+
+        Uri f;
+        try {
+            var uriBuilder = new UriBuilder(root);
+            uriBuilder.Path += prefix + unqualifiedFileName;
+            f = uriBuilder.Uri;
+        } catch (UriFormatException me) {
+            ErrorManager.RuntimeError(null, ErrorType.INVALID_TEMPLATE_NAME, me, Path.Combine(root.LocalPath, unqualifiedFileName));
+            return null;
+        }
+
+        ANTLRReaderStream fs;
+        try {
+            if (TryOpenStream(f, out var inputStream, out _)) {
+                fs = new ANTLRReaderStream(new StreamReader(inputStream, Encoding)) {
+                    name = unqualifiedFileName
+                };
+            } else {
+                if (Verbose) {
+                    Console.WriteLine("{0}/{1} doesn't exist", root, unqualifiedFileName);
+                }
+                return null;
+            }
+        } catch (IOException) {
+            if (Verbose) {
+                Console.WriteLine("{0}/{1} doesn't exist", root, unqualifiedFileName);
+            }
+            //errMgr.IOError(null, ErrorType.NO_SUCH_TEMPLATE, ioe, unqualifiedFileName);
+            return null;
+        }
+
+        return LoadTemplateFile(prefix, unqualifiedFileName, fs);
+    }
+
+    public override string Name => groupDirName;
+
+    public override string FileName => Path.GetFileName(root.LocalPath);
+
+    protected override Uri RootDirUri => root;
 }

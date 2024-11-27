@@ -30,178 +30,156 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate
-{
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Linq;
-    using Antlr4.StringTemplate.Compiler;
-    using Antlr4.StringTemplate.Debug;
-    using Antlr4.StringTemplate.Extensions;
-    using Antlr4.StringTemplate.Misc;
+namespace Antlr4.StringTemplate;
 
-    using ArgumentNullException = System.ArgumentNullException;
-    using Array = System.Array;
-    using BitConverter = System.BitConverter;
-    using Console = System.Console;
-    using CultureInfo = System.Globalization.CultureInfo;
-    using Environment = System.Environment;
-    using Exception = System.Exception;
-    using ICollection = System.Collections.ICollection;
-    using IDictionary = System.Collections.IDictionary;
-    using IEnumerable = System.Collections.IEnumerable;
-    using IEnumerator = System.Collections.IEnumerator;
-    using IList = System.Collections.IList;
-    using IOException = System.IO.IOException;
-    using Math = System.Math;
-    using StringBuilder = System.Text.StringBuilder;
-    using StringWriter = System.IO.StringWriter;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using Compiler;
+using Debug;
+using Extensions;
+using Misc;
 
-    /** This class knows how to execute template bytecodes relative to a
-     *  particular TemplateGroup. To execute the byte codes, we need an output stream
-     *  and a reference to an Template an instance. That instance's impl field points at
-     *  a CompiledTemplate, which contains all of the byte codes and other information
-     *  relevant to execution.
-     *
-     *  This interpreter is a stack-based bytecode interpreter.  All operands
-     *  go onto an operand stack.
-     *
-     *  If the group that we're executing relative to has debug set, we track
-     *  interpreter events. For now, I am only tracking instance creation events.
-     *  These are used by STViz to pair up output chunks with the template
-     *  expressions that generate them.
-     *
-     *  We create a new interpreter for each Template.Render(), DebugTemplate.Visualize, or
-     *  DebugTemplate.GetEvents() invocation.
+using ArgumentNullException = System.ArgumentNullException;
+using Array = System.Array;
+using BitConverter = System.BitConverter;
+using Console = System.Console;
+using CultureInfo = System.Globalization.CultureInfo;
+using Environment = System.Environment;
+using Exception = System.Exception;
+using ICollection = System.Collections.ICollection;
+using IDictionary = System.Collections.IDictionary;
+using IEnumerable = System.Collections.IEnumerable;
+using IEnumerator = System.Collections.IEnumerator;
+using IList = System.Collections.IList;
+using IOException = System.IO.IOException;
+using Math = System.Math;
+using StringBuilder = System.Text.StringBuilder;
+using StringWriter = System.IO.StringWriter;
+
+/** This class knows how to execute template bytecodes relative to a
+ *  particular TemplateGroup. To execute the byte codes, we need an output stream
+ *  and a reference to a Template an instance. That instance's impl field points at
+ *  a CompiledTemplate, which contains all the byte codes and other information
+ *  relevant to execution.
+ *
+ *  This interpreter is a stack-based bytecode interpreter.  All operands
+ *  go onto an operand stack.
+ *
+ *  If the group that we're executing relative to has debug set, we track
+ *  interpreter events. For now, I am only tracking instance creation events.
+ *  These are used by STViz to pair up output chunks with the template
+ *  expressions that generate them.
+ *
+ *  We create a new interpreter for each Template.Render(), DebugTemplate.Visualize, or
+ *  DebugTemplate.GetEvents() invocation.
+ */
+public sealed class Interpreter {
+
+    private const int DefaultOperandStackSize = 512;
+
+    private static readonly string[] predefinedAnonSubtemplateAttributes = ["i", "i0"];
+
+    /** Dump bytecode instructions as we execute them? */
+    private static bool trace = false;
+
+    /** Exec st with respect to this group. Once set in Template.ToString(),
+     *  it should be fixed. Template has group also.
      */
-    public partial class Interpreter
+    private readonly TemplateGroup group;
+
+    /** For renderers, we have to pass in the culture */
+    private readonly CultureInfo culture;
+
+    private readonly ErrorManager _errorManager;
+
+    /** Operand stack, grows upwards */
+    private object[] operands = new object[DefaultOperandStackSize];
+    private int sp = -1;      // stack pointer register
+    private int nwline;       // how many char written on this template LINE so far?
+
+    /** Track events inside templates and in this.events */
+    private bool _debug;
+
+    /** Track everything happening in interp if debug across all templates.
+     *  The last event in this field is the EvalTemplateEvent for the root
+     *  template.
+     */
+    private List<InterpEvent> events;
+
+    public Interpreter(TemplateGroup group, bool debug)
+    : this(group, CultureInfo.CurrentCulture, group.ErrorManager, debug)
     {
+    }
 
-        public const int DefaultOperandStackSize = 512;
+    public Interpreter(TemplateGroup group, CultureInfo culture, bool debug)
+    : this(group, culture, group.ErrorManager, debug)
+    {
+    }
 
-        private static readonly string[] predefinedAnonSubtemplateAttributes = { "i", "i0" };
+    public Interpreter(TemplateGroup group, ErrorManager errorManager, bool debug)
+    : this(group, CultureInfo.CurrentCulture, errorManager, debug)
+    {
+    }
 
-        /** Dump bytecode instructions as we execute them? */
-        private static bool trace = false;
-
-        /** Exec st with respect to this group. Once set in Template.ToString(),
-         *  it should be fixed. Template has group also.
-         */
-        private readonly TemplateGroup group;
-
-        /** For renderers, we have to pass in the culture */
-        private readonly CultureInfo culture;
-
-        private readonly ErrorManager _errorManager;
-
-        /** Operand stack, grows upwards */
-        private object[] operands = new object[DefaultOperandStackSize];
-        private int sp = -1;        // stack pointer register
-        private int nwline = 0;     // how many char written on this template LINE so far?
-
-        /** If trace mode, track trace here */
-        // TODO: track the pieces not a string and track what it contributes to output
-        private List<string> executeTrace;
-
-        /** Track events inside templates and in this.events */
-        private bool _debug;
-
-        /** Track everything happening in interp if debug across all templates.
-         *  The last event in this field is the EvalTemplateEvent for the root
-         *  template.
-         */
-        private List<InterpEvent> events;
-
-        public Interpreter(TemplateGroup group, bool debug)
-            : this(group, CultureInfo.CurrentCulture, group.ErrorManager, debug)
-        {
+    public Interpreter(TemplateGroup group, CultureInfo culture, ErrorManager errorManager, bool debug) {
+        this.group = group;
+        this.culture = culture;
+        _errorManager = errorManager ?? throw new ArgumentNullException(nameof(errorManager));
+        _debug = debug;
+        if (debug) {
+            events = [];
         }
+    }
 
-        public Interpreter(TemplateGroup group, CultureInfo culture, bool debug)
-            : this(group, culture, group.ErrorManager, debug)
-        {
-        }
+    public static ReadOnlyCollection<string> PredefinedAnonymousSubtemplateAttributes =>
+        new(predefinedAnonSubtemplateAttributes);
 
-        public Interpreter(TemplateGroup group, ErrorManager errorManager, bool debug)
-            : this(group, CultureInfo.CurrentCulture, errorManager, debug)
-        {
-        }
-
-        public Interpreter(TemplateGroup group, CultureInfo culture, ErrorManager errorManager, bool debug)
-        {
-            if (errorManager == null)
-                throw new ArgumentNullException("errorManager");
-
-            this.group = group;
-            this.culture = culture;
-            this._errorManager = errorManager;
-            this._debug = debug;
-            if (debug)
-            {
-                events = new List<InterpEvent>();
-                executeTrace = new List<string>();
+    /** Execute template self and return how many characters it wrote to out */
+    public int Execute(ITemplateWriter @out, TemplateFrame frame) {
+        try {
+            if (frame.StackDepth > 200) {
+                throw new TemplateException("Template stack overflow.", null);
             }
-        }
-
-        public static ReadOnlyCollection<string> PredefinedAnonymousSubtemplateAttributes
-        {
-            get
-            {
-                return new ReadOnlyCollection<string>(predefinedAnonSubtemplateAttributes);
+            if (trace) {
+                Console.Out.WriteLine("Execute({0})", frame.Template.Name);
             }
+            SetDefaultArguments(frame);
+            return ExecuteImpl(@out, frame);
+        } catch (Exception e) when (!e.IsCritical()) {
+            var builder = new StringBuilder();
+            builder.AppendLine(e.ToString());
+            builder.AppendLine(e.StackTrace);
+            _errorManager.RuntimeError(frame, ErrorType.INTERNAL_ERROR, "internal error: " + builder);
+            return 0;
         }
+    }
 
-        /** Execute template self and return how many characters it wrote to out */
-        public virtual int Execute(ITemplateWriter @out, TemplateFrame frame)
-        {
-            try
-            {
-                if (frame.StackDepth > 200)
-                    throw new TemplateException("Template stack overflow.", null);
-
-                if (trace)
-                    Console.Out.WriteLine("Execute({0})", frame.Template.Name);
-
-                SetDefaultArguments(frame);
-                return ExecuteImpl(@out, frame);
+    private int ExecuteImpl(ITemplateWriter @out, TemplateFrame frame) {
+        var self = frame.Template;
+        var start = @out.Index; // track char we're about to Write
+        var prevOpcode = Bytecode.Invalid;
+        var n = 0; // how many char we Write out
+        var code = self.impl.instrs;        // which code block are we executing
+        var ip = 0;
+        while (ip < self.impl.codeSize) {
+            if (trace || _debug) {
+                Trace(frame, ip);
             }
-            catch (Exception e) when (!e.IsCritical())
-            {
-                StringBuilder builder = new StringBuilder();
-                builder.AppendLine(e.ToString());
-                builder.AppendLine(e.StackTrace);
-                _errorManager.RuntimeError(frame, ErrorType.INTERNAL_ERROR, "internal error: " + builder);
-                return 0;
-            }
-        }
-
-        protected virtual int ExecuteImpl(ITemplateWriter @out, TemplateFrame frame)
-        {
-            Template self = frame.Template;
-            int start = @out.Index; // track char we're about to Write
-            Bytecode prevOpcode = Bytecode.Invalid;
-            int n = 0; // how many char we Write out
-            int nargs;
+            var opcode = (Bytecode)code[ip];
+            frame.InstructionPointer = ip;
+            ip++; //jump to next instruction or first byte of operand
+            int nArgs;
             int nameIndex;
-            int addr;
             string name;
-            object o, left, right;
             Template st;
             object[] options;
-            byte[] code = self.impl.instrs;        // which code block are we executing
-            int ip = 0;
-            while (ip < self.impl.codeSize)
-            {
-                if (trace || _debug)
-                    Trace(frame, ip);
-
-                Bytecode opcode = (Bytecode)code[ip];
-                frame.InstructionPointer = ip;
-                ip++; //jump to next instruction or first byte of operand
-                switch (opcode)
-                {
+            object left;
+            object right;
+            object o;
+            switch (opcode) {
                 case Bytecode.INSTR_LOAD_STR:
-                    int strIndex = GetShort(code, ip);
+                    var strIndex = GetShort(code, ip);
                     ip += Instruction.OperandSizeInBytes;
                     operands[++sp] = self.impl.strings[strIndex];
                     break;
@@ -225,7 +203,7 @@ namespace Antlr4.StringTemplate
                     break;
 
                 case Bytecode.INSTR_LOAD_LOCAL:
-                    int valueIndex = GetShort(code, ip);
+                    var valueIndex = GetShort(code, ip);
                     ip += Instruction.OperandSizeInBytes;
                     o = self.locals[valueIndex];
                     if (o == Template.EmptyAttribute)
@@ -242,7 +220,7 @@ namespace Antlr4.StringTemplate
                     break;
 
                 case Bytecode.INSTR_LOAD_PROP_IND:
-                    object propName = operands[sp--];
+                    var propName = operands[sp--];
                     o = operands[sp];
                     operands[sp] = GetObjectProperty(frame, o, propName);
                     break;
@@ -251,24 +229,24 @@ namespace Antlr4.StringTemplate
                     nameIndex = GetShort(code, ip);
                     ip += Instruction.OperandSizeInBytes;
                     name = self.impl.strings[nameIndex];
-                    nargs = GetShort(code, ip);
+                    nArgs = GetShort(code, ip);
                     ip += Instruction.OperandSizeInBytes;
                     // look up in original hierarchy not enclosing template (variable group)
                     // see TestSubtemplates.testEvalSTFromAnotherGroup()
                     st = self.Group.GetEmbeddedInstanceOf(frame, name);
                     // get n args and store into st's attr list
-                    StoreArguments(frame, nargs, st);
-                    sp -= nargs;
+                    StoreArguments(frame, nArgs, st);
+                    sp -= nArgs;
                     operands[++sp] = st;
                     break;
 
                 case Bytecode.INSTR_NEW_IND:
-                    nargs = GetShort(code, ip);
+                    nArgs = GetShort(code, ip);
                     ip += Instruction.OperandSizeInBytes;
-                    name = (string)operands[sp - nargs];
+                    name = (string)operands[sp - nArgs];
                     st = self.Group.GetEmbeddedInstanceOf(frame, name);
-                    StoreArguments(frame, nargs, st);
-                    sp -= nargs;
+                    StoreArguments(frame, nArgs, st);
+                    sp -= nArgs;
                     sp--; // pop template name
                     operands[++sp] = st;
                     break;
@@ -277,7 +255,7 @@ namespace Antlr4.StringTemplate
                     nameIndex = GetShort(code, ip);
                     ip += Instruction.OperandSizeInBytes;
                     name = self.impl.strings[nameIndex];
-                    IDictionary<string, object> attrs = (IDictionary<string, object>)operands[sp--];
+                    var attrs = (IDictionary<string, object>)operands[sp--];
                     // look up in original hierarchy not enclosing template (variable group)
                     // see TestSubtemplates.testEvalSTFromAnotherGroup()
                     st = self.Group.GetEmbeddedInstanceOf(frame, name);
@@ -290,9 +268,9 @@ namespace Antlr4.StringTemplate
                     nameIndex = GetShort(code, ip);
                     ip += Instruction.OperandSizeInBytes;
                     name = self.impl.strings[nameIndex];
-                    nargs = GetShort(code, ip);
+                    nArgs = GetShort(code, ip);
                     ip += Instruction.OperandSizeInBytes;
-                    SuperNew(frame, name, nargs);
+                    SuperNew(frame, name, nArgs);
                     break;
 
                 case Bytecode.INSTR_SUPER_NEW_BOX_ARGS:
@@ -304,7 +282,7 @@ namespace Antlr4.StringTemplate
                     break;
 
                 case Bytecode.INSTR_STORE_OPTION:
-                    int optionIndex = GetShort(code, ip);
+                    var optionIndex = GetShort(code, ip);
                     ip += Instruction.OperandSizeInBytes;
                     o = operands[sp--];    // value to store
                     options = (object[])operands[sp]; // get options
@@ -322,7 +300,7 @@ namespace Antlr4.StringTemplate
 
                 case Bytecode.INSTR_WRITE:
                     o = operands[sp--];
-                    int n1 = WriteObjectNoOptions(@out, frame, o);
+                    var n1 = WriteObjectNoOptions(@out, frame, o);
                     n += n1;
                     nwline += n1;
                     break;
@@ -330,7 +308,7 @@ namespace Antlr4.StringTemplate
                 case Bytecode.INSTR_WRITE_OPT:
                     options = (object[])operands[sp--]; // get options
                     o = operands[sp--];                 // get option to Write
-                    int n2 = WriteObjectWithOptions(@out, frame, o, options);
+                    var n2 = WriteObjectWithOptions(@out, frame, o, options);
                     n += n2;
                     nwline += n2;
                     break;
@@ -342,12 +320,12 @@ namespace Antlr4.StringTemplate
                     break;
 
                 case Bytecode.INSTR_ROT_MAP:
-                    int nmaps = GetShort(code, ip);
+                    var nMaps = GetShort(code, ip);
                     ip += Instruction.OperandSizeInBytes;
-                    List<Template> templates = new List<Template>();
-                    for (int i = nmaps - 1; i >= 0; i--)
+                    var templates = new List<Template>();
+                    for (var i = nMaps - 1; i >= 0; i--)
                         templates.Add((Template)operands[sp - i]);
-                    sp -= nmaps;
+                    sp -= nMaps;
                     o = operands[sp--];
                     if (o != null)
                         RotateMap(frame, o, templates);
@@ -355,13 +333,13 @@ namespace Antlr4.StringTemplate
 
                 case Bytecode.INSTR_ZIP_MAP:
                     st = (Template)operands[sp--];
-                    nmaps = GetShort(code, ip);
+                    nMaps = GetShort(code, ip);
                     ip += Instruction.OperandSizeInBytes;
-                    List<object> exprs = new List<object>();
-                    for (int i = nmaps - 1; i >= 0; i--)
+                    var exprs = new List<object>();
+                    for (var i = nMaps - 1; i >= 0; i--)
                         exprs.Add(operands[sp - i]);
 
-                    sp -= nmaps;
+                    sp -= nMaps;
                     operands[++sp] = ZipMap(frame, exprs, st);
                     break;
 
@@ -370,7 +348,7 @@ namespace Antlr4.StringTemplate
                     break;
 
                 case Bytecode.INSTR_BRF:
-                    addr = GetShort(code, ip);
+                    var addr = GetShort(code, ip);
                     ip += Instruction.OperandSizeInBytes;
                     o = operands[sp--]; // <if(expr)>...<endif>
                     if (!TestAttributeTrue(o))
@@ -379,7 +357,7 @@ namespace Antlr4.StringTemplate
                     break;
 
                 case Bytecode.INSTR_OPTIONS:
-                    operands[++sp] = new object[Compiler.TemplateCompiler.NUM_OPTIONS];
+                    operands[++sp] = new object[TemplateCompiler.NUM_OPTIONS];
                     break;
 
                 case Bytecode.INSTR_ARGS:
@@ -400,7 +378,7 @@ namespace Antlr4.StringTemplate
 
                 case Bytecode.INSTR_ADD:
                     o = operands[sp--];             // pop value
-                    List<object> list = (List<object>)operands[sp]; // don't pop list
+                    var list = (List<object>)operands[sp]; // don't pop list
                     AddToList(list, frame, o);
                     break;
 
@@ -431,12 +409,9 @@ namespace Antlr4.StringTemplate
 
                 case Bytecode.INSTR_TRIM:
                     o = operands[sp--];
-                    if (o.GetType() == typeof(string))
-                    {
-                        operands[++sp] = ((string)o).Trim();
-                    }
-                    else
-                    {
+                    if (o is string s1) {
+                        operands[++sp] = s1.Trim();
+                    } else {
                         _errorManager.RuntimeError(frame, ErrorType.EXPECTING_STRING, "trim", o.GetType());
                         operands[++sp] = o;
                     }
@@ -448,12 +423,9 @@ namespace Antlr4.StringTemplate
 
                 case Bytecode.INSTR_STRLEN:
                     o = operands[sp--];
-                    if (o.GetType() == typeof(string))
-                    {
-                        operands[++sp] = ((string)o).Length;
-                    }
-                    else
-                    {
+                    if (o is string s2) {
+                        operands[++sp] = s2.Length;
+                    } else {
                         _errorManager.RuntimeError(frame, ErrorType.EXPECTING_STRING, "strlen", o.GetType());
                         operands[++sp] = 0;
                     }
@@ -494,14 +466,11 @@ namespace Antlr4.StringTemplate
                     {
                         if (prevOpcode == Bytecode.INSTR_NEWLINE ||
                             prevOpcode == Bytecode.INSTR_INDENT ||
-                            nwline > 0)
-                        {
+                            nwline > 0) {
                             @out.Write(Environment.NewLine);
                         }
                         nwline = 0;
-                    }
-                    catch (IOException ioe)
-                    {
+                    } catch (IOException ioe) {
                         _errorManager.IOError(self, ErrorType.WRITE_IO_ERROR, ioe);
                     }
                     break;
@@ -547,1121 +516,901 @@ namespace Antlr4.StringTemplate
                 //    nwline += n1;
                 //    break;
 
+                case Bytecode.Invalid:
+                case Bytecode.INSTR_WRITE_LOCAL:
                 default:
                     _errorManager.InternalError(self, "invalid bytecode @ " + (ip - 1) + ": " + opcode, null);
                     self.impl.Dump();
                     break;
+            }
+
+            prevOpcode = opcode;
+        }
+
+        if (_debug) {
+            var e = new EvalTemplateEvent(frame, Interval.FromBounds(start, @out.Index));
+            TrackDebugEvent(frame, e);
+        }
+        return n;
+    }
+
+    // TODO: refactor to Remove duplicated code
+
+    private void SuperNew(TemplateFrame frame, string name, int nArgs) {
+        var self = frame.Template;
+        Template st;
+        var imported = self.impl.NativeGroup.LookupImportedTemplate(name);
+        if (imported == null) {
+            _errorManager.RuntimeError(frame, ErrorType.NO_IMPORTED_TEMPLATE, name);
+            st = self.Group.CreateStringTemplateInternally(new CompiledTemplate());
+        } else {
+            st = imported.NativeGroup.GetEmbeddedInstanceOf(frame, name);
+            st.Group = group;
+        }
+        // get n args and store into st's attr list
+        StoreArguments(frame, nArgs, st);
+        sp -= nArgs;
+        operands[++sp] = st;
+    }
+
+    private void SuperNew(TemplateFrame frame, string name, IDictionary<string, object> attrs) {
+        var self = frame.Template;
+        Template st;
+        var imported = self.impl.NativeGroup.LookupImportedTemplate(name);
+        if (imported == null) {
+            _errorManager.RuntimeError(frame, ErrorType.NO_IMPORTED_TEMPLATE, name);
+            st = self.Group.CreateStringTemplateInternally(new CompiledTemplate());
+        } else {
+            st = imported.NativeGroup.CreateStringTemplateInternally(imported);
+            st.Group = group;
+        }
+        // get n args and store into st's attr list
+        StoreArguments(frame, attrs, st);
+        operands[++sp] = st;
+    }
+
+    private void PassThrough(TemplateFrame frame, string templateName, IDictionary<string, object> attrs) {
+        var c = group.LookupTemplate(templateName);
+        if (c == null) {
+            return; // will get error later
+        }
+        if (c.FormalArguments == null) {
+            return;
+        }
+        foreach (var arg in c.FormalArguments.Where(arg => !attrs.ContainsKey(arg.Name))) {
+            //System.out.println("arg "+arg.name+" missing");
+            try {
+                var o = GetAttribute(frame, arg.Name);
+                // If the attribute exists but there is no value and
+                // the formal argument has no default value, make it null.
+                if (o == Template.EmptyAttribute && arg.DefaultValueToken == null) {
+                    attrs[arg.Name] = null;
+                } else if (o != Template.EmptyAttribute) {
+                    // Else, the attribute has an existing value, set arg.
+                    attrs[arg.Name] = o;
                 }
-
-                prevOpcode = opcode;
-            }
-
-            if (_debug)
-            {
-                EvalTemplateEvent e = new EvalTemplateEvent(frame, Interval.FromBounds(start, @out.Index));
-                TrackDebugEvent(frame, e);
-            }
-            return n;
-        }
-
-        // TODO: refactor to Remove dup'd code
-
-        internal virtual void SuperNew(TemplateFrame frame, string name, int nargs)
-        {
-            Template self = frame.Template;
-            Template st = null;
-            CompiledTemplate imported = self.impl.NativeGroup.LookupImportedTemplate(name);
-            if (imported == null)
-            {
-                _errorManager.RuntimeError(frame, ErrorType.NO_IMPORTED_TEMPLATE, name);
-                st = self.Group.CreateStringTemplateInternally(new CompiledTemplate());
-            }
-            else
-            {
-                st = imported.NativeGroup.GetEmbeddedInstanceOf(frame, name);
-                st.Group = group;
-            }
-
-            // get n args and store into st's attr list
-            StoreArguments(frame, nargs, st);
-            sp -= nargs;
-            operands[++sp] = st;
-        }
-
-        internal virtual void SuperNew(TemplateFrame frame, string name, IDictionary<string, object> attrs)
-        {
-            Template self = frame.Template;
-            Template st = null;
-            CompiledTemplate imported = self.impl.NativeGroup.LookupImportedTemplate(name);
-            if (imported == null)
-            {
-                _errorManager.RuntimeError(frame, ErrorType.NO_IMPORTED_TEMPLATE, name);
-                st = self.Group.CreateStringTemplateInternally(new CompiledTemplate());
-            }
-            else
-            {
-                st = imported.NativeGroup.CreateStringTemplateInternally(imported);
-                st.Group = group;
-            }
-
-            // get n args and store into st's attr list
-            StoreArguments(frame, attrs, st);
-            operands[++sp] = st;
-        }
-
-        internal virtual void PassThrough(TemplateFrame frame, string templateName, IDictionary<string, object> attrs)
-        {
-            CompiledTemplate c = group.LookupTemplate(templateName);
-            if (c == null)
-                return; // will get error later
-            if (c.FormalArguments == null)
-                return;
-
-            foreach (FormalArgument arg in c.FormalArguments)
-            {
-                // if not already set by user, set to value from outer scope
-                if (!attrs.ContainsKey(arg.Name))
-                {
-                    //System.out.println("arg "+arg.name+" missing");
-                    try
-                    {
-                        object o = GetAttribute(frame, arg.Name);
-                        // If the attribute exists but there is no value and
-                        // the formal argument has no default value, make it null.
-                        if (o == Template.EmptyAttribute && arg.DefaultValueToken == null)
-                        {
-                            attrs[arg.Name] = null;
-                        }
-                        // Else, the attribute has an existing value, set arg.
-                        else if (o != Template.EmptyAttribute)
-                        {
-                            attrs[arg.Name] = o;
-                        }
-                    }
-                    catch (AttributeNotFoundException)
-                    {
-                        // if no such attribute exists for arg.name, set parameter
-                        // if no default value
-                        if (arg.DefaultValueToken == null)
-                        {
-                            _errorManager.RuntimeError(frame, ErrorType.NO_SUCH_ATTRIBUTE_PASS_THROUGH, arg.Name);
-                            attrs[arg.Name] = null;
-                        }
-                    }
+            } catch (AttributeNotFoundException) {
+                // if no such attribute exists for arg.name, set parameter
+                // if no default value
+                if (arg.DefaultValueToken == null) {
+                    _errorManager.RuntimeError(frame, ErrorType.NO_SUCH_ATTRIBUTE_PASS_THROUGH, arg.Name);
+                    attrs[arg.Name] = null;
                 }
             }
         }
+    }
 
-        internal virtual void StoreArguments(TemplateFrame frame, IDictionary<string, object> attrs, Template st)
+    private void StoreArguments(TemplateFrame frame, IDictionary<string, object> attrs, Template st) {
+        var noSuchAttributeReported = false;
+        if (attrs != null)
         {
-            bool noSuchAttributeReported = false;
-            if (attrs != null)
+            foreach (var argument in attrs)
             {
-                foreach (KeyValuePair<string, object> argument in attrs)
+                if (!st.impl.HasFormalArgs)
                 {
-                    if (!st.impl.HasFormalArgs)
+                    if (st.impl.FormalArguments == null || st.impl.TryGetFormalArgument(argument.Key) == null)
                     {
-                        if (st.impl.FormalArguments == null || st.impl.TryGetFormalArgument(argument.Key) == null)
-                        {
-                            // we clone the CompiledTemplate to prevent modifying the original
-                            // _formalArguments map during interpretation.
-                            st.impl = st.impl.Clone();
-                            st.Add(argument.Key, argument.Value);
-                        }
-                        else
-                        {
-                            st.RawSetAttribute(argument.Key, argument.Value);
-                        }
+                        // we clone the CompiledTemplate to prevent modifying the original
+                        // _formalArguments map during interpretation.
+                        st.impl = st.impl.Clone();
+                        st.Add(argument.Key, argument.Value);
                     }
                     else
                     {
-                        // don't let it throw an exception in RawSetAttribute
-                        if (st.impl.FormalArguments == null || st.impl.TryGetFormalArgument(argument.Key) == null)
-                        {
-                            noSuchAttributeReported = true;
-                            _errorManager.RuntimeError(
-                                frame,
-                                ErrorType.NO_SUCH_ATTRIBUTE,
-                                argument.Key);
-                            continue;
-                        }
-
                         st.RawSetAttribute(argument.Key, argument.Value);
                     }
                 }
-            }
-
-            if (st.impl.HasFormalArgs)
-            {
-                bool argumentCountMismatch = false;
-                var formalArguments = st.impl.FormalArguments;
-                if (formalArguments == null)
-                    formalArguments = new List<FormalArgument>();
-
-                // first make sure that all non-default arguments are specified
-                // ignore this check if a NO_SUCH_ATTRIBUTE error already occurred
-                if (!noSuchAttributeReported)
-                {
-                    foreach (FormalArgument formalArgument in formalArguments)
-                    {
-                        if (formalArgument.DefaultValueToken != null || formalArgument.DefaultValue != null)
-                        {
-                            // this argument has a default value, so it doesn't need to appear in attrs
-                            continue;
-                        }
-
-                        if (attrs == null || !attrs.ContainsKey(formalArgument.Name))
-                        {
-                            argumentCountMismatch = true;
-                            break;
-                        }
-                    }
-                }
-
-                // next make sure there aren't too many arguments. note that the names
-                // of arguments are checked below as they are applied to the template
-                // instance, so there's no need to do that here.
-                if (attrs != null && attrs.Count > formalArguments.Count)
-                {
-                    argumentCountMismatch = true;
-                }
-
-                if (argumentCountMismatch)
-                {
-                    int nargs = attrs != null ? attrs.Count : 0;
-                    int nformalArgs = formalArguments.Count;
-                    _errorManager.RuntimeError(
-                        frame,
-                        ErrorType.ARGUMENT_COUNT_MISMATCH,
-                        nargs,
-                        st.impl.Name,
-                        nformalArgs);
-                }
-            }
-        }
-
-        internal virtual void StoreArguments(TemplateFrame frame, int nargs, Template st)
-        {
-            if (nargs > 0 && !st.impl.HasFormalArgs && st.impl.FormalArguments == null)
-            {
-                st.Add(Template.ImplicitArgumentName, null); // pretend we have "it" arg
-            }
-
-            int nformalArgs = 0;
-            if (st.impl.FormalArguments != null)
-                nformalArgs = st.impl.FormalArguments.Count;
-            int firstArg = sp - (nargs - 1);
-            int numToStore = Math.Min(nargs, nformalArgs);
-            if (st.impl.IsAnonSubtemplate)
-                nformalArgs -= predefinedAnonSubtemplateAttributes.Length;
-
-            if (nargs < (nformalArgs - st.impl.NumberOfArgsWithDefaultValues) ||
-                 nargs > nformalArgs)
-            {
-                _errorManager.RuntimeError(frame,
-                                    ErrorType.ARGUMENT_COUNT_MISMATCH,
-                                    nargs,
-                                    st.impl.Name,
-                                    nformalArgs);
-            }
-
-            if (st.impl.FormalArguments == null)
-                return;
-
-            for (int i = 0; i < numToStore; i++)
-            {
-                object o = operands[firstArg + i];
-                string argName = st.impl.FormalArguments[i].Name;
-                st.RawSetAttribute(argName, o);
-            }
-        }
-
-        protected void Indent(ITemplateWriter @out, TemplateFrame frame, int strIndex)
-        {
-            Template self = frame.Template;
-            string indent = self.impl.strings[strIndex];
-            if (_debug)
-            {
-                int start = @out.Index; // track char we're about to write
-                EvalExprEvent e = new IndentEvent(frame, new Interval(start, indent.Length), GetExpressionInterval(frame));
-                TrackDebugEvent(frame, e);
-            }
-
-            @out.PushIndentation(indent);
-        }
-
-        /** Write out an expression result that doesn't use expression options.
-         *  E.g., &lt;name&gt;
-         */
-        protected virtual int WriteObjectNoOptions(ITemplateWriter @out, TemplateFrame frame, object o)
-        {
-            int start = @out.Index; // track char we're about to Write
-            int n = WriteObject(@out, frame, o, null);
-            if (_debug)
-            {
-                Interval templateLocation = frame.Template.impl.sourceMap[frame.InstructionPointer];
-                EvalExprEvent e = new EvalExprEvent(frame, Interval.FromBounds(start, @out.Index), templateLocation);
-                TrackDebugEvent(frame, e);
-            }
-
-            return n;
-        }
-
-        /** Write out an expression result that uses expression options.
-         *  E.g., &lt;names; separator=", "&gt;
-         */
-        protected virtual int WriteObjectWithOptions(ITemplateWriter @out, TemplateFrame frame, object o, object[] options)
-        {
-            int start = @out.Index; // track char we're about to Write
-            // precompute all option values (Render all the way to strings)
-            string[] optionStrings = null;
-            if (options != null)
-            {
-                optionStrings = new string[options.Length];
-                for (int i = 0; i < Compiler.TemplateCompiler.NUM_OPTIONS; i++)
-                {
-                    optionStrings[i] = ToString(frame, options[i]);
-                }
-            }
-
-            if (options != null && options[(int)RenderOption.Anchor] != null)
-            {
-                @out.PushAnchorPoint();
-            }
-
-            int n = WriteObject(@out, frame, o, optionStrings);
-
-            if (options != null && options[(int)RenderOption.Anchor] != null)
-            {
-                @out.PopAnchorPoint();
-            }
-
-            if (_debug)
-            {
-                Interval templateLocation = frame.Template.impl.sourceMap[frame.InstructionPointer];
-                EvalExprEvent e = new EvalExprEvent(frame, Interval.FromBounds(start, @out.Index), templateLocation);
-                TrackDebugEvent(frame, e);
-            }
-
-            return n;
-        }
-
-        /** Generic method to emit text for an object. It differentiates
-         *  between templates, iterable objects, and plain old Java objects (POJOs)
-         */
-        protected virtual int WriteObject(ITemplateWriter @out, TemplateFrame frame, object o, string[] options)
-        {
-            int n = 0;
-            if (o == null)
-            {
-                if (options != null && options[(int)RenderOption.Null] != null)
-                    o = options[(int)RenderOption.Null];
                 else
-                    return 0;
-            }
-
-            ITypeProxyFactory proxyFactory = frame.Template.Group.GetTypeProxyFactory(o.GetType());
-            if (proxyFactory != null)
-                o = proxyFactory.CreateProxy(frame, o);
-
-            System.Diagnostics.Debug.Assert(!(o is TemplateFrame));
-            Template template = o as Template;
-            if (template != null)
-            {
-                frame = new TemplateFrame(template, frame);
-                if (options != null && options[(int)RenderOption.Wrap] != null)
                 {
-                    // if we have a wrap string, then inform writer it
-                    // might need to wrap
-                    try
+                    // don't let it throw an exception in RawSetAttribute
+                    if (st.impl.FormalArguments == null || st.impl.TryGetFormalArgument(argument.Key) == null)
                     {
-                        @out.WriteWrap(options[(int)RenderOption.Wrap]);
+                        noSuchAttributeReported = true;
+                        _errorManager.RuntimeError(
+                            frame,
+                            ErrorType.NO_SUCH_ATTRIBUTE,
+                            argument.Key);
+                        continue;
                     }
-                    catch (IOException ioe)
+
+                    st.RawSetAttribute(argument.Key, argument.Value);
+                }
+            }
+        }
+
+        if (st.impl.HasFormalArgs)
+        {
+            var argumentCountMismatch = false;
+            var formalArguments = st.impl.FormalArguments ?? [];
+
+            // first make sure that all non-default arguments are specified
+            // ignore this check if a NO_SUCH_ATTRIBUTE error already occurred
+            if (!noSuchAttributeReported)
+            {
+                foreach (var formalArgument in formalArguments)
+                {
+                    if (formalArgument.DefaultValueToken != null || formalArgument.DefaultValue != null)
                     {
-                        _errorManager.IOError(template, ErrorType.WRITE_IO_ERROR, ioe);
+                        // this argument has a default value, so it doesn't need to appear in attrs
+                        continue;
+                    }
+
+                    if (attrs == null || !attrs.ContainsKey(formalArgument.Name))
+                    {
+                        argumentCountMismatch = true;
+                        break;
                     }
                 }
-                n = Execute(@out, frame);
             }
-            else
+
+            // next make sure there aren't too many arguments. note that the names
+            // of arguments are checked below as they are applied to the template
+            // instance, so there's no need to do that here.
+            if (attrs != null && attrs.Count > formalArguments.Count)
             {
-                o = ConvertAnythingIteratableToIterator(frame, o); // normalize
+                argumentCountMismatch = true;
+            }
+
+            if (argumentCountMismatch)
+            {
+                var nArgs = attrs?.Count ?? 0;
+                var nFormalArgs = formalArguments.Count;
+                _errorManager.RuntimeError(
+                    frame,
+                    ErrorType.ARGUMENT_COUNT_MISMATCH,
+                    nArgs,
+                    st.impl.Name,
+                    nFormalArgs);
+            }
+        }
+    }
+
+    private void StoreArguments(TemplateFrame frame, int nArgs, Template st) {
+        if (nArgs > 0 && !st.impl.HasFormalArgs && st.impl.FormalArguments == null)
+        {
+            st.Add(Template.ImplicitArgumentName, null); // pretend we have "it" arg
+        }
+
+        var nFormalArgs = 0;
+        if (st.impl.FormalArguments != null) {
+            nFormalArgs = st.impl.FormalArguments.Count;
+        }
+        var firstArg = sp - (nArgs - 1);
+        var numToStore = Math.Min(nArgs, nFormalArgs);
+        if (st.impl.IsAnonSubtemplate) {
+            nFormalArgs -= predefinedAnonSubtemplateAttributes.Length;
+        }
+        if (nArgs < (nFormalArgs - st.impl.NumberOfArgsWithDefaultValues) || nArgs > nFormalArgs) {
+            _errorManager.RuntimeError(frame,
+                ErrorType.ARGUMENT_COUNT_MISMATCH,
+                nArgs,
+                st.impl.Name,
+                nFormalArgs);
+        }
+
+        if (st.impl.FormalArguments == null)
+            return;
+
+        for (var i = 0; i < numToStore; i++)
+        {
+            var o = operands[firstArg + i];
+            var argName = st.impl.FormalArguments[i].Name;
+            st.RawSetAttribute(argName, o);
+        }
+    }
+
+    private void Indent(ITemplateWriter @out, TemplateFrame frame, int strIndex)
+    {
+        var self = frame.Template;
+        var indent = self.impl.strings[strIndex];
+        if (_debug)
+        {
+            var start = @out.Index; // track char we're about to write
+            EvalExprEvent e = new IndentEvent(frame, new Interval(start, indent.Length), GetExpressionInterval(frame));
+            TrackDebugEvent(frame, e);
+        }
+
+        @out.PushIndentation(indent);
+    }
+
+    /** Write out an expression result that doesn't use expression options.
+     *  E.g., &lt;name&gt;
+     */
+    private int WriteObjectNoOptions(ITemplateWriter @out, TemplateFrame frame, object o) {
+        var start = @out.Index; // track char we're about to Write
+        var n = WriteObject(@out, frame, o, null);
+        if (_debug) {
+            var templateLocation = frame.Template.impl.sourceMap[frame.InstructionPointer];
+            var e = new EvalExprEvent(frame, Interval.FromBounds(start, @out.Index), templateLocation);
+            TrackDebugEvent(frame, e);
+        }
+
+        return n;
+    }
+
+    /** Write out an expression result that uses expression options.
+     *  E.g., &lt;names; separator=", "&gt;
+     */
+    private int WriteObjectWithOptions(ITemplateWriter @out, TemplateFrame frame, object o, object[] options) {
+        var start = @out.Index; // track char we're about to Write
+        // precompute all option values (Render all the way to strings)
+        string[] optionStrings = null;
+        if (options != null) {
+            optionStrings = new string[options.Length];
+            for (var i = 0; i < TemplateCompiler.NUM_OPTIONS; i++) {
+                optionStrings[i] = ToString(frame, options[i]);
+            }
+        }
+
+        if (options != null && options[(int)RenderOption.Anchor] != null) {
+            @out.PushAnchorPoint();
+        }
+        var n = WriteObject(@out, frame, o, optionStrings);
+        if (options != null && options[(int)RenderOption.Anchor] != null) {
+            @out.PopAnchorPoint();
+        }
+
+        if (_debug) {
+            var templateLocation = frame.Template.impl.sourceMap[frame.InstructionPointer];
+            var e = new EvalExprEvent(frame, Interval.FromBounds(start, @out.Index), templateLocation);
+            TrackDebugEvent(frame, e);
+        }
+        return n;
+    }
+
+    /** Generic method to emit text for an object. It differentiates
+     *  between templates, iterable objects, and plain old Java objects (POJOs)
+     */
+    private int WriteObject(ITemplateWriter @out, TemplateFrame frame, object o, string[] options) {
+        var n = 0;
+        if (o == null) {
+            if (options != null && options[(int)RenderOption.Null] != null) {
+                o = options[(int)RenderOption.Null];
+            } else {
+                return 0;
+            }
+        }
+
+        var proxyFactory = frame.Template.Group.GetTypeProxyFactory(o.GetType());
+        if (proxyFactory != null) {
+            o = proxyFactory.CreateProxy(frame, o);
+        }
+        System.Diagnostics.Debug.Assert(!(o is TemplateFrame));
+        if (o is Template template) {
+            frame = new TemplateFrame(template, frame);
+            if (options != null && options[(int)RenderOption.Wrap] != null) {
+                // if we have a wrap string, then inform writer it
+                // might need to wrap
                 try
                 {
-                    if (o is IEnumerator)
-                        n = WriteIterator(@out, frame, o, options);
-                    else
-                        n = WritePlainObject(@out, frame, o, options);
+                    @out.WriteWrap(options[(int)RenderOption.Wrap]);
                 }
                 catch (IOException ioe)
                 {
-                    _errorManager.IOError(frame.Template, ErrorType.WRITE_IO_ERROR, ioe, o);
+                    _errorManager.IOError(template, ErrorType.WRITE_IO_ERROR, ioe);
                 }
             }
-
-            return n;
-        }
-
-        protected virtual int WriteIterator(ITemplateWriter @out, TemplateFrame frame, object o, string[] options)
-        {
-            if (o == null)
-                return 0;
-
-            int n = 0;
-            IEnumerator it = (IEnumerator)o;
-            string separator = null;
-            if (options != null)
-                separator = options[(int)RenderOption.Separator];
-            bool seenAValue = false;
-            while (it.MoveNext())
-            {
-                object iterValue = it.Current;
-                // Emit separator if we're beyond first value
-                bool needSeparator = seenAValue &&
-                    separator != null &&            // we have a separator and
-                    (iterValue != null ||           // either we have a value
-                        options[(int)RenderOption.Null] != null); // or no value but null option
-                if (needSeparator)
-                    n += @out.WriteSeparator(separator);
-                int nw = WriteObject(@out, frame, iterValue, options);
-                if (nw > 0)
-                    seenAValue = true;
-                n += nw;
+            n = Execute(@out, frame);
+        } else {
+            o = ConvertAnythingIterableToIterator(frame, o); // normalize
+            try {
+                n = o is IEnumerator ?
+                    WriteIterator(@out, frame, o, options) :
+                    WritePlainObject(@out, frame, o, options);
             }
-            return n;
-        }
-
-        protected virtual int WritePlainObject(ITemplateWriter @out, TemplateFrame frame, object o, string[] options)
-        {
-            string formatString = null;
-            if (options != null)
-                formatString = options[(int)RenderOption.Format];
-            IAttributeRenderer r = frame.Template.impl.NativeGroup.GetAttributeRenderer(o.GetType());
-
-            string v;
-            if (r != null)
+            catch (IOException ioe)
             {
-                v = r.ToString(o, formatString, culture);
+                _errorManager.IOError(frame.Template, ErrorType.WRITE_IO_ERROR, ioe, o);
             }
-            else
-            {
-                if (o is bool)
-                    v = (bool)o ? "true" : "false";
-                else if (o is bool? && ((bool?)o).HasValue)
-                    v = ((bool?)o).Value ? "true" : "false";
-                else
-                    v = o.ToString();
-            }
-
-            int n;
-            if (options != null && options[(int)RenderOption.Wrap] != null)
-            {
-                n = @out.Write(v, options[(int)RenderOption.Wrap]);
-            }
-            else
-            {
-                n = @out.Write(v);
-            }
-
-            return n;
         }
+        return n;
+    }
 
-        protected virtual Interval GetExpressionInterval(TemplateFrame frame)
-        {
-            return frame.Template.impl.sourceMap[frame.InstructionPointer];
+    private int WriteIterator(ITemplateWriter @out, TemplateFrame frame, object o, string[] options) {
+        if (o == null) {
+            return 0;
         }
-
-        protected virtual void Map(TemplateFrame frame, object attr, Template st)
-        {
-            RotateMap(frame, attr, new List<Template>() { st });
+        var n = 0;
+        var it = (IEnumerator)o;
+        string separator = null;
+        if (options != null) {
+            separator = options[(int)RenderOption.Separator];
         }
+        var seenAValue = false;
+        while (it.MoveNext()) {
+            var iterValue = it.Current;
+            // Emit separator if we're beyond first value
+            var needSeparator = seenAValue &&
+                                separator != null &&            // we have a separator and
+                                (iterValue != null ||           // either we have a value
+                                 options[(int)RenderOption.Null] != null); // or no value but null option
+            if (needSeparator)
+                n += @out.WriteSeparator(separator);
+            var nw = WriteObject(@out, frame, iterValue, options);
+            if (nw > 0)
+                seenAValue = true;
+            n += nw;
+        }
+        return n;
+    }
 
-        // <names:a()> or <names:a(),b()>
-        protected virtual void RotateMap(TemplateFrame frame, object attr, List<Template> prototypes)
-        {
-            if (attr == null)
-            {
+    private int WritePlainObject(ITemplateWriter @out, TemplateFrame frame, object o, string[] options) {
+        string formatString = null;
+        if (options != null) {
+            formatString = options[(int)RenderOption.Format];
+        }
+        var r = frame.Template.impl.NativeGroup.GetAttributeRenderer(o.GetType());
+
+        string v;
+        if (r != null) {
+            v = r.ToString(o, formatString, culture);
+        } else {
+            if (o is bool b) {
+                v = b ? "true" : "false";
+            } else {
+                v = o.ToString();
+            }
+        }
+        int n;
+        if (options != null && options[(int)RenderOption.Wrap] != null) {
+            n = @out.Write(v, options[(int)RenderOption.Wrap]);
+        } else {
+            n = @out.Write(v);
+        }
+        return n;
+    }
+
+    private Interval GetExpressionInterval(TemplateFrame frame)
+    {
+        return frame.Template.impl.sourceMap[frame.InstructionPointer];
+    }
+
+    private void Map(TemplateFrame frame, object attr, Template st)
+    {
+        RotateMap(frame, attr, [st]);
+    }
+
+    // <names:a()> or <names:a(),b()>
+    private void RotateMap(TemplateFrame frame, object attr, List<Template> prototypes) {
+        if (attr == null) {
+            operands[++sp] = null;
+            return;
+        }
+        attr = ConvertAnythingIterableToIterator(frame, attr);
+        if (attr is IEnumerator iterator) {
+            var mapped = RotateMapIterator(frame, iterator, prototypes);
+            operands[++sp] = mapped;
+        } else {
+            // if only single value, just apply first template to sole value
+            var proto = prototypes[0];
+            var st = proto.CreateShadow();
+            if (st != null) {
+                SetFirstArgument(frame, st, attr);
+                if (st.impl.IsAnonSubtemplate) {
+                    st.RawSetAttribute("i0", 0);
+                    st.RawSetAttribute("i", 1);
+                }
+                operands[++sp] = st;
+            } else {
                 operands[++sp] = null;
-                return;
             }
-            attr = ConvertAnythingIteratableToIterator(frame, attr);
-            IEnumerator iterator = attr as IEnumerator;
-            if (iterator != null)
-            {
-                List<Template> mapped = RotateMapIterator(frame, iterator, prototypes);
-                operands[++sp] = mapped;
-            }
-            else
-            {
-                // if only single value, just apply first template to sole value
-                Template proto = prototypes[0];
-                Template st = proto.CreateShadow();
-                if (st != null)
-                {
-                    SetFirstArgument(frame, st, attr);
-                    if (st.impl.IsAnonSubtemplate)
-                    {
-                        st.RawSetAttribute("i0", 0);
-                        st.RawSetAttribute("i", 1);
-                    }
-
-                    operands[++sp] = st;
-                }
-                else
-                {
-                    operands[++sp] = null;
-                }
-            }
-        }
-
-        protected virtual List<Template> RotateMapIterator(TemplateFrame frame, IEnumerator iterator, List<Template> prototypes)
-        {
-            List<Template> mapped = new List<Template>();
-            int i0 = 0;
-            int i = 1;
-            int ti = 0;
-            while (iterator.MoveNext())
-            {
-                object iterValue = iterator.Current;
-                if (iterValue == null)
-                {
-                    mapped.Add(null);
-                    continue;
-                }
-
-                int templateIndex = ti % prototypes.Count; // rotate through
-                ti++;
-                Template proto = prototypes[templateIndex];
-                Template st = group.CreateStringTemplateInternally(proto);
-                SetFirstArgument(frame, st, iterValue);
-                if (st.impl.IsAnonSubtemplate)
-                {
-                    st.RawSetAttribute("i0", i0);
-                    st.RawSetAttribute("i", i);
-                }
-
-                mapped.Add(st);
-                i0++;
-                i++;
-            }
-
-            return mapped;
-        }
-
-        // <names,phones:{n,p | ...}> or <a,b:t()>
-        // todo: i, i0 not set unless mentioned? map:{k,v | ..}?
-        protected virtual Template.AttributeList ZipMap(TemplateFrame frame, List<object> exprs, Template prototype)
-        {
-            Template self = frame.Template;
-
-            if (exprs == null || prototype == null || exprs.Count == 0)
-            {
-                return null; // do not apply if missing templates or empty values
-            }
-            // make everything iterable
-            for (int i = 0; i < exprs.Count; i++)
-            {
-                object attr = exprs[i];
-                if (attr != null)
-                    exprs[i] = ConvertAnythingToIterator(frame, attr);
-            }
-
-            // ensure arguments line up
-            int numExprs = exprs.Count;
-            CompiledTemplate code = prototype.impl;
-            List<FormalArgument> formalArguments = code.FormalArguments;
-            if (!code.HasFormalArgs || formalArguments == null)
-            {
-                _errorManager.RuntimeError(frame, ErrorType.MISSING_FORMAL_ARGUMENTS);
-                return null;
-            }
-
-            // todo: track formal args not names for efficient filling of locals
-            object[] formalArgumentNames = formalArguments.Select(i => i.Name).ToArray();
-            int nformalArgs = formalArgumentNames.Length;
-            if (prototype.IsAnonymousSubtemplate)
-                nformalArgs -= predefinedAnonSubtemplateAttributes.Length;
-
-            if (nformalArgs != numExprs)
-            {
-                _errorManager.RuntimeError(frame, ErrorType.MAP_ARGUMENT_COUNT_MISMATCH, numExprs, nformalArgs);
-                // TODO just fill first n
-                // truncate arg list to match smaller size
-                int shorterSize = Math.Min(formalArgumentNames.Length, numExprs);
-                numExprs = shorterSize;
-                Array.Resize(ref formalArgumentNames, shorterSize);
-            }
-
-            // keep walking while at least one attribute has values
-
-            Template.AttributeList results = new Template.AttributeList();
-            int i2 = 0; // iteration number from 0
-            while (true)
-            {
-                // get a value for each attribute in list; put into Template instance
-                int numEmpty = 0;
-                Template embedded = group.CreateStringTemplateInternally(prototype);
-                embedded.RawSetAttribute("i0", i2);
-                embedded.RawSetAttribute("i", i2 + 1);
-                for (int a = 0; a < numExprs; a++)
-                {
-                    IEnumerator it = (IEnumerator)exprs[a];
-                    if (it != null && it.MoveNext())
-                    {
-                        string argName = (string)formalArgumentNames[a];
-                        object iteratedValue = it.Current;
-                        embedded.RawSetAttribute(argName, iteratedValue);
-                    }
-                    else
-                    {
-                        numEmpty++;
-                    }
-                }
-
-                if (numEmpty == numExprs)
-                    break;
-
-                results.Add(embedded);
-                i2++;
-            }
-            return results;
-        }
-
-        protected virtual void SetFirstArgument(TemplateFrame frame, Template st, object attr)
-        {
-            if (!st.impl.HasFormalArgs)
-            {
-                if (st.impl.FormalArguments == null)
-                {
-                    st.Add(Template.ImplicitArgumentName, attr);
-                    return;
-                }
-                // else fall thru to set locals[0]
-            }
-
-            if (st.impl.FormalArguments == null)
-            {
-                _errorManager.RuntimeError(frame, ErrorType.ARGUMENT_COUNT_MISMATCH, 1, st.impl.Name, 0);
-                return;
-            }
-
-            st.locals[0] = attr;
-        }
-
-        protected virtual void AddToList(List<object> list, TemplateFrame frame, object o)
-        {
-            o = Interpreter.ConvertAnythingIteratableToIterator(frame, o);
-            if (o is IEnumerator)
-            {
-                // copy of elements into our temp list
-                IEnumerator it = (IEnumerator)o;
-                while (it.MoveNext())
-                    list.Add(it.Current);
-            }
-            else
-            {
-                list.Add(o);
-            }
-        }
-
-        /** Return the first attribute if multiple valued or the attribute
-         *  itself if single-valued.  Used in &lt;names:First()&gt;
-         */
-        public virtual object First(TemplateFrame frame, object v)
-        {
-            if (v == null)
-                return null;
-            object r = v;
-            v = ConvertAnythingIteratableToIterator(frame, v);
-            if (v is IEnumerator)
-            {
-                IEnumerator it = (IEnumerator)v;
-                if (it.MoveNext())
-                {
-                    r = it.Current;
-                }
-            }
-            return r;
-        }
-
-        /** Return the last attribute if multiple valued or the attribute
-         *  itself if single-valued. Unless it's a list or array, this is pretty
-         *  slow as it iterates until the last element.
-         */
-        public virtual object Last(TemplateFrame frame, object v)
-        {
-            if (v == null)
-                return null;
-
-            IList list = v as IList;
-            if (list != null)
-                return list[list.Count - 1];
-
-            object last = v;
-            v = ConvertAnythingIteratableToIterator(frame, v);
-            IEnumerator it = v as IEnumerator;
-            if (it != null)
-            {
-                while (it.MoveNext())
-                    last = it.Current;
-            }
-
-            return last;
-        }
-
-        /** Return everything but the first attribute if multiple valued
-         *  or null if single-valued.
-         */
-        public virtual object Rest(TemplateFrame frame, object v)
-        {
-            if (v == null)
-                return null;
-
-            v = ConvertAnythingIteratableToIterator(frame, v);
-            IEnumerator it = v as IEnumerator;
-            if (it != null)
-            {
-                if (!it.MoveNext())
-                    return null; // if not even one value return null
-
-                List<object> a = new List<object>();
-                // first value is ignored above
-
-                while (it.MoveNext())
-                {
-                    object o = it.Current;
-                    a.Add(o);
-                }
-
-                return a;
-            }
-
-            // rest of single-valued attribute is null
-            return null;
-        }
-
-        /** Return all but the last element.  Trunc(x)=null if x is single-valued. */
-        public virtual object Trunc(TemplateFrame frame, object v)
-        {
-            if (v == null)
-                return null;
-
-            v = ConvertAnythingIteratableToIterator(frame, v);
-            if (v is IEnumerator)
-            {
-                List<object> a = new List<object>();
-                IEnumerator it = (IEnumerator)v;
-                while (it.MoveNext())
-                    a.Add(it.Current);
-
-                // remove the last item
-                a.RemoveAt(a.Count - 1);
-                return a;
-            }
-
-            // Trunc(x)==null when x single-valued attribute
-            return null;
-        }
-
-        /** Return a new list w/o null values. */
-        public virtual object Strip(TemplateFrame frame, object v)
-        {
-            if (v == null)
-                return null;
-
-            v = ConvertAnythingIteratableToIterator(frame, v);
-            if (v is IEnumerator)
-            {
-                List<object> a = new List<object>();
-                IEnumerator it = (IEnumerator)v;
-                while (it.MoveNext())
-                {
-                    object o = it.Current;
-                    if (o != null)
-                        a.Add(o);
-                }
-
-                return a;
-            }
-
-            return v; // Strip(x)==x when x single-valued attribute
-        }
-
-        /** Return a list with the same elements as v but in reverse order. null
-         *  values are NOT stripped out. use Reverse(Strip(v)) to do that.
-         */
-        public virtual object Reverse(TemplateFrame frame, object v)
-        {
-            if (v == null)
-                return null;
-
-            v = ConvertAnythingIteratableToIterator(frame, v);
-            IEnumerator it = v as IEnumerator;
-            if (it != null)
-            {
-                List<object> a = new List<object>();
-                while (it.MoveNext())
-                    a.Add(it.Current);
-
-                a.Reverse();
-                return a;
-            }
-
-            return v;
-        }
-
-        /** Return the length of a mult-valued attribute or 1 if it is a
-         *  single attribute. If attribute is null return 0.
-         *  Special case several common collections and primitive arrays for
-         *  speed. This method by Kay Roepke from v3.
-         */
-        public virtual object Length(object v)
-        {
-            if (v == null)
-                return 0;
-
-            string str = v as string;
-            if (str != null)
-                return 1;
-
-            ICollection collection = v as ICollection;
-            if (collection != null)
-                return collection.Count;
-
-            IDictionary dictionary = v as IDictionary;
-            if (dictionary != null)
-                return dictionary.Count;
-
-            IEnumerable enumerable = v as IEnumerable;
-            if (enumerable != null)
-                return enumerable.Cast<object>().Count();
-
-            IEnumerator iterator = v as IEnumerator;
-            if (iterator != null)
-            {
-                int i = 0;
-                while (iterator.MoveNext())
-                    i++;
-
-                return i;
-            }
-
-            return 1;
-        }
-
-        protected virtual string ToString(TemplateFrame frame, object value)
-        {
-            if (value != null)
-            {
-                if (value.GetType() == typeof(string))
-                    return (string)value;
-
-                // if not string already, must evaluate it
-                StringWriter sw = new StringWriter();
-                /*
-                            Interpreter interp = new Interpreter(group, new NoIndentWriter(sw), culture);
-                            interp.WriteObjectNoOptions(self, value, -1, -1);
-                            */
-
-                if (_debug && !frame.GetDebugState().IsEarlyEval)
-                {
-                    frame = new TemplateFrame(frame.Template, frame);
-                    frame.GetDebugState().IsEarlyEval = true;
-                }
-
-                WriteObjectNoOptions(new NoIndentWriter(sw), frame, value);
-
-                return sw.ToString();
-            }
-            return null;
-        }
-
-        public static object ConvertAnythingIteratableToIterator(TemplateFrame frame, object o)
-        {
-            if (o == null)
-                return null;
-
-            string str = o as string;
-            if (str != null)
-                return str;
-
-            IDictionary dictionary = o as IDictionary;
-            if (dictionary != null)
-            {
-                if (frame.Template.Group.IterateAcrossValues)
-                    return dictionary.Values.GetEnumerator();
-
-                return dictionary.Keys.GetEnumerator();
-            }
-
-            ICollection collection = o as ICollection;
-            if (collection != null)
-                return collection.GetEnumerator();
-
-            IEnumerable enumerable = o as IEnumerable;
-            if (enumerable != null)
-                return enumerable.GetEnumerator();
-
-            //// This code is implied in the last line
-            //IEnumerator enumerator = o as IEnumerator;
-            //if ( enumerator != null )
-            //    return enumerator;
-
-            return o;
-        }
-
-        public static IEnumerator ConvertAnythingToIterator(TemplateFrame frame, object o)
-        {
-            o = ConvertAnythingIteratableToIterator(frame, o);
-
-            IEnumerator iter = o as IEnumerator;
-            if (iter != null)
-                return iter;
-
-            Template.AttributeList singleton = new Template.AttributeList(1);
-            singleton.Add(o);
-            return singleton.GetEnumerator();
-        }
-
-        protected virtual bool TestAttributeTrue(object a)
-        {
-            if (a == null)
-                return false;
-
-            if (a is bool)
-                return (bool)a;
-
-            string str = a as string;
-            if (str != null)
-                return true;
-
-            ICollection collection = a as ICollection;
-            if (collection != null)
-                return collection.Count > 0;
-
-            IDictionary dictionary = a as IDictionary;
-            if (dictionary != null)
-                return dictionary.Count > 0;
-
-            IEnumerable enumerable = a as IEnumerable;
-            if (enumerable != null)
-                return enumerable.Cast<object>().Any();
-
-            // have to simply return true here for IEnumerator because there's no immutable way to check its contents
-            //IEnumerator iterator = a as IEnumerator;
-            //if (iterator != null)
-            //    return iterator.hasNext();
-
-            // any other non-null object, return true--it's present
-            return true;
-        }
-
-        protected virtual object GetObjectProperty(TemplateFrame frame, object o, object property)
-        {
-            Template self = frame.Template;
-
-            if (o == null)
-            {
-                _errorManager.RuntimeError(frame, ErrorType.NO_SUCH_PROPERTY,
-                                          "null." + property);
-                return null;
-            }
-
-            try
-            {
-                ITypeProxyFactory proxyFactory = self.Group.GetTypeProxyFactory(o.GetType());
-                if (proxyFactory != null)
-                    o = proxyFactory.CreateProxy(frame, o);
-
-                IModelAdaptor adap = self.Group.GetModelAdaptor(o.GetType());
-                return adap.GetProperty(this, frame, o, property, ToString(frame, property));
-            }
-            catch (TemplateNoSuchPropertyException e)
-            {
-                _errorManager.RuntimeError(frame, ErrorType.NO_SUCH_PROPERTY,
-                                          e, o.GetType().Name + "." + property);
-            }
-            return null;
-        }
-
-        /** Find an attr via dynamic scoping up enclosing scope chain.
-         *  If not found, look for a map.  So attributes sent in to a template
-         *  override dictionary names.
-         */
-        public virtual object GetAttribute(TemplateFrame frame, string name)
-        {
-            TemplateFrame scope = frame;
-            while (scope != null)
-            {
-                Template template = scope.Template;
-                FormalArgument arg = template.impl.TryGetFormalArgument(name);
-                if (arg != null)
-                {
-                    object o = template.locals[arg.Index];
-                    return o;
-                }
-                scope = scope.Parent;
-            }
-
-            // got to root template and no definition, try dictionaries in group
-            Template self = frame.Template;
-            if (self.impl.NativeGroup.IsDictionary(name))
-                return self.impl.NativeGroup.RawGetDictionary(name);
-
-            // not found, report unknown attr
-            throw new AttributeNotFoundException(frame, name);
-        }
-
-        /** Set any default argument values that were not set by the
-         *  invoking template or by setAttribute directly.  Note
-         *  that the default values may be templates.
-         *
-         *  The evaluation context is the template enclosing invokedST.
-         */
-        protected virtual void SetDefaultArguments(TemplateFrame frame)
-        {
-            Template invokedST = frame.Template;
-            if (invokedST.impl.FormalArguments == null || invokedST.impl.NumberOfArgsWithDefaultValues == 0)
-                return;
-
-            foreach (FormalArgument arg in invokedST.impl.FormalArguments)
-            {
-                // if no value for attribute and default arg, inject default arg into self
-                if (invokedST.locals[arg.Index] != Template.EmptyAttribute || arg.DefaultValueToken == null)
-                    continue;
-
-                if (arg.DefaultValueToken.Type == GroupParser.ANONYMOUS_TEMPLATE)
-                {
-                    CompiledTemplate code = arg.CompiledDefaultValue;
-                    if (code == null)
-                        code = new CompiledTemplate();
-
-                    Template defaultArgST = group.CreateStringTemplateInternally(code);
-                    // default arg template must see other args so it's enclosing
-                    // instance is the template we are invoking.
-                    defaultArgST.Group = group;
-                    // If default arg is template with single expression
-                    // wrapped in parens, x={<(...)>}, then eval to string
-                    // rather than setting x to the template for later
-                    // eval.
-                    string defArgTemplate = arg.DefaultValueToken.Text;
-                    if (defArgTemplate.StartsWith("{" + group.DelimiterStartChar + "(")
-                        && defArgTemplate.EndsWith(")" + group.DelimiterStopChar + "}"))
-                    {
-                        invokedST.RawSetAttribute(arg.Name, ToString(new TemplateFrame(defaultArgST, frame), defaultArgST));
-                    }
-                    else
-                    {
-                        invokedST.RawSetAttribute(arg.Name, defaultArgST);
-                    }
-                }
-                else
-                {
-                    invokedST.RawSetAttribute(arg.Name, arg.DefaultValue);
-                }
-            }
-        }
-
-        protected virtual void Trace(TemplateFrame frame, int ip)
-        {
-            Template self = frame.Template;
-            StringBuilder tr = new StringBuilder();
-            BytecodeDisassembler dis = new BytecodeDisassembler(self.impl);
-            StringBuilder buf = new StringBuilder();
-            dis.DisassembleInstruction(buf, ip);
-            string name = self.impl.Name + ":";
-            if (object.ReferenceEquals(self.impl.Name, Template.UnknownName))
-                name = string.Empty;
-
-            tr.Append(string.Format("{0,-40}", name + buf));
-            tr.Append("\tstack=[");
-            for (int i = 0; i <= sp; i++)
-            {
-                object o = operands[i];
-                PrintForTrace(tr, frame, o);
-            }
-
-            tr.Append(" ], calls=");
-            tr.Append(frame.GetEnclosingInstanceStackString());
-            tr.Append(", sp=" + sp + ", nw=" + nwline);
-            string s = tr.ToString();
-
-            if (_debug)
-                executeTrace.Add(s);
-
-            if (trace)
-                Console.WriteLine(s);
-        }
-
-        protected virtual void PrintForTrace(StringBuilder tr, TemplateFrame frame, object o)
-        {
-            if (o is Template)
-            {
-                if (((Template)o).impl == null)
-                    tr.Append("bad-template()");
-                else
-                    tr.Append(" " + ((Template)o).impl.Name + "()");
-                return;
-            }
-            o = ConvertAnythingIteratableToIterator(frame, o);
-            if (o is IEnumerator)
-            {
-                IEnumerator it = (IEnumerator)o;
-                tr.Append(" [");
-                while (it.MoveNext())
-                {
-                    object iterValue = it.Current;
-                    PrintForTrace(tr, frame, iterValue);
-                }
-
-                tr.Append(" ]");
-            }
-            else
-            {
-                tr.Append(" " + o);
-            }
-        }
-
-        public virtual List<InterpEvent> GetEvents()
-        {
-            return events;
-        }
-
-        /** For every event, we track in overall list and in self's
-         *  event list so that each template has a list of events used to
-         *  create it.  If EvalTemplateEvent, store in parent's
-         *  childEvalTemplateEvents list for STViz tree view.
-         */
-        protected void TrackDebugEvent(TemplateFrame frame, InterpEvent e)
-        {
-            //		System.out.println(e);
-            this.events.Add(e);
-            //		if ( self.debugState==null ) self.debugState = new ST.DebugState();
-            //		self.debugState.events.add(e);
-            frame.GetDebugState().Events.Add(e);
-            if (e is EvalTemplateEvent)
-            {
-                //ST parent = getDebugState(self).interpEnclosingInstance;
-                TemplateFrame parent = frame.Parent;
-                if (parent != null)
-                {
-                    // System.out.println("add eval "+e.self.getName()+" to children of "+parent.getName());
-                    //				if ( parent.debugState==null ) parent.debugState = new ST.DebugState();
-                    //				parent.debugState.childEvalTemplateEvents.add((EvalTemplateEvent)e);
-                    parent.GetDebugState().ChildEvalTemplateEvents.Add((EvalTemplateEvent)e);
-                }
-            }
-        }
-
-        public virtual List<string> GetExecutionTrace()
-        {
-            return executeTrace;
-        }
-
-        private static int GetShort(byte[] value, int startIndex)
-        {
-            return BitConverter.ToInt16(value, startIndex);
         }
     }
+
+    private List<Template> RotateMapIterator(TemplateFrame frame, IEnumerator iterator, List<Template> prototypes) {
+        var mapped = new List<Template>();
+        var i0 = 0;
+        var i = 1;
+        var ti = 0;
+        while (iterator.MoveNext()) {
+            var iterValue = iterator.Current;
+            if (iterValue == null) {
+                mapped.Add(null);
+                continue;
+            }
+            var templateIndex = ti % prototypes.Count; // rotate through
+            ti++;
+            var proto = prototypes[templateIndex];
+            var st = group.CreateStringTemplateInternally(proto);
+            SetFirstArgument(frame, st, iterValue);
+            if (st.impl.IsAnonSubtemplate) {
+                st.RawSetAttribute("i0", i0);
+                st.RawSetAttribute("i", i);
+            }
+            mapped.Add(st);
+            i0++;
+            i++;
+        }
+        return mapped;
+    }
+
+    // <names,phones:{n,p | ...}> or <a,b:t()>
+    // todo: i, i0 not set unless mentioned? map:{k,v | ..}?
+    private Template.AttributeList ZipMap(TemplateFrame frame, List<object> exprs, Template prototype) {
+        if (exprs == null || prototype == null || exprs.Count == 0) {
+            return null; // do not apply if missing templates or empty values
+        }
+        // make everything iterable
+        for (var i = 0; i < exprs.Count; i++) {
+            var attr = exprs[i];
+            if (attr != null) {
+                exprs[i] = ConvertAnythingToIterator(frame, attr);
+            }
+        }
+        // ensure arguments line up
+        var numExprs = exprs.Count;
+        var code = prototype.impl;
+        var formalArguments = code.FormalArguments;
+        if (!code.HasFormalArgs || formalArguments == null) {
+            _errorManager.RuntimeError(frame, ErrorType.MISSING_FORMAL_ARGUMENTS);
+            return null;
+        }
+
+        // todo: track formal args not names for efficient filling of locals
+        var formalArgumentNames = formalArguments.Select(i => i.Name).ToArray();
+        var nFormalArgs = formalArgumentNames.Length;
+        if (prototype.IsAnonymousSubtemplate) {
+            nFormalArgs -= predefinedAnonSubtemplateAttributes.Length;
+        }
+        if (nFormalArgs != numExprs) {
+            _errorManager.RuntimeError(frame, ErrorType.MAP_ARGUMENT_COUNT_MISMATCH, numExprs, nFormalArgs);
+            // TODO just fill first n
+            // truncate arg list to match smaller size
+            var shorterSize = Math.Min(formalArgumentNames.Length, numExprs);
+            numExprs = shorterSize;
+            Array.Resize(ref formalArgumentNames, shorterSize);
+        }
+
+        // keep walking while at least one attribute has values
+
+        var results = new Template.AttributeList();
+        var i2 = 0; // iteration number from 0
+        while (true) {
+            // get a value for each attribute in list; put into Template instance
+            var numEmpty = 0;
+            var embedded = group.CreateStringTemplateInternally(prototype);
+            embedded.RawSetAttribute("i0", i2);
+            embedded.RawSetAttribute("i", i2 + 1);
+            for (var a = 0; a < numExprs; a++) {
+                var it = (IEnumerator)exprs[a];
+                if (it != null && it.MoveNext()) {
+                    var argName = formalArgumentNames[a];
+                    var iteratedValue = it.Current;
+                    embedded.RawSetAttribute(argName, iteratedValue);
+                } else {
+                    numEmpty++;
+                }
+            }
+            if (numEmpty == numExprs) {
+                break;
+            }
+            results.Add(embedded);
+            i2++;
+        }
+        return results;
+    }
+
+    private void SetFirstArgument(TemplateFrame frame, Template st, object attr) {
+        if (!st.impl.HasFormalArgs) {
+            if (st.impl.FormalArguments == null) {
+                st.Add(Template.ImplicitArgumentName, attr);
+                return;
+            }
+            // else fall through to set locals[0]
+        }
+        if (st.impl.FormalArguments == null) {
+            _errorManager.RuntimeError(frame, ErrorType.ARGUMENT_COUNT_MISMATCH, 1, st.impl.Name, 0);
+            return;
+        }
+        st.locals[0] = attr;
+    }
+
+    private void AddToList(List<object> list, TemplateFrame frame, object o) {
+        o = ConvertAnythingIterableToIterator(frame, o);
+        if (o is IEnumerator it) {
+            // copy of elements into our temp list
+            while (it.MoveNext()) {
+                list.Add(it.Current);
+            }
+        } else {
+            list.Add(o);
+        }
+    }
+
+    /** Return the first attribute if multiple valued or the attribute
+     *  itself if single-valued.  Used in &lt;names:First()&gt;
+     */
+    private object First(TemplateFrame frame, object v) {
+        if (v == null) {
+            return null;
+        }
+        var r = v;
+        v = ConvertAnythingIterableToIterator(frame, v);
+        if (v is IEnumerator it) {
+            if (it.MoveNext()) {
+                r = it.Current;
+            }
+        }
+        return r;
+    }
+
+    /** Return the last attribute if multiple valued or the attribute
+     *  itself if single-valued. Unless it's a list or array, this is pretty
+     *  slow as it iterates until the last element.
+     */
+    private object Last(TemplateFrame frame, object v) {
+        if (v == null) {
+            return null;
+        }
+        if (v is IList list) {
+            return list[list.Count - 1];
+        }
+        var last = v;
+        v = ConvertAnythingIterableToIterator(frame, v);
+        if (v is IEnumerator it) {
+            while (it.MoveNext()) {
+                last = it.Current;
+            }
+        }
+        return last;
+    }
+
+    /** Return everything but the first attribute if multiple valued
+     *  or null if single-valued.
+     */
+    private object Rest(TemplateFrame frame, object v) {
+        if (v == null) {
+            return null;
+        }
+        v = ConvertAnythingIterableToIterator(frame, v);
+        if (v is IEnumerator it) {
+            if (!it.MoveNext()) {
+                return null; // if not even one value return null
+            }
+            var a = new List<object>();
+            // first value is ignored above
+            while (it.MoveNext()) {
+                var o = it.Current;
+                a.Add(o);
+            }
+            return a;
+        }
+        // rest of single-valued attribute is null
+        return null;
+    }
+
+    /** Return all but the last element.  Trunc(x)=null if x is single-valued. */
+    private object Trunc(TemplateFrame frame, object v) {
+        if (v == null) {
+            return null;
+        }
+        v = ConvertAnythingIterableToIterator(frame, v);
+        if (v is IEnumerator it) {
+            var a = new List<object>();
+            while (it.MoveNext()) {
+                a.Add(it.Current);
+            }
+            // remove the last item
+            a.RemoveAt(a.Count - 1);
+            return a;
+        }
+
+        // Trunc(x)==null when x single-valued attribute
+        return null;
+    }
+
+    /** Return a new list w/o null values. */
+    private object Strip(TemplateFrame frame, object v) {
+        if (v == null) {
+            return null;
+        }
+        v = ConvertAnythingIterableToIterator(frame, v);
+        if (v is IEnumerator it) {
+            var a = new List<object>();
+            while (it.MoveNext()) {
+                var o = it.Current;
+                if (o != null) {
+                    a.Add(o);
+                }
+            }
+            return a;
+        }
+        return v; // Strip(x)==x when x single-valued attribute
+    }
+
+    /** Return a list with the same elements as v but in reverse order. null
+     *  values are NOT stripped out. use Reverse(Strip(v)) to do that.
+     */
+    private object Reverse(TemplateFrame frame, object v) {
+        if (v == null) {
+            return null;
+        }
+        v = ConvertAnythingIterableToIterator(frame, v);
+        if (v is IEnumerator it) {
+            var a = new List<object>();
+            while (it.MoveNext()) {
+                a.Add(it.Current);
+            }
+            a.Reverse();
+            return a;
+        }
+        return v;
+    }
+
+    /** Return the length of a mult-valued attribute or 1 if it is a
+     *  single attribute. If attribute is null return 0.
+     *  Special case several common collections and primitive arrays for
+     *  speed. This method by Kay Roepke from v3.
+     */
+    private object Length(object v) {
+        switch (v) {
+            case null:
+                return 0;
+            case string:
+                return 1;
+            case ICollection collection:
+                return collection.Count;
+            case IEnumerable enumerable:
+                return enumerable.Cast<object>().Count();
+            case IEnumerator iterator: {
+                var i = 0;
+                while (iterator.MoveNext()) {
+                    i++;
+                }
+                return i;
+            }
+            default: {
+                return 1;
+            }
+        }
+    }
+
+    private string ToString(TemplateFrame frame, object value)
+    {
+        switch (value) {
+            case null:
+                return null;
+            case string s:
+                return s;
+        }
+
+        // if not string already, must evaluate it
+        var sw = new StringWriter();
+        /*
+        Interpreter interp = new Interpreter(group, new NoIndentWriter(sw), culture);
+        interp.WriteObjectNoOptions(self, value, -1, -1);
+        */
+
+        if (_debug && !frame.GetDebugState().IsEarlyEval) {
+            frame = new TemplateFrame(frame.Template, frame);
+            frame.GetDebugState().IsEarlyEval = true;
+        }
+        WriteObjectNoOptions(new NoIndentWriter(sw), frame, value);
+        return sw.ToString();
+    }
+
+    private static object ConvertAnythingIterableToIterator(TemplateFrame frame, object o) {
+        switch (o) {
+            case null:
+                return null;
+            case string str:
+                return str;
+            case IDictionary dictionary when frame.Template.Group.IterateAcrossValues:
+                return dictionary.Values.GetEnumerator();
+            case IDictionary dictionary:
+                return dictionary.Keys.GetEnumerator();
+            case ICollection collection:
+                return collection.GetEnumerator();
+            case IEnumerable enumerable:
+                return enumerable.GetEnumerator();
+            default:
+                //// This code is implied in the last line
+                //IEnumerator enumerator = o as IEnumerator;
+                //if ( enumerator != null )
+                //    return enumerator;
+                return o;
+        }
+    }
+
+    private static IEnumerator ConvertAnythingToIterator(TemplateFrame frame, object o) {
+        o = ConvertAnythingIterableToIterator(frame, o);
+        if (o is IEnumerator iter) {
+            return iter;
+        }
+        var singleton = new Template.AttributeList(1) { o };
+        return singleton.GetEnumerator();
+    }
+
+    private bool TestAttributeTrue(object a) {
+        return a switch {
+            null => false,
+            bool b => b,
+            string => true,
+            ICollection collection => collection.Count > 0,
+            IEnumerable enumerable => enumerable.Cast<object>().Any(),
+            _ => true
+        };
+    }
+
+    private object GetObjectProperty(TemplateFrame frame, object o, object property) {
+        var self = frame.Template;
+        if (o == null) {
+            _errorManager.RuntimeError(frame, ErrorType.NO_SUCH_PROPERTY, "null." + property);
+            return null;
+        }
+        try {
+            var proxyFactory = self.Group.GetTypeProxyFactory(o.GetType());
+            if (proxyFactory != null) {
+                o = proxyFactory.CreateProxy(frame, o);
+            }
+            var adap = self.Group.GetModelAdaptor(o.GetType());
+            return adap.GetProperty(this, frame, o, property, ToString(frame, property));
+        } catch (TemplateNoSuchPropertyException e) {
+            _errorManager.RuntimeError(frame, ErrorType.NO_SUCH_PROPERTY,
+                e, o.GetType().Name + "." + property);
+        }
+        return null;
+    }
+
+    /** Find an attr via dynamic scoping up enclosing scope chain.
+     *  If not found, look for a map.  So attributes sent in to a template
+     *  override dictionary names.
+     */
+    private object GetAttribute(TemplateFrame frame, string name) {
+        var scope = frame;
+        while (scope != null) {
+            var template = scope.Template;
+            var arg = template.impl.TryGetFormalArgument(name);
+            if (arg != null) {
+                var o = template.locals[arg.Index];
+                return o;
+            }
+            scope = scope.Parent;
+        }
+        // got to root template and no definition, try dictionaries in group
+        var self = frame.Template;
+        if (self.impl.NativeGroup.IsDictionary(name)) {
+            return self.impl.NativeGroup.RawGetDictionary(name);
+        }
+        // not found, report unknown attr
+        throw new AttributeNotFoundException(frame, name);
+    }
+
+    /** Set any default argument values that were not set by the
+     *  invoking template or by setAttribute directly.  Note
+     *  that the default values may be templates.
+     *
+     *  The evaluation context is the template enclosing invokedST.
+     */
+    private void SetDefaultArguments(TemplateFrame frame) {
+        var invokedST = frame.Template;
+        if (invokedST.impl.FormalArguments == null || invokedST.impl.NumberOfArgsWithDefaultValues == 0) {
+            return;
+        }
+        foreach (var arg in invokedST.impl.FormalArguments) {
+            // if no value for attribute and default arg, inject default arg into self
+            if (invokedST.locals[arg.Index] != Template.EmptyAttribute || arg.DefaultValueToken == null) {
+                continue;
+            }
+            if (arg.DefaultValueToken.Type == GroupParser.ANONYMOUS_TEMPLATE) {
+                var code = arg.CompiledDefaultValue ?? new CompiledTemplate();
+                var defaultArgST = group.CreateStringTemplateInternally(code);
+                // default arg template must see other args so it's enclosing
+                // instance is the template we are invoking.
+                defaultArgST.Group = group;
+                // If default arg is template with single expression
+                // wrapped in parens, x={<(...)>}, then eval to string
+                // rather than setting x to the template for later
+                // eval.
+                var defArgTemplate = arg.DefaultValueToken.Text;
+                if (defArgTemplate.StartsWith("{" + group.DelimiterStartChar + "(")
+                    && defArgTemplate.EndsWith(")" + group.DelimiterStopChar + "}")) {
+                    invokedST.RawSetAttribute(arg.Name, ToString(new TemplateFrame(defaultArgST, frame), defaultArgST));
+                } else {
+                    invokedST.RawSetAttribute(arg.Name, defaultArgST);
+                }
+            } else {
+                invokedST.RawSetAttribute(arg.Name, arg.DefaultValue);
+            }
+        }
+    }
+
+    private void Trace(TemplateFrame frame, int ip) {
+        var self = frame.Template;
+        var tr = new StringBuilder();
+        var dis = new BytecodeDisassembler(self.impl);
+        var buf = new StringBuilder();
+        dis.DisassembleInstruction(buf, ip);
+        var name = self.impl.Name + ":";
+        if (ReferenceEquals(self.impl.Name, Template.UnknownName)) {
+            name = string.Empty;
+        }
+        tr.Append($"{name + buf,-40}");
+        tr.Append("\tstack=[");
+        for (var i = 0; i <= sp; i++) {
+            var o = operands[i];
+            PrintForTrace(tr, frame, o);
+        }
+        tr.Append(" ], calls=");
+        tr.Append(frame.GetEnclosingInstanceStackString());
+        tr.Append(", sp=" + sp + ", nw=" + nwline);
+        var s = tr.ToString();
+        if (trace) {
+            Console.WriteLine(s);
+        }
+    }
+
+    private void PrintForTrace(StringBuilder tr, TemplateFrame frame, object o) {
+        if (o is Template template) {
+            if (template.impl == null) {
+                tr.Append("bad-template()");
+            } else {
+                tr.Append(" " + template.impl.Name + "()");
+            }
+            return;
+        }
+        o = ConvertAnythingIterableToIterator(frame, o);
+        if (o is IEnumerator it) {
+            tr.Append(" [");
+            while (it.MoveNext()) {
+                var iterValue = it.Current;
+                PrintForTrace(tr, frame, iterValue);
+            }
+            tr.Append(" ]");
+        } else {
+            tr.Append(" " + o);
+        }
+    }
+
+    public List<InterpEvent> GetEvents() {
+        return events;
+    }
+
+    /** For every event, we track in overall list and in self's
+     *  event list so that each template has a list of events used to
+     *  create it.  If EvalTemplateEvent, store in parent's
+     *  childEvalTemplateEvents list for STViz tree view.
+     */
+    private void TrackDebugEvent(TemplateFrame frame, InterpEvent e) {
+        //		System.out.println(e);
+        events.Add(e);
+        //		if ( self.debugState==null ) self.debugState = new ST.DebugState();
+        //		self.debugState.events.add(e);
+        frame.GetDebugState().Events.Add(e);
+        if (e is EvalTemplateEvent evt) {
+            //ST parent = getDebugState(self).interpEnclosingInstance;
+            var parent = frame.Parent;
+            if (parent != null) {
+                // System.out.println("add eval "+e.self.getName()+" to children of "+parent.getName());
+                //				if ( parent.debugState==null ) parent.debugState = new ST.DebugState();
+                //				parent.debugState.childEvalTemplateEvents.add((EvalTemplateEvent)e);
+                parent.GetDebugState().ChildEvalTemplateEvents.Add(evt);
+            }
+        }
+    }
+
+    private static int GetShort(byte[] value, int startIndex) {
+        return BitConverter.ToInt16(value, startIndex);
+    }
+
 }

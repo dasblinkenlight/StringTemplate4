@@ -30,53 +30,50 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate
-{
-    using CultureInfo = System.Globalization.CultureInfo;
-    using Encoding = System.Text.Encoding;
-    using HttpUtility = Antlr4.StringTemplate.Misc.HttpUtility;
+namespace Antlr4.StringTemplate;
+
+using CultureInfo = System.Globalization.CultureInfo;
+using Encoding = System.Text.Encoding;
+using HttpUtility = Misc.HttpUtility;
 #if !NETSTANDARD
     using SecurityElement = System.Security.SecurityElement;
 #endif
 
-    /** This Render knows to perform a few operations on String objects:
-     *  upper, lower, cap, url-encode, xml-encode.
-     */
-    public class StringRenderer : IAttributeRenderer
-    {
-        // trim(s) and strlen(s) built-in funcs; these are Format options
-        public virtual string ToString(object o, string formatString, CultureInfo culture)
+/** This Render knows to perform a few operations on String objects:
+ *  upper, lower, cap, url-encode, xml-encode.
+ */
+public class StringRenderer : IAttributeRenderer {
+    // trim(s) and strlen(s) built-in funcs; these are Format options
+    public string ToString(object o, string formatString, CultureInfo culture) {
+        var s = (string)o;
+        if (formatString == null) {
+            return s;
+        }
+        if (formatString.Equals("upper")) {
+            return culture.TextInfo.ToUpper(s);
+        }
+        if (formatString.Equals("lower")) {
+            return culture.TextInfo.ToLower(s);
+        }
+        if (formatString.Equals("cap")) {
+            return s.Length > 0 ? culture.TextInfo.ToUpper(s[0]) + s.Substring(1) : s;
+        }
+        if (formatString.Equals("url-encode")) {
+            return HttpUtility.UrlEncode(s, Encoding.UTF8);
+        }
+        if (formatString.Equals("xml-encode"))
         {
-            string s = (string)o;
-            if (formatString == null)
-                return s;
-
-            if (formatString.Equals("upper"))
-                return culture.TextInfo.ToUpper(s);
-
-            if (formatString.Equals("lower"))
-                return culture.TextInfo.ToLower(s);
-
-            if (formatString.Equals("cap"))
-                return s.Length > 0 ? culture.TextInfo.ToUpper(s[0]) + s.Substring(1) : s;
-
-            if (formatString.Equals("url-encode"))
-                return HttpUtility.UrlEncode(s, Encoding.UTF8);
-
-            if (formatString.Equals("xml-encode"))
-            {
 #if NETSTANDARD
-                return s.Replace("&", "&amp;")
-                    .Replace("<", "&lt;")
-                    .Replace(">", "&gt;")
-                    .Replace("\"", "&quot;")
-                    .Replace("'", "&apos;");
+            return s.Replace("&", "&amp;")
+                .Replace("<", "&lt;")
+                .Replace(">", "&gt;")
+                .Replace("\"", "&quot;")
+                .Replace("'", "&apos;");
 #else
                 return SecurityElement.Escape(s);
 #endif
-            }
-
-            return string.Format(culture, formatString, s);
         }
+        return string.Format(culture, formatString, s);
     }
+
 }

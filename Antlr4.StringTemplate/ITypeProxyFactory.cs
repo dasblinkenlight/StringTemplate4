@@ -30,10 +30,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate
-{
-    public interface ITypeProxyFactory
-    {
-        object CreateProxy(TemplateFrame frame, object obj);
-    }
+namespace Antlr4.StringTemplate;
+
+public interface ITypeProxyFactory  {
+    object CreateProxy(TemplateFrame frame, object obj);
 }

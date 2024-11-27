@@ -30,16 +30,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate
-{
-    using Antlr4.StringTemplate.Misc;
+namespace Antlr4.StringTemplate;
 
-    /** How to handle messages */
-    public interface ITemplateErrorListener
-    {
-        void CompiletimeError(TemplateMessage msg);
-        void RuntimeError(TemplateMessage msg);
-        void IOError(TemplateMessage msg);
-        void InternalError(TemplateMessage msg);
-    }
+using Misc;
+
+/** How to handle messages */
+public interface ITemplateErrorListener {
+    void CompileTimeError(TemplateMessage msg);
+    void RuntimeError(TemplateMessage msg);
+    void IOError(TemplateMessage msg);
+    void InternalError(TemplateMessage msg);
 }
