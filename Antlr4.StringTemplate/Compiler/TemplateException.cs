@@ -30,19 +30,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate.Compiler
-{
-    using Exception = System.Exception;
+namespace Antlr4.StringTemplate.Compiler;
 
-    public class TemplateException : Exception
-    {
-        public TemplateException()
-        {
-        }
+using Exception = System.Exception;
 
-        public TemplateException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
+public class TemplateException : Exception {
+    public TemplateException() {
+    }
+    public TemplateException(string message, Exception innerException)
+    : base(message, innerException) {
     }
 }

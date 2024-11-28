@@ -30,13 +30,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate.Compiler
-{
-    public enum OperandType
-    {
-        None,
-        String,
-        Address,
-        Int
-    }
+namespace Antlr4.StringTemplate.Compiler;
+
+public enum OperandType {
+    None,
+    String,
+    Address,
+    Int
 }

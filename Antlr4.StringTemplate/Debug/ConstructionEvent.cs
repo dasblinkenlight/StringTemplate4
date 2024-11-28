@@ -30,25 +30,25 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate.Debug
-{
+namespace Antlr4.StringTemplate.Debug;
+
 #if !NETSTANDARD
     using System.Diagnostics;
 #endif
 
-    /** An event that happens when building Template trees, adding attributes etc... */
-    public class ConstructionEvent
-    {
+/** An event that happens when building Template trees, adding attributes etc... */
+public class ConstructionEvent
+{
 #if !NETSTANDARD
         private readonly StackTrace stack;
 #endif
 
-        public ConstructionEvent()
-        {
+    public ConstructionEvent()
+    {
 #if !NETSTANDARD
             stack = new StackTrace(true);
 #endif
-        }
+    }
 
 #if !NETSTANDARD
         public virtual string GetFileName()
@@ -74,5 +74,4 @@ namespace Antlr4.StringTemplate.Debug
             return trace[0];
         }
 #endif
-    }
 }

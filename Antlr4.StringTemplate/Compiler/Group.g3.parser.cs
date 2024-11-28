@@ -30,50 +30,49 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate.Compiler
+namespace Antlr4.StringTemplate.Compiler;
+
+using Misc;
+using Antlr.Runtime;
+using Path = System.IO.Path;
+
+partial class GroupParser
 {
-    using Antlr4.StringTemplate.Misc;
-    using Antlr.Runtime;
-    using Path = System.IO.Path;
+    private TemplateGroup _group;
 
-    partial class GroupParser
+    public TemplateGroup Group
     {
-        private TemplateGroup _group;
-
-        public TemplateGroup Group
+        get
         {
-            get
-            {
-                return _group;
-            }
-
-            internal set
-            {
-                _group = value;
-            }
+            return _group;
         }
 
-        public override void DisplayRecognitionError(string[] tokenNames, RecognitionException e)
+        internal set
         {
-            string msg = GetErrorMessage(e, tokenNames);
-            _group.ErrorManager.GroupSyntaxError(ErrorType.SYNTAX_ERROR, SourceName, e, msg);
+            _group = value;
         }
+    }
 
-        public override string SourceName
-        {
-            get
-            {
-                string fullFileName = base.SourceName;
-                // strip to simple name
-                return Path.GetFileName(fullFileName);
-            }
-        }
+    public override void DisplayRecognitionError(string[] tokenNames, RecognitionException e)
+    {
+        var msg = GetErrorMessage(e, tokenNames);
+        _group.ErrorManager.GroupSyntaxError(ErrorType.SYNTAX_ERROR, SourceName, e, msg);
+    }
 
-        public virtual void Error(string msg)
+    public override string SourceName
+    {
+        get
         {
-            NoViableAltException e = new NoViableAltException(string.Empty, 0, 0, input);
-            _group.ErrorManager.GroupSyntaxError(ErrorType.SYNTAX_ERROR, SourceName, e, msg);
-            Recover(input, null);
+            var fullFileName = base.SourceName;
+            // strip to simple name
+            return Path.GetFileName(fullFileName);
         }
+    }
+
+    public virtual void Error(string msg)
+    {
+        var e = new NoViableAltException(string.Empty, 0, 0, input);
+        _group.ErrorManager.GroupSyntaxError(ErrorType.SYNTAX_ERROR, SourceName, e, msg);
+        Recover(input, null);
     }
 }

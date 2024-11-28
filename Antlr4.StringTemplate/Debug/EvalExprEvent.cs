@@ -30,43 +30,29 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate.Debug
-{
-    using Antlr4.StringTemplate.Misc;
+namespace Antlr4.StringTemplate.Debug;
 
-    public class EvalExprEvent : InterpEvent
-    {
-        // template pattern location
-        private readonly Interval _sourceInterval;
-        private readonly string expr = string.Empty;
+using Misc;
 
-        public EvalExprEvent(TemplateFrame frame, Interval outputInterval, Interval sourceInterval)
-            : base(frame, outputInterval)
-        {
-            this._sourceInterval = sourceInterval;
-            if (_sourceInterval != null)
-                expr = frame.Template.impl.Template.Substring(_sourceInterval.Start, _sourceInterval.Length);
-        }
+public class EvalExprEvent : InterpEvent {
 
-        public Interval SourceInterval
-        {
-            get
-            {
-                return _sourceInterval;
-            }
-        }
+    // template pattern location
+    private readonly Interval _sourceInterval;
 
-        public string Expr
-        {
-            get
-            {
-                return expr;
-            }
-        }
-
-        public override string ToString()
-        {
-            return string.Format("{0}{{self={1}, expr='{2}', source={3}, output={4}}}", GetType().Name, Template, Expr, SourceInterval, OutputInterval);
+    public EvalExprEvent(TemplateFrame frame, Interval outputInterval, Interval sourceInterval)
+    : base(frame, outputInterval) {
+        _sourceInterval = sourceInterval;
+        if (_sourceInterval != null) {
+            Expr = frame.Template.impl.Template.Substring(_sourceInterval.Start, _sourceInterval.Length);
         }
     }
+
+    private Interval SourceInterval => _sourceInterval;
+
+    private string Expr { get; } = string.Empty;
+
+    public override string ToString() {
+        return $"{GetType().Name}{{self={Template}, expr='{Expr}', source={SourceInterval}, output={OutputInterval}}}";
+    }
+
 }

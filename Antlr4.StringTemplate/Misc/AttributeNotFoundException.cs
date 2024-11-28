@@ -26,28 +26,27 @@
  *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate.Misc
+namespace Antlr4.StringTemplate.Misc;
+
+using Compiler;
+
+////** <name> where name is not found up the dynamic scoping chain. */
+public class AttributeNotFoundException : TemplateException
 {
-    using Antlr4.StringTemplate.Compiler;
+    private readonly TemplateFrame _frame;
+    private readonly string _attributeName;
 
-    ////** <name> where name is not found up the dynamic scoping chain. */
-    public class AttributeNotFoundException : TemplateException
+    public AttributeNotFoundException(TemplateFrame frame, string attributeName)
     {
-        private readonly TemplateFrame _frame;
-        private readonly string _attributeName;
+        _frame = frame;
+        _attributeName = attributeName;
+    }
 
-        public AttributeNotFoundException(TemplateFrame frame, string attributeName)
+    public override string Message
+    {
+        get
         {
-            _frame = frame;
-            _attributeName = attributeName;
-        }
-
-        public override string Message
-        {
-            get
-            {
-                return "from template " + _frame.Template.Name + " no attribute " + _attributeName + " is visible";
-            }
+            return "from template " + _frame.Template.Name + " no attribute " + _attributeName + " is visible";
         }
     }
 }

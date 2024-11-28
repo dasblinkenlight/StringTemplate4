@@ -1,57 +1,48 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Dynamic;
+﻿using System.Dynamic;
 using System.Linq;
 using System.Xml.Linq;
 
 
-namespace Antlr4.StringTemplate.Misc
-{
-    public class DynamicXml : DynamicObject
-    {
-        XElement _root;
-        private DynamicXml(XElement root)
-        {
-            _root = root;
-        }
+namespace Antlr4.StringTemplate.Misc;
 
-        public static DynamicXml Parse(string xmlString)
-        {
-            return new DynamicXml(XDocument.Parse(xmlString).Root);
-        }
+public class DynamicXml : DynamicObject {
 
-        public static DynamicXml Load(string filename)
-        {
-            return new DynamicXml(XDocument.Load(filename).Root);
-        }
+    XElement _root;
 
-        public override bool TryGetMember(GetMemberBinder binder, out object result)
-        {
-            result = null;
+    private DynamicXml(XElement root) {
+        _root = root;
+    }
 
-            var att = _root.Attribute(binder.Name);
-            if (att != null)
-            {
-                result = att.Value;
-                return true;
-            }
+    public static DynamicXml Parse(string xmlString) {
+        return new DynamicXml(XDocument.Parse(xmlString).Root);
+    }
 
-            var nodes = _root.Elements(binder.Name);
-            if (nodes.Count() > 1)
-            {
-                result = nodes.Select(n => n.HasElements ? (object)new DynamicXml(n) : n.Value).ToList();
-                return true;
-            }
+    public static DynamicXml Load(string filename) {
+        return new DynamicXml(XDocument.Load(filename).Root);
+    }
 
-            var node = _root.Element(binder.Name);
-            if (node != null)
-            {
-                result = node.HasElements || node.HasAttributes ? (object)new DynamicXml(node) : node.Value;
-                return true;
-            }
+    public override bool TryGetMember(GetMemberBinder binder, out object result) {
+        result = null;
 
+        var att = _root.Attribute(binder.Name);
+        if (att != null) {
+            result = att.Value;
             return true;
         }
+
+        var nodes = _root.Elements(binder.Name);
+        if (nodes.Count() > 1) {
+            result = nodes.Select(n => n.HasElements ? (object)new DynamicXml(n) : n.Value).ToList();
+            return true;
+        }
+
+        var node = _root.Element(binder.Name);
+        if (node != null) {
+            result = node.HasElements || node.HasAttributes ? new DynamicXml(node) : node.Value;
+            return true;
+        }
+
+        return true;
     }
+
 }

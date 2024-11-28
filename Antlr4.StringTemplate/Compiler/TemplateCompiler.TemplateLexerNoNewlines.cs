@@ -30,34 +30,30 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate.Compiler
-{
-    using Antlr.Runtime;
-    using Antlr4.StringTemplate.Misc;
+namespace Antlr4.StringTemplate.Compiler;
 
-    partial class TemplateCompiler
-    {
-        private class TemplateLexerNoNewlines : TemplateLexer
-        {
-            public TemplateLexerNoNewlines(ErrorManager errMgr, ICharStream input, IToken templateToken, char delimiterStartChar, char delimiterStopChar)
-                : base(errMgr, input, templateToken, delimiterStartChar, delimiterStopChar)
-            {
+using Antlr.Runtime;
+using Misc;
+
+partial class TemplateCompiler {
+
+    private class TemplateLexerNoNewlines : TemplateLexer {
+        public TemplateLexerNoNewlines(ErrorManager errMgr, ICharStream input, IToken templateToken,
+            char delimiterStartChar, char delimiterStopChar)
+        : base(errMgr, input, templateToken, delimiterStartChar, delimiterStopChar) {
+        }
+
+        /// <summary>
+        /// Throw out \n and leading whitespace tokens inside BIGSTRING_NO_NL.
+        /// </summary>
+        /// <returns></returns>
+        public override IToken NextToken() {
+            var t = base.NextToken();
+            while (t.Type == NEWLINE || t.Type == INDENT) {
+                t = base.NextToken();
             }
-
-            /// <summary>
-            /// Throw out \n and leading whitespace tokens inside BIGSTRING_NO_NL.
-            /// </summary>
-            /// <returns></returns>
-            public override IToken NextToken()
-            {
-                IToken t = base.NextToken();
-                while (t.Type == TemplateLexer.NEWLINE || t.Type == TemplateLexer.INDENT)
-                {
-                    t = base.NextToken();
-                }
-
-                return t;
-            }
+            return t;
         }
     }
+
 }

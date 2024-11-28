@@ -30,15 +30,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate.Debug
-{
-    using Antlr4.StringTemplate.Misc;
+namespace Antlr4.StringTemplate.Debug;
 
-    public class EvalTemplateEvent : InterpEvent
-    {
-        public EvalTemplateEvent(TemplateFrame frame, Interval interval)
-            : base(frame, interval)
-        {
-        }
+using Misc;
+
+public class EvalTemplateEvent : InterpEvent {
+
+    public EvalTemplateEvent(TemplateFrame frame, Interval interval)
+    : base(frame, interval) {
     }
+
 }

@@ -30,55 +30,27 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate.Debug
-{
-    using Antlr4.StringTemplate.Misc;
-    using ArgumentNullException = System.ArgumentNullException;
+namespace Antlr4.StringTemplate.Debug;
 
-    public class InterpEvent
-    {
-        private readonly TemplateFrame _frame;
-        // output location
-        private readonly Interval _interval;
+using Misc;
+using ArgumentNullException = System.ArgumentNullException;
 
-        public InterpEvent(TemplateFrame frame, Interval interval)
-        {
-            if (frame == null)
-                throw new ArgumentNullException("frame");
-            if (interval == null)
-                throw new ArgumentNullException("interval");
+public class InterpEvent {
 
-            this._frame = frame;
-            this._interval = interval;
-        }
-
-        public TemplateFrame Frame
-        {
-            get
-            {
-                return _frame;
-            }
-        }
-
-        public Template Template
-        {
-            get
-            {
-                return _frame.Template;
-            }
-        }
-
-        public Interval OutputInterval
-        {
-            get
-            {
-                return _interval;
-            }
-        }
-
-        public override string ToString()
-        {
-            return string.Format("{0}{{self={1}, output={2}}}", GetType().Name, Template, OutputInterval);
-        }
+    // output location
+    protected InterpEvent(TemplateFrame frame, Interval interval) {
+        Frame = frame ?? throw new ArgumentNullException(nameof(frame));
+        OutputInterval = interval ?? throw new ArgumentNullException(nameof(interval));
     }
+
+    private TemplateFrame Frame { get; }
+
+    protected Template Template => Frame.Template;
+
+    protected Interval OutputInterval { get; }
+
+    public override string ToString() {
+        return $"{GetType().Name}{{self={Template}, output={OutputInterval}}}";
+    }
+
 }

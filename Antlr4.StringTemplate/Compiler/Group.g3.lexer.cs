@@ -30,43 +30,42 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate.Compiler
+namespace Antlr4.StringTemplate.Compiler;
+
+using Path = System.IO.Path;
+using Antlr.Runtime;
+using Misc;
+
+partial class GroupLexer
 {
-    using Path = System.IO.Path;
-    using Antlr.Runtime;
-    using Antlr4.StringTemplate.Misc;
+    public TemplateGroup group;
 
-    partial class GroupLexer
+    public override void ReportError(RecognitionException e)
     {
-        public TemplateGroup group;
-
-        public override void ReportError(RecognitionException e)
+        string msg = null;
+        if (e is NoViableAltException)
         {
-            string msg = null;
-            if (e is NoViableAltException)
-            {
-                msg = "invalid character '" + (char)input.LA(1) + "'";
-            }
-            else if (e is MismatchedTokenException && ((MismatchedTokenException)e).Expecting == '"')
-            {
-                msg = "unterminated string";
-            }
-            else
-            {
-                msg = GetErrorMessage(e, TokenNames);
-            }
-
-            group.ErrorManager.GroupSyntaxError(ErrorType.SYNTAX_ERROR, SourceName, e, msg);
+            msg = "invalid character '" + (char)input.LA(1) + "'";
+        }
+        else if (e is MismatchedTokenException && ((MismatchedTokenException)e).Expecting == '"')
+        {
+            msg = "unterminated string";
+        }
+        else
+        {
+            msg = GetErrorMessage(e, TokenNames);
         }
 
-        public override string SourceName
+        group.ErrorManager.GroupSyntaxError(ErrorType.SYNTAX_ERROR, SourceName, e, msg);
+    }
+
+    public override string SourceName
+    {
+        get
         {
-            get
-            {
-                string fullFileName = base.SourceName;
-                // strip to simple name
-                return Path.GetFileName(fullFileName);
-            }
+            var fullFileName = base.SourceName;
+            // strip to simple name
+            return Path.GetFileName(fullFileName);
         }
     }
 }

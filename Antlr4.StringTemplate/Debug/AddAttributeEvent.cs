@@ -30,44 +30,27 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate.Debug
-{
-    public class AddAttributeEvent : ConstructionEvent
-    {
-        private readonly string name;
-        private readonly object value; // unused really; leave for future
+namespace Antlr4.StringTemplate.Debug;
 
-        public AddAttributeEvent(string name, object value)
-        {
-            this.name = name;
-            this.value = value;
-        }
+public class AddAttributeEvent : ConstructionEvent {
+    private readonly object value; // unused really; leave for future
 
-        public string Name
-        {
-            get
-            {
-                return name;
-            }
-        }
+    public AddAttributeEvent(string name, object value) {
+        this.Name = name;
+        this.value = value;
+    }
 
-        public object Value
-        {
-            get
-            {
-                return value;
-            }
-        }
+    public string Name { get; }
 
-        public override string ToString()
-        {
-            return "addEvent{" +
-                ", name='" + name + '\'' +
-                ", value=" + value +
+    public object Value => value;
+
+    public override string ToString() {
+        return "addEvent{" +
+               ", name='" + Name + '\'' +
+               ", value=" + value +
 #if !NETSTANDARD
                 ", location=" + GetFileName() + ":" + GetLine() +
 #endif
-                '}';
-        }
+               '}';
     }
 }

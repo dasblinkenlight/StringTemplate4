@@ -1,23 +1,21 @@
-﻿namespace Antlr4.StringTemplate.Extensions
-{
-    using System;
+﻿namespace Antlr4.StringTemplate.Extensions;
 
-    internal static class Arrays
-    {
-        public static TOutput[] ConvertAll<TInput, TOutput>(TInput[] array, Func<TInput, TOutput> transform)
-        {
-            if (array == null)
-                throw new ArgumentNullException("array");
-            if (transform == null)
-                throw new ArgumentNullException("transform");
+using System;
 
-            TOutput[] result = new TOutput[array.Length];
-            for (int i = 0; i < array.Length; i++)
-            {
-                result[i] = transform(array[i]);
-            }
+internal static class Arrays {
 
-            return result;
+    public static TOutput[] ConvertAll<TInput, TOutput>(TInput[] array, Func<TInput, TOutput> transform) {
+        if (array == null) {
+            throw new ArgumentNullException(nameof(array));
         }
+        if (transform == null) {
+            throw new ArgumentNullException(nameof(transform));
+        }
+        var result = new TOutput[array.Length];
+        for (var i = 0; i < array.Length; i++) {
+            result[i] = transform(array[i]);
+        }
+        return result;
     }
+
 }

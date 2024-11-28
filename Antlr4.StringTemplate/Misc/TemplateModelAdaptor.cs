@@ -30,14 +30,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate.Misc
+namespace Antlr4.StringTemplate.Misc;
+
+public class TemplateModelAdaptor : IModelAdaptor
 {
-    public class TemplateModelAdaptor : IModelAdaptor
+    public virtual object GetProperty(Interpreter interpreter, TemplateFrame frame, object o, object property, string propertyName)
     {
-        public virtual object GetProperty(Interpreter interpreter, TemplateFrame frame, object o, object property, string propertyName)
-        {
-            Template template = (Template)o;
-            return template.GetAttribute(propertyName);
-        }
+        var template = (Template)o;
+        return template.GetAttribute(propertyName);
     }
 }

@@ -30,26 +30,22 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate.Compiler
-{
-    using Antlr4.StringTemplate.Misc;
-    using Antlr.Runtime;
+namespace Antlr4.StringTemplate.Compiler;
 
-    partial class TemplateParser
-    {
-        private readonly ErrorManager errMgr;
-        private readonly IToken templateToken;
+using Misc;
+using Antlr.Runtime;
 
-        public TemplateParser(ITokenStream input, ErrorManager errMgr, IToken templateToken)
-            : this(input)
-        {
-            this.errMgr = errMgr;
-            this.templateToken = templateToken;
-        }
+partial class TemplateParser {
+    private readonly ErrorManager errMgr;
+    private readonly IToken templateToken;
 
-        protected override object RecoverFromMismatchedToken(IIntStream input, int ttype, BitSet follow)
-        {
-            throw new MismatchedTokenException(ttype, input);
-        }
+    public TemplateParser(ITokenStream input, ErrorManager errMgr, IToken templateToken)
+    : this(input) {
+        this.errMgr = errMgr;
+        this.templateToken = templateToken;
+    }
+
+    protected override object RecoverFromMismatchedToken(IIntStream inp, int ttype, BitSet follow) {
+        throw new MismatchedTokenException(ttype, inp);
     }
 }

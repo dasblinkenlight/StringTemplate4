@@ -28,8 +28,8 @@ using System.Collections.Generic;
 using Antlr.Runtime;
 using Antlr.Runtime.Misc;
 
-namespace Antlr4.StringTemplate.Compiler
-{
+namespace Antlr4.StringTemplate.Compiler;
+
 [System.CodeDom.Compiler.GeneratedCode("ANTLR", "3.5.2-beta2")]
 [System.CLSCompliant(false)]
 public partial class GroupParser : Antlr.Runtime.Parser
@@ -100,246 +100,246 @@ public partial class GroupParser : Antlr.Runtime.Parser
 		this._group = lexer.group = group;
 
 		try { DebugEnterRule(GrammarFileName, "group");
-		DebugLocation(60, 1);
-		try
-		{
-			// Compiler\\Group.g3:65:2: ( ( oldStyleHeader )? ( delimiters )? ( 'import' STRING | 'import' ID ( '.' ID )* )* ( def[prefix] )* EOF )
-			DebugEnterAlt(1);
-			// Compiler\\Group.g3:65:4: ( oldStyleHeader )? ( delimiters )? ( 'import' STRING | 'import' ID ( '.' ID )* )* ( def[prefix] )* EOF
+			DebugLocation(60, 1);
+			try
 			{
-			DebugLocation(65, 4);
-			// Compiler\\Group.g3:65:4: ( oldStyleHeader )?
-			int alt1=2;
-			try { DebugEnterSubRule(1);
-			try { DebugEnterDecision(1, false);
-			int LA1_1 = input.LA(1);
-
-			if ((LA1_1==26))
-			{
-				alt1 = 1;
-			}
-			} finally { DebugExitDecision(1); }
-			switch (alt1)
-			{
-			case 1:
+				// Compiler\\Group.g3:65:2: ( ( oldStyleHeader )? ( delimiters )? ( 'import' STRING | 'import' ID ( '.' ID )* )* ( def[prefix] )* EOF )
 				DebugEnterAlt(1);
-				// Compiler\\Group.g3:65:4: oldStyleHeader
+				// Compiler\\Group.g3:65:4: ( oldStyleHeader )? ( delimiters )? ( 'import' STRING | 'import' ID ( '.' ID )* )* ( def[prefix] )* EOF
 				{
-				DebugLocation(65, 4);
-				PushFollow(Follow._oldStyleHeader_in_group99);
-				oldStyleHeader();
-				PopFollow();
+					DebugLocation(65, 4);
+					// Compiler\\Group.g3:65:4: ( oldStyleHeader )?
+					int alt1=2;
+					try { DebugEnterSubRule(1);
+						try { DebugEnterDecision(1, false);
+							int LA1_1 = input.LA(1);
 
-
-				}
-				break;
-
-			}
-			} finally { DebugExitSubRule(1); }
-
-			DebugLocation(66, 3);
-			// Compiler\\Group.g3:66:3: ( delimiters )?
-			int alt2=2;
-			try { DebugEnterSubRule(2);
-			try { DebugEnterDecision(2, false);
-			int LA2_1 = input.LA(1);
-
-			if ((LA2_1==ID))
-			{
-				int LA2_2 = input.LA(2);
-
-				if ((LA2_2==STRING) && ((string.Equals("delimiters", input.LT(1).Text))))
-				{
-					alt2 = 1;
-				}
-			}
-			} finally { DebugExitDecision(2); }
-			switch (alt2)
-			{
-			case 1:
-				DebugEnterAlt(1);
-				// Compiler\\Group.g3:66:3: delimiters
-				{
-				DebugLocation(66, 3);
-				PushFollow(Follow._delimiters_in_group104);
-				delimiters();
-				PopFollow();
-
-
-				}
-				break;
-
-			}
-			} finally { DebugExitSubRule(2); }
-
-			DebugLocation(67, 3);
-			// Compiler\\Group.g3:67:3: ( 'import' STRING | 'import' ID ( '.' ID )* )*
-			try { DebugEnterSubRule(4);
-			while (true)
-			{
-				int alt4=3;
-				try { DebugEnterDecision(4, false);
-				int LA4_1 = input.LA(1);
-
-				if ((LA4_1==28))
-				{
-					int LA4_2 = input.LA(2);
-
-					if ((LA4_2==STRING))
-					{
-						alt4 = 1;
-					}
-					else if ((LA4_2==ID))
-					{
-						alt4 = 2;
-					}
-
-
-				}
-
-
-				} finally { DebugExitDecision(4); }
-				switch ( alt4 )
-				{
-				case 1:
-					DebugEnterAlt(1);
-					// Compiler\\Group.g3:67:5: 'import' STRING
-					{
-					DebugLocation(67, 5);
-					Match(input,28,Follow._28_in_group111); 
-					DebugLocation(67, 14);
-					STRING1=(IToken)Match(input,STRING,Follow._STRING_in_group113); 
-					DebugLocation(67, 21);
-					_group.ImportTemplates(STRING1);
-
-					}
-					break;
-				case 2:
-					DebugEnterAlt(2);
-					// Compiler\\Group.g3:68:5: 'import' ID ( '.' ID )*
-					{
-					DebugLocation(68, 5);
-					Match(input,28,Follow._28_in_group121); 
-					DebugLocation(69, 4);
-
-								MismatchedTokenException e = new MismatchedTokenException(STRING, input);
-								ReportError(e);
-								
-					DebugLocation(73, 4);
-					Match(input,ID,Follow._ID_in_group132); 
-					DebugLocation(73, 7);
-					// Compiler\\Group.g3:73:7: ( '.' ID )*
-					try { DebugEnterSubRule(3);
-					while (true)
-					{
-						int alt3=2;
-						try { DebugEnterDecision(3, false);
-						int LA3_1 = input.LA(1);
-
-						if ((LA3_1==19))
-						{
-							alt3 = 1;
-						}
-
-
-						} finally { DebugExitDecision(3); }
-						switch ( alt3 )
-						{
-						case 1:
-							DebugEnterAlt(1);
-							// Compiler\\Group.g3:73:8: '.' ID
+							if ((LA1_1==26))
 							{
-							DebugLocation(73, 8);
-							Match(input,19,Follow._19_in_group135); 
-							DebugLocation(73, 12);
-							Match(input,ID,Follow._ID_in_group137); 
+								alt1 = 1;
+							}
+						} finally { DebugExitDecision(1); }
+						switch (alt1)
+						{
+							case 1:
+								DebugEnterAlt(1);
+								// Compiler\\Group.g3:65:4: oldStyleHeader
+							{
+								DebugLocation(65, 4);
+								PushFollow(Follow._oldStyleHeader_in_group99);
+								oldStyleHeader();
+								PopFollow();
+
 
 							}
-							break;
+								break;
 
-						default:
-							goto loop3;
 						}
-					}
+					} finally { DebugExitSubRule(1); }
 
-					loop3:
+					DebugLocation(66, 3);
+					// Compiler\\Group.g3:66:3: ( delimiters )?
+					int alt2=2;
+					try { DebugEnterSubRule(2);
+						try { DebugEnterDecision(2, false);
+							int LA2_1 = input.LA(1);
+
+							if ((LA2_1==ID))
+							{
+								int LA2_2 = input.LA(2);
+
+								if ((LA2_2==STRING) && ((string.Equals("delimiters", input.LT(1).Text))))
+								{
+									alt2 = 1;
+								}
+							}
+						} finally { DebugExitDecision(2); }
+						switch (alt2)
+						{
+							case 1:
+								DebugEnterAlt(1);
+								// Compiler\\Group.g3:66:3: delimiters
+							{
+								DebugLocation(66, 3);
+								PushFollow(Follow._delimiters_in_group104);
+								delimiters();
+								PopFollow();
+
+
+							}
+								break;
+
+						}
+					} finally { DebugExitSubRule(2); }
+
+					DebugLocation(67, 3);
+					// Compiler\\Group.g3:67:3: ( 'import' STRING | 'import' ID ( '.' ID )* )*
+					try { DebugEnterSubRule(4);
+						while (true)
+						{
+							int alt4=3;
+							try { DebugEnterDecision(4, false);
+								int LA4_1 = input.LA(1);
+
+								if ((LA4_1==28))
+								{
+									int LA4_2 = input.LA(2);
+
+									if ((LA4_2==STRING))
+									{
+										alt4 = 1;
+									}
+									else if ((LA4_2==ID))
+									{
+										alt4 = 2;
+									}
+
+
+								}
+
+
+							} finally { DebugExitDecision(4); }
+							switch ( alt4 )
+							{
+								case 1:
+									DebugEnterAlt(1);
+									// Compiler\\Group.g3:67:5: 'import' STRING
+								{
+									DebugLocation(67, 5);
+									Match(input,28,Follow._28_in_group111);
+									DebugLocation(67, 14);
+									STRING1=(IToken)Match(input,STRING,Follow._STRING_in_group113);
+									DebugLocation(67, 21);
+									_group.ImportTemplates(STRING1);
+
+								}
+									break;
+								case 2:
+									DebugEnterAlt(2);
+									// Compiler\\Group.g3:68:5: 'import' ID ( '.' ID )*
+								{
+									DebugLocation(68, 5);
+									Match(input,28,Follow._28_in_group121);
+									DebugLocation(69, 4);
+
+									MismatchedTokenException e = new MismatchedTokenException(STRING, input);
+									ReportError(e);
+
+									DebugLocation(73, 4);
+									Match(input,ID,Follow._ID_in_group132);
+									DebugLocation(73, 7);
+									// Compiler\\Group.g3:73:7: ( '.' ID )*
+									try { DebugEnterSubRule(3);
+										while (true)
+										{
+											int alt3=2;
+											try { DebugEnterDecision(3, false);
+												int LA3_1 = input.LA(1);
+
+												if ((LA3_1==19))
+												{
+													alt3 = 1;
+												}
+
+
+											} finally { DebugExitDecision(3); }
+											switch ( alt3 )
+											{
+												case 1:
+													DebugEnterAlt(1);
+													// Compiler\\Group.g3:73:8: '.' ID
+												{
+													DebugLocation(73, 8);
+													Match(input,19,Follow._19_in_group135);
+													DebugLocation(73, 12);
+													Match(input,ID,Follow._ID_in_group137);
+
+												}
+													break;
+
+												default:
+													goto loop3;
+											}
+										}
+
+										loop3:
+										;
+
+									} finally { DebugExitSubRule(3); }
+
+
+								}
+									break;
+
+								default:
+									goto loop4;
+							}
+						}
+
+						loop4:
 						;
 
-					} finally { DebugExitSubRule(3); }
+					} finally { DebugExitSubRule(4); }
 
-
-					}
-					break;
-
-				default:
-					goto loop4;
-				}
-			}
-
-			loop4:
-				;
-
-			} finally { DebugExitSubRule(4); }
-
-			DebugLocation(75, 3);
-			// Compiler\\Group.g3:75:3: ( def[prefix] )*
-			try { DebugEnterSubRule(5);
-			while (true)
-			{
-				int alt5=2;
-				try { DebugEnterDecision(5, false);
-				int LA5_1 = input.LA(1);
-
-				if ((LA5_1==ID||LA5_1==24))
-				{
-					alt5 = 1;
-				}
-
-
-				} finally { DebugExitDecision(5); }
-				switch ( alt5 )
-				{
-				case 1:
-					DebugEnterAlt(1);
-					// Compiler\\Group.g3:75:3: def[prefix]
-					{
 					DebugLocation(75, 3);
-					PushFollow(Follow._def_in_group149);
-					def(prefix);
-					PopFollow();
+					// Compiler\\Group.g3:75:3: ( def[prefix] )*
+					try { DebugEnterSubRule(5);
+						while (true)
+						{
+							int alt5=2;
+							try { DebugEnterDecision(5, false);
+								int LA5_1 = input.LA(1);
+
+								if ((LA5_1==ID||LA5_1==24))
+								{
+									alt5 = 1;
+								}
 
 
-					}
-					break;
+							} finally { DebugExitDecision(5); }
+							switch ( alt5 )
+							{
+								case 1:
+									DebugEnterAlt(1);
+									// Compiler\\Group.g3:75:3: def[prefix]
+								{
+									DebugLocation(75, 3);
+									PushFollow(Follow._def_in_group149);
+									def(prefix);
+									PopFollow();
 
-				default:
-					goto loop5;
+
+								}
+									break;
+
+								default:
+									goto loop5;
+							}
+						}
+
+						loop5:
+						;
+
+					} finally { DebugExitSubRule(5); }
+
+					DebugLocation(76, 3);
+					Match(input,EOF,Follow._EOF_in_group155);
+
 				}
-			}
-
-			loop5:
-				;
-
-			} finally { DebugExitSubRule(5); }
-
-			DebugLocation(76, 3);
-			Match(input,EOF,Follow._EOF_in_group155); 
 
 			}
-
-		}
-		catch (RecognitionException re)
-		{
-			ReportError(re);
-			Recover(input,re);
-		}
-		finally
-		{
-			TraceOut("group", 1);
-			LeaveRule("group", 1);
-			LeaveRule_group();
-		}
-		DebugLocation(77, 1);
+			catch (RecognitionException re)
+			{
+				ReportError(re);
+				Recover(input,re);
+			}
+			finally
+			{
+				TraceOut("group", 1);
+				LeaveRule("group", 1);
+				LeaveRule_group();
+			}
+			DebugLocation(77, 1);
 		} finally { DebugExitRule(GrammarFileName, "group"); }
 		return;
 
@@ -357,133 +357,133 @@ public partial class GroupParser : Antlr.Runtime.Parser
 		EnterRule("oldStyleHeader", 2);
 		TraceIn("oldStyleHeader", 2);
 		try { DebugEnterRule(GrammarFileName, "oldStyleHeader");
-		DebugLocation(79, 1);
-		try
-		{
-			// Compiler\\Group.g3:80:5: ( 'group' ID ( ':' ID )? ( 'implements' ID ( ',' ID )* )? ';' )
-			DebugEnterAlt(1);
-			// Compiler\\Group.g3:80:9: 'group' ID ( ':' ID )? ( 'implements' ID ( ',' ID )* )? ';'
+			DebugLocation(79, 1);
+			try
 			{
-			DebugLocation(80, 9);
-			Match(input,26,Follow._26_in_oldStyleHeader172); 
-			DebugLocation(80, 17);
-			Match(input,ID,Follow._ID_in_oldStyleHeader174); 
-			DebugLocation(80, 20);
-			// Compiler\\Group.g3:80:20: ( ':' ID )?
-			int alt6=2;
-			try { DebugEnterSubRule(6);
-			try { DebugEnterDecision(6, false);
-			int LA6_1 = input.LA(1);
-
-			if ((LA6_1==20))
-			{
-				alt6 = 1;
-			}
-			} finally { DebugExitDecision(6); }
-			switch (alt6)
-			{
-			case 1:
+				// Compiler\\Group.g3:80:5: ( 'group' ID ( ':' ID )? ( 'implements' ID ( ',' ID )* )? ';' )
 				DebugEnterAlt(1);
-				// Compiler\\Group.g3:80:22: ':' ID
+				// Compiler\\Group.g3:80:9: 'group' ID ( ':' ID )? ( 'implements' ID ( ',' ID )* )? ';'
 				{
-				DebugLocation(80, 22);
-				Match(input,20,Follow._20_in_oldStyleHeader178); 
-				DebugLocation(80, 26);
-				Match(input,ID,Follow._ID_in_oldStyleHeader180); 
+					DebugLocation(80, 9);
+					Match(input,26,Follow._26_in_oldStyleHeader172);
+					DebugLocation(80, 17);
+					Match(input,ID,Follow._ID_in_oldStyleHeader174);
+					DebugLocation(80, 20);
+					// Compiler\\Group.g3:80:20: ( ':' ID )?
+					int alt6=2;
+					try { DebugEnterSubRule(6);
+						try { DebugEnterDecision(6, false);
+							int LA6_1 = input.LA(1);
 
-				}
-				break;
-
-			}
-			} finally { DebugExitSubRule(6); }
-
-			DebugLocation(81, 6);
-			// Compiler\\Group.g3:81:6: ( 'implements' ID ( ',' ID )* )?
-			int alt8=2;
-			try { DebugEnterSubRule(8);
-			try { DebugEnterDecision(8, false);
-			int LA8_1 = input.LA(1);
-
-			if ((LA8_1==27))
-			{
-				alt8 = 1;
-			}
-			} finally { DebugExitDecision(8); }
-			switch (alt8)
-			{
-			case 1:
-				DebugEnterAlt(1);
-				// Compiler\\Group.g3:81:8: 'implements' ID ( ',' ID )*
-				{
-				DebugLocation(81, 8);
-				Match(input,27,Follow._27_in_oldStyleHeader192); 
-				DebugLocation(81, 21);
-				Match(input,ID,Follow._ID_in_oldStyleHeader194); 
-				DebugLocation(81, 24);
-				// Compiler\\Group.g3:81:24: ( ',' ID )*
-				try { DebugEnterSubRule(7);
-				while (true)
-				{
-					int alt7=2;
-					try { DebugEnterDecision(7, false);
-					int LA7_1 = input.LA(1);
-
-					if ((LA7_1==COMMA))
-					{
-						alt7 = 1;
-					}
-
-
-					} finally { DebugExitDecision(7); }
-					switch ( alt7 )
-					{
-					case 1:
-						DebugEnterAlt(1);
-						// Compiler\\Group.g3:81:25: ',' ID
+							if ((LA6_1==20))
+							{
+								alt6 = 1;
+							}
+						} finally { DebugExitDecision(6); }
+						switch (alt6)
 						{
-						DebugLocation(81, 25);
-						Match(input,COMMA,Follow._COMMA_in_oldStyleHeader197); 
-						DebugLocation(81, 29);
-						Match(input,ID,Follow._ID_in_oldStyleHeader199); 
+							case 1:
+								DebugEnterAlt(1);
+								// Compiler\\Group.g3:80:22: ':' ID
+							{
+								DebugLocation(80, 22);
+								Match(input,20,Follow._20_in_oldStyleHeader178);
+								DebugLocation(80, 26);
+								Match(input,ID,Follow._ID_in_oldStyleHeader180);
+
+							}
+								break;
 
 						}
-						break;
+					} finally { DebugExitSubRule(6); }
 
-					default:
-						goto loop7;
-					}
+					DebugLocation(81, 6);
+					// Compiler\\Group.g3:81:6: ( 'implements' ID ( ',' ID )* )?
+					int alt8=2;
+					try { DebugEnterSubRule(8);
+						try { DebugEnterDecision(8, false);
+							int LA8_1 = input.LA(1);
+
+							if ((LA8_1==27))
+							{
+								alt8 = 1;
+							}
+						} finally { DebugExitDecision(8); }
+						switch (alt8)
+						{
+							case 1:
+								DebugEnterAlt(1);
+								// Compiler\\Group.g3:81:8: 'implements' ID ( ',' ID )*
+							{
+								DebugLocation(81, 8);
+								Match(input,27,Follow._27_in_oldStyleHeader192);
+								DebugLocation(81, 21);
+								Match(input,ID,Follow._ID_in_oldStyleHeader194);
+								DebugLocation(81, 24);
+								// Compiler\\Group.g3:81:24: ( ',' ID )*
+								try { DebugEnterSubRule(7);
+									while (true)
+									{
+										int alt7=2;
+										try { DebugEnterDecision(7, false);
+											int LA7_1 = input.LA(1);
+
+											if ((LA7_1==COMMA))
+											{
+												alt7 = 1;
+											}
+
+
+										} finally { DebugExitDecision(7); }
+										switch ( alt7 )
+										{
+											case 1:
+												DebugEnterAlt(1);
+												// Compiler\\Group.g3:81:25: ',' ID
+											{
+												DebugLocation(81, 25);
+												Match(input,COMMA,Follow._COMMA_in_oldStyleHeader197);
+												DebugLocation(81, 29);
+												Match(input,ID,Follow._ID_in_oldStyleHeader199);
+
+											}
+												break;
+
+											default:
+												goto loop7;
+										}
+									}
+
+									loop7:
+									;
+
+								} finally { DebugExitSubRule(7); }
+
+
+							}
+								break;
+
+						}
+					} finally { DebugExitSubRule(8); }
+
+					DebugLocation(82, 6);
+					Match(input,22,Follow._22_in_oldStyleHeader211);
+
 				}
 
-				loop7:
-					;
-
-				} finally { DebugExitSubRule(7); }
-
-
-				}
-				break;
-
 			}
-			} finally { DebugExitSubRule(8); }
-
-			DebugLocation(82, 6);
-			Match(input,22,Follow._22_in_oldStyleHeader211); 
-
+			catch (RecognitionException re)
+			{
+				ReportError(re);
+				Recover(input,re);
 			}
-
-		}
-		catch (RecognitionException re)
-		{
-			ReportError(re);
-			Recover(input,re);
-		}
-		finally
-		{
-			TraceOut("oldStyleHeader", 2);
-			LeaveRule("oldStyleHeader", 2);
-			LeaveRule_oldStyleHeader();
-		}
-		DebugLocation(83, 1);
+			finally
+			{
+				TraceOut("oldStyleHeader", 2);
+				LeaveRule("oldStyleHeader", 2);
+				LeaveRule_oldStyleHeader();
+			}
+			DebugLocation(83, 1);
 		} finally { DebugExitRule(GrammarFileName, "oldStyleHeader"); }
 		return;
 
@@ -507,75 +507,75 @@ public partial class GroupParser : Antlr.Runtime.Parser
 
 		StringBuilder buf = new StringBuilder();
 		try { DebugEnterRule(GrammarFileName, "groupName");
-		DebugLocation(85, 1);
-		try
-		{
-			// Compiler\\Group.g3:87:2: (a= ID ( '.' a= ID )* )
-			DebugEnterAlt(1);
-			// Compiler\\Group.g3:87:4: a= ID ( '.' a= ID )*
+			DebugLocation(85, 1);
+			try
 			{
-			DebugLocation(87, 5);
-			a=(IToken)Match(input,ID,Follow._ID_in_groupName233); 
-			DebugLocation(87, 9);
-			buf.Append((a!=null?a.Text:default(string)));
-			DebugLocation(87, 32);
-			// Compiler\\Group.g3:87:32: ( '.' a= ID )*
-			try { DebugEnterSubRule(9);
-			while (true)
-			{
-				int alt9=2;
-				try { DebugEnterDecision(9, false);
-				int LA9_1 = input.LA(1);
-
-				if ((LA9_1==19))
+				// Compiler\\Group.g3:87:2: (a= ID ( '.' a= ID )* )
+				DebugEnterAlt(1);
+				// Compiler\\Group.g3:87:4: a= ID ( '.' a= ID )*
 				{
-					alt9 = 1;
-				}
-
-
-				} finally { DebugExitDecision(9); }
-				switch ( alt9 )
-				{
-				case 1:
-					DebugEnterAlt(1);
-					// Compiler\\Group.g3:87:33: '.' a= ID
-					{
-					DebugLocation(87, 33);
-					Match(input,19,Follow._19_in_groupName238); 
-					DebugLocation(87, 38);
-					a=(IToken)Match(input,ID,Follow._ID_in_groupName242); 
-					DebugLocation(87, 42);
+					DebugLocation(87, 5);
+					a=(IToken)Match(input,ID,Follow._ID_in_groupName233);
+					DebugLocation(87, 9);
 					buf.Append((a!=null?a.Text:default(string)));
+					DebugLocation(87, 32);
+					// Compiler\\Group.g3:87:32: ( '.' a= ID )*
+					try { DebugEnterSubRule(9);
+						while (true)
+						{
+							int alt9=2;
+							try { DebugEnterDecision(9, false);
+								int LA9_1 = input.LA(1);
 
-					}
-					break;
+								if ((LA9_1==19))
+								{
+									alt9 = 1;
+								}
 
-				default:
-					goto loop9;
+
+							} finally { DebugExitDecision(9); }
+							switch ( alt9 )
+							{
+								case 1:
+									DebugEnterAlt(1);
+									// Compiler\\Group.g3:87:33: '.' a= ID
+								{
+									DebugLocation(87, 33);
+									Match(input,19,Follow._19_in_groupName238);
+									DebugLocation(87, 38);
+									a=(IToken)Match(input,ID,Follow._ID_in_groupName242);
+									DebugLocation(87, 42);
+									buf.Append((a!=null?a.Text:default(string)));
+
+								}
+									break;
+
+								default:
+									goto loop9;
+							}
+						}
+
+						loop9:
+						;
+
+					} finally { DebugExitSubRule(9); }
+
+
 				}
-			}
-
-			loop9:
-				;
-
-			} finally { DebugExitSubRule(9); }
-
 
 			}
-
-		}
-		catch (RecognitionException re)
-		{
-			ReportError(re);
-			Recover(input,re);
-		}
-		finally
-		{
-			TraceOut("groupName", 3);
-			LeaveRule("groupName", 3);
-			LeaveRule_groupName();
-		}
-		DebugLocation(88, 1);
+			catch (RecognitionException re)
+			{
+				ReportError(re);
+				Recover(input,re);
+			}
+			finally
+			{
+				TraceOut("groupName", 3);
+				LeaveRule("groupName", 3);
+				LeaveRule_groupName();
+			}
+			DebugLocation(88, 1);
 		} finally { DebugExitRule(GrammarFileName, "groupName"); }
 		return name;
 
@@ -596,44 +596,44 @@ public partial class GroupParser : Antlr.Runtime.Parser
 		IToken close = default(IToken);
 
 		try { DebugEnterRule(GrammarFileName, "delimiters");
-		DebugLocation(90, 1);
-		try
-		{
-			// Compiler\\Group.g3:91:2: ({...}? => ID open= STRING ',' close= STRING )
-			DebugEnterAlt(1);
-			// Compiler\\Group.g3:91:4: {...}? => ID open= STRING ',' close= STRING
+			DebugLocation(90, 1);
+			try
 			{
-			DebugLocation(91, 4);
-			if (!((string.Equals("delimiters", input.LT(1).Text))))
-			{
-				throw new FailedPredicateException(input, "delimiters", "string.Equals(\"delimiters\", input.LT(1).Text)");
-			}
-			DebugLocation(91, 56);
-			Match(input,ID,Follow._ID_in_delimiters261); 
-			DebugLocation(91, 63);
-			open=(IToken)Match(input,STRING,Follow._STRING_in_delimiters265); 
-			DebugLocation(91, 71);
-			Match(input,COMMA,Follow._COMMA_in_delimiters267); 
-			DebugLocation(91, 80);
-			close=(IToken)Match(input,STRING,Follow._STRING_in_delimiters271); 
-			DebugLocation(91, 88);
-			_group.SetDelimiters(open, close);
+				// Compiler\\Group.g3:91:2: ({...}? => ID open= STRING ',' close= STRING )
+				DebugEnterAlt(1);
+				// Compiler\\Group.g3:91:4: {...}? => ID open= STRING ',' close= STRING
+				{
+					DebugLocation(91, 4);
+					if (!((string.Equals("delimiters", input.LT(1).Text))))
+					{
+						throw new FailedPredicateException(input, "delimiters", "string.Equals(\"delimiters\", input.LT(1).Text)");
+					}
+					DebugLocation(91, 56);
+					Match(input,ID,Follow._ID_in_delimiters261);
+					DebugLocation(91, 63);
+					open=(IToken)Match(input,STRING,Follow._STRING_in_delimiters265);
+					DebugLocation(91, 71);
+					Match(input,COMMA,Follow._COMMA_in_delimiters267);
+					DebugLocation(91, 80);
+					close=(IToken)Match(input,STRING,Follow._STRING_in_delimiters271);
+					DebugLocation(91, 88);
+					_group.SetDelimiters(open, close);
+
+				}
 
 			}
-
-		}
-		catch (RecognitionException re)
-		{
-			ReportError(re);
-			Recover(input,re);
-		}
-		finally
-		{
-			TraceOut("delimiters", 4);
-			LeaveRule("delimiters", 4);
-			LeaveRule_delimiters();
-		}
-		DebugLocation(92, 1);
+			catch (RecognitionException re)
+			{
+				ReportError(re);
+				Recover(input,re);
+			}
+			finally
+			{
+				TraceOut("delimiters", 4);
+				LeaveRule("delimiters", 4);
+				LeaveRule_delimiters();
+			}
+			DebugLocation(92, 1);
 		} finally { DebugExitRule(GrammarFileName, "delimiters"); }
 		return;
 
@@ -651,104 +651,104 @@ public partial class GroupParser : Antlr.Runtime.Parser
 		EnterRule("def", 5);
 		TraceIn("def", 5);
 		try { DebugEnterRule(GrammarFileName, "def");
-		DebugLocation(98, 51);
-		try
-		{
-			// Compiler\\Group.g3:98:20: ( templateDef[prefix] | dictDef )
-			int alt10=2;
-			try { DebugEnterDecision(10, false);
-			int LA10_1 = input.LA(1);
-
-			if ((LA10_1==24))
+			DebugLocation(98, 51);
+			try
 			{
-				alt10 = 1;
-			}
-			else if ((LA10_1==ID))
-			{
-				int LA10_2 = input.LA(2);
+				// Compiler\\Group.g3:98:20: ( templateDef[prefix] | dictDef )
+				int alt10=2;
+				try { DebugEnterDecision(10, false);
+					int LA10_1 = input.LA(1);
 
-				if ((LA10_2==17))
-				{
-					alt10 = 1;
-				}
-				else if ((LA10_2==21))
-				{
-					int LA10_3 = input.LA(3);
-
-					if ((LA10_3==ID))
+					if ((LA10_1==24))
 					{
 						alt10 = 1;
 					}
-					else if ((LA10_3==LBRACK))
+					else if ((LA10_1==ID))
 					{
-						alt10 = 2;
+						int LA10_2 = input.LA(2);
+
+						if ((LA10_2==17))
+						{
+							alt10 = 1;
+						}
+						else if ((LA10_2==21))
+						{
+							int LA10_3 = input.LA(3);
+
+							if ((LA10_3==ID))
+							{
+								alt10 = 1;
+							}
+							else if ((LA10_3==LBRACK))
+							{
+								alt10 = 2;
+							}
+							else
+							{
+								NoViableAltException nvae = new NoViableAltException("", 10, 3, input, 3);
+								DebugRecognitionException(nvae);
+								throw nvae;
+							}
+						}
+						else
+						{
+							NoViableAltException nvae = new NoViableAltException("", 10, 2, input, 2);
+							DebugRecognitionException(nvae);
+							throw nvae;
+						}
 					}
 					else
 					{
-						NoViableAltException nvae = new NoViableAltException("", 10, 3, input, 3);
+						NoViableAltException nvae = new NoViableAltException("", 10, 0, input, 1);
 						DebugRecognitionException(nvae);
 						throw nvae;
 					}
-				}
-				else
+				} finally { DebugExitDecision(10); }
+				switch (alt10)
 				{
-					NoViableAltException nvae = new NoViableAltException("", 10, 2, input, 2);
-					DebugRecognitionException(nvae);
-					throw nvae;
+					case 1:
+						DebugEnterAlt(1);
+						// Compiler\\Group.g3:98:22: templateDef[prefix]
+					{
+						DebugLocation(98, 22);
+						PushFollow(Follow._templateDef_in_def286);
+						templateDef(prefix);
+						PopFollow();
+
+
+					}
+						break;
+					case 2:
+						DebugEnterAlt(2);
+						// Compiler\\Group.g3:98:44: dictDef
+					{
+						DebugLocation(98, 44);
+						PushFollow(Follow._dictDef_in_def291);
+						dictDef();
+						PopFollow();
+
+
+					}
+						break;
+
 				}
 			}
-			else
+			catch (RecognitionException)
 			{
-				NoViableAltException nvae = new NoViableAltException("", 10, 0, input, 1);
-				DebugRecognitionException(nvae);
-				throw nvae;
+
+				// pretend we already saw an error here
+				state.lastErrorIndex = input.Index;
+				Error("garbled template definition starting at '"+input.LT(1).Text+"'");
+
 			}
-			} finally { DebugExitDecision(10); }
-			switch (alt10)
+
+			finally
 			{
-			case 1:
-				DebugEnterAlt(1);
-				// Compiler\\Group.g3:98:22: templateDef[prefix]
-				{
-				DebugLocation(98, 22);
-				PushFollow(Follow._templateDef_in_def286);
-				templateDef(prefix);
-				PopFollow();
-
-
-				}
-				break;
-			case 2:
-				DebugEnterAlt(2);
-				// Compiler\\Group.g3:98:44: dictDef
-				{
-				DebugLocation(98, 44);
-				PushFollow(Follow._dictDef_in_def291);
-				dictDef();
-				PopFollow();
-
-
-				}
-				break;
-
+				TraceOut("def", 5);
+				LeaveRule("def", 5);
+				LeaveRule_def();
 			}
-		}
-		catch (RecognitionException)
-		{
-
-					// pretend we already saw an error here
-					state.lastErrorIndex = input.Index;
-					Error("garbled template definition starting at '"+input.LT(1).Text+"'");
-				
-		}
-
-		finally
-		{
-			TraceOut("def", 5);
-			LeaveRule("def", 5);
-			LeaveRule_def();
-		}
-		DebugLocation(98, 51);
+			DebugLocation(98, 51);
 		} finally { DebugExitRule(GrammarFileName, "def"); }
 		return;
 
@@ -775,215 +775,215 @@ public partial class GroupParser : Antlr.Runtime.Parser
 		List<FormalArgument> formalArgs5 = default(List<FormalArgument>);
 
 
-		    string template=null;
-		    int n=0; // num char to strip from left, right of template def
+		string template=null;
+		int n=0; // num char to strip from left, right of template def
 
 		try { DebugEnterRule(GrammarFileName, "templateDef");
-		DebugLocation(106, 1);
-		try
-		{
-			// Compiler\\Group.g3:111:2: ( ( '@' enclosing= ID '.' name= ID '(' ')' |name= ID '(' formalArgs ')' ) '::=' ( STRING | BIGSTRING | BIGSTRING_NO_NL |) |alias= ID '::=' target= ID )
-			int alt13=2;
-			try { DebugEnterDecision(13, false);
-			int LA13_1 = input.LA(1);
-
-			if ((LA13_1==24))
+			DebugLocation(106, 1);
+			try
 			{
-				alt13 = 1;
-			}
-			else if ((LA13_1==ID))
-			{
-				int LA13_2 = input.LA(2);
+				// Compiler\\Group.g3:111:2: ( ( '@' enclosing= ID '.' name= ID '(' ')' |name= ID '(' formalArgs ')' ) '::=' ( STRING | BIGSTRING | BIGSTRING_NO_NL |) |alias= ID '::=' target= ID )
+				int alt13=2;
+				try { DebugEnterDecision(13, false);
+					int LA13_1 = input.LA(1);
 
-				if ((LA13_2==17))
-				{
-					alt13 = 1;
-				}
-				else if ((LA13_2==21))
-				{
-					alt13 = 2;
-				}
-				else
-				{
-					NoViableAltException nvae = new NoViableAltException("", 13, 2, input, 2);
-					DebugRecognitionException(nvae);
-					throw nvae;
-				}
-			}
-			else
-			{
-				NoViableAltException nvae = new NoViableAltException("", 13, 0, input, 1);
-				DebugRecognitionException(nvae);
-				throw nvae;
-			}
-			} finally { DebugExitDecision(13); }
-			switch (alt13)
-			{
-			case 1:
-				DebugEnterAlt(1);
-				// Compiler\\Group.g3:111:4: ( '@' enclosing= ID '.' name= ID '(' ')' |name= ID '(' formalArgs ')' ) '::=' ( STRING | BIGSTRING | BIGSTRING_NO_NL |)
-				{
-				DebugLocation(111, 4);
-				// Compiler\\Group.g3:111:4: ( '@' enclosing= ID '.' name= ID '(' ')' |name= ID '(' formalArgs ')' )
-				int alt11=2;
-				try { DebugEnterSubRule(11);
-				try { DebugEnterDecision(11, false);
-				int LA11_1 = input.LA(1);
-
-				if ((LA11_1==24))
-				{
-					alt11 = 1;
-				}
-				else if ((LA11_1==ID))
-				{
-					alt11 = 2;
-				}
-				else
-				{
-					NoViableAltException nvae = new NoViableAltException("", 11, 0, input, 1);
-					DebugRecognitionException(nvae);
-					throw nvae;
-				}
-				} finally { DebugExitDecision(11); }
-				switch (alt11)
-				{
-				case 1:
-					DebugEnterAlt(1);
-					// Compiler\\Group.g3:111:6: '@' enclosing= ID '.' name= ID '(' ')'
+					if ((LA13_1==24))
 					{
-					DebugLocation(111, 6);
-					Match(input,24,Follow._24_in_templateDef317); 
-					DebugLocation(111, 19);
-					enclosing=(IToken)Match(input,ID,Follow._ID_in_templateDef321); 
-					DebugLocation(111, 23);
-					Match(input,19,Follow._19_in_templateDef323); 
-					DebugLocation(111, 31);
-					name=(IToken)Match(input,ID,Follow._ID_in_templateDef327); 
-					DebugLocation(111, 35);
-					Match(input,17,Follow._17_in_templateDef329); 
-					DebugLocation(111, 39);
-					Match(input,18,Follow._18_in_templateDef331); 
-
+						alt13 = 1;
 					}
-					break;
-				case 2:
-					DebugEnterAlt(2);
-					// Compiler\\Group.g3:112:5: name= ID '(' formalArgs ')'
+					else if ((LA13_1==ID))
 					{
-					DebugLocation(112, 9);
-					name=(IToken)Match(input,ID,Follow._ID_in_templateDef339); 
-					DebugLocation(112, 13);
-					Match(input,17,Follow._17_in_templateDef341); 
-					DebugLocation(112, 17);
-					PushFollow(Follow._formalArgs_in_templateDef343);
-					formalArgs5=formalArgs();
-					PopFollow();
+						int LA13_2 = input.LA(2);
 
-					DebugLocation(112, 28);
-					Match(input,18,Follow._18_in_templateDef345); 
-
+						if ((LA13_2==17))
+						{
+							alt13 = 1;
+						}
+						else if ((LA13_2==21))
+						{
+							alt13 = 2;
+						}
+						else
+						{
+							NoViableAltException nvae = new NoViableAltException("", 13, 2, input, 2);
+							DebugRecognitionException(nvae);
+							throw nvae;
+						}
 					}
-					break;
-
-				}
-				} finally { DebugExitSubRule(11); }
-
-				DebugLocation(114, 6);
-				Match(input,21,Follow._21_in_templateDef356); 
-				DebugLocation(115, 6);
-				IToken templateToken = input.LT(1);
-				DebugLocation(116, 6);
-				// Compiler\\Group.g3:116:6: ( STRING | BIGSTRING | BIGSTRING_NO_NL |)
-				int alt12=4;
-				try { DebugEnterSubRule(12);
-				try { DebugEnterDecision(12, false);
-				switch (input.LA(1))
-				{
-				case STRING:
+					else
 					{
-					alt12 = 1;
-					}
-					break;
-				case BIGSTRING:
-					{
-					alt12 = 2;
-					}
-					break;
-				case BIGSTRING_NO_NL:
-					{
-					alt12 = 3;
-					}
-					break;
-				case EOF:
-				case ID:
-				case 24:
-					{
-					alt12 = 4;
-					}
-					break;
-				default:
-					{
-						NoViableAltException nvae = new NoViableAltException("", 12, 0, input, 1);
+						NoViableAltException nvae = new NoViableAltException("", 13, 0, input, 1);
 						DebugRecognitionException(nvae);
 						throw nvae;
 					}
-				}
-
-				} finally { DebugExitDecision(12); }
-				switch (alt12)
+				} finally { DebugExitDecision(13); }
+				switch (alt13)
 				{
-				case 1:
-					DebugEnterAlt(1);
-					// Compiler\\Group.g3:116:8: STRING
+					case 1:
+						DebugEnterAlt(1);
+						// Compiler\\Group.g3:111:4: ( '@' enclosing= ID '.' name= ID '(' ')' |name= ID '(' formalArgs ')' ) '::=' ( STRING | BIGSTRING | BIGSTRING_NO_NL |)
 					{
-					DebugLocation(116, 8);
-					STRING2=(IToken)Match(input,STRING,Follow._STRING_in_templateDef372); 
-					DebugLocation(116, 19);
-					template=(STRING2!=null?STRING2.Text:default(string)); n=1;
+						DebugLocation(111, 4);
+						// Compiler\\Group.g3:111:4: ( '@' enclosing= ID '.' name= ID '(' ')' |name= ID '(' formalArgs ')' )
+						int alt11=2;
+						try { DebugEnterSubRule(11);
+							try { DebugEnterDecision(11, false);
+								int LA11_1 = input.LA(1);
 
-					}
-					break;
-				case 2:
-					DebugEnterAlt(2);
-					// Compiler\\Group.g3:117:8: BIGSTRING
-					{
-					DebugLocation(117, 8);
-					BIGSTRING3=(IToken)Match(input,BIGSTRING,Follow._BIGSTRING_in_templateDef387); 
-					DebugLocation(117, 19);
-					template=(BIGSTRING3!=null?BIGSTRING3.Text:default(string)); n=2;
+								if ((LA11_1==24))
+								{
+									alt11 = 1;
+								}
+								else if ((LA11_1==ID))
+								{
+									alt11 = 2;
+								}
+								else
+								{
+									NoViableAltException nvae = new NoViableAltException("", 11, 0, input, 1);
+									DebugRecognitionException(nvae);
+									throw nvae;
+								}
+							} finally { DebugExitDecision(11); }
+							switch (alt11)
+							{
+								case 1:
+									DebugEnterAlt(1);
+									// Compiler\\Group.g3:111:6: '@' enclosing= ID '.' name= ID '(' ')'
+								{
+									DebugLocation(111, 6);
+									Match(input,24,Follow._24_in_templateDef317);
+									DebugLocation(111, 19);
+									enclosing=(IToken)Match(input,ID,Follow._ID_in_templateDef321);
+									DebugLocation(111, 23);
+									Match(input,19,Follow._19_in_templateDef323);
+									DebugLocation(111, 31);
+									name=(IToken)Match(input,ID,Follow._ID_in_templateDef327);
+									DebugLocation(111, 35);
+									Match(input,17,Follow._17_in_templateDef329);
+									DebugLocation(111, 39);
+									Match(input,18,Follow._18_in_templateDef331);
 
-					}
-					break;
-				case 3:
-					DebugEnterAlt(3);
-					// Compiler\\Group.g3:118:8: BIGSTRING_NO_NL
-					{
-					DebugLocation(118, 8);
-					BIGSTRING_NO_NL4=(IToken)Match(input,BIGSTRING_NO_NL,Follow._BIGSTRING_NO_NL_in_templateDef399); 
-					DebugLocation(118, 25);
-					template=(BIGSTRING_NO_NL4!=null?BIGSTRING_NO_NL4.Text:default(string)); n=2;
+								}
+									break;
+								case 2:
+									DebugEnterAlt(2);
+									// Compiler\\Group.g3:112:5: name= ID '(' formalArgs ')'
+								{
+									DebugLocation(112, 9);
+									name=(IToken)Match(input,ID,Follow._ID_in_templateDef339);
+									DebugLocation(112, 13);
+									Match(input,17,Follow._17_in_templateDef341);
+									DebugLocation(112, 17);
+									PushFollow(Follow._formalArgs_in_templateDef343);
+									formalArgs5=formalArgs();
+									PopFollow();
 
-					}
-					break;
-				case 4:
-					DebugEnterAlt(4);
-					// Compiler\\Group.g3:119:8: 
-					{
-					DebugLocation(119, 8);
+									DebugLocation(112, 28);
+									Match(input,18,Follow._18_in_templateDef345);
 
-						    	template = string.Empty;
-						    	string msg = "missing template at '"+input.LT(1).Text+"'";
-					            NoViableAltException e = new NoViableAltException(string.Empty, 0, 0, input);
-					    	    _group.ErrorManager.GroupSyntaxError(ErrorType.SYNTAX_ERROR, SourceName, e, msg);
-					    	    
+								}
+									break;
 
-					}
-					break;
+							}
+						} finally { DebugExitSubRule(11); }
 
-				}
-				} finally { DebugExitSubRule(12); }
+						DebugLocation(114, 6);
+						Match(input,21,Follow._21_in_templateDef356);
+						DebugLocation(115, 6);
+						IToken templateToken = input.LT(1);
+						DebugLocation(116, 6);
+						// Compiler\\Group.g3:116:6: ( STRING | BIGSTRING | BIGSTRING_NO_NL |)
+						int alt12=4;
+						try { DebugEnterSubRule(12);
+							try { DebugEnterDecision(12, false);
+								switch (input.LA(1))
+								{
+									case STRING:
+									{
+										alt12 = 1;
+									}
+										break;
+									case BIGSTRING:
+									{
+										alt12 = 2;
+									}
+										break;
+									case BIGSTRING_NO_NL:
+									{
+										alt12 = 3;
+									}
+										break;
+									case EOF:
+									case ID:
+									case 24:
+									{
+										alt12 = 4;
+									}
+										break;
+									default:
+									{
+										NoViableAltException nvae = new NoViableAltException("", 12, 0, input, 1);
+										DebugRecognitionException(nvae);
+										throw nvae;
+									}
+								}
 
-				DebugLocation(126, 6);
+							} finally { DebugExitDecision(12); }
+							switch (alt12)
+							{
+								case 1:
+									DebugEnterAlt(1);
+									// Compiler\\Group.g3:116:8: STRING
+								{
+									DebugLocation(116, 8);
+									STRING2=(IToken)Match(input,STRING,Follow._STRING_in_templateDef372);
+									DebugLocation(116, 19);
+									template=(STRING2!=null?STRING2.Text:default(string)); n=1;
+
+								}
+									break;
+								case 2:
+									DebugEnterAlt(2);
+									// Compiler\\Group.g3:117:8: BIGSTRING
+								{
+									DebugLocation(117, 8);
+									BIGSTRING3=(IToken)Match(input,BIGSTRING,Follow._BIGSTRING_in_templateDef387);
+									DebugLocation(117, 19);
+									template=(BIGSTRING3!=null?BIGSTRING3.Text:default(string)); n=2;
+
+								}
+									break;
+								case 3:
+									DebugEnterAlt(3);
+									// Compiler\\Group.g3:118:8: BIGSTRING_NO_NL
+								{
+									DebugLocation(118, 8);
+									BIGSTRING_NO_NL4=(IToken)Match(input,BIGSTRING_NO_NL,Follow._BIGSTRING_NO_NL_in_templateDef399);
+									DebugLocation(118, 25);
+									template=(BIGSTRING_NO_NL4!=null?BIGSTRING_NO_NL4.Text:default(string)); n=2;
+
+								}
+									break;
+								case 4:
+									DebugEnterAlt(4);
+									// Compiler\\Group.g3:119:8:
+								{
+									DebugLocation(119, 8);
+
+									template = string.Empty;
+									string msg = "missing template at '"+input.LT(1).Text+"'";
+									NoViableAltException e = new NoViableAltException(string.Empty, 0, 0, input);
+									_group.ErrorManager.GroupSyntaxError(ErrorType.SYNTAX_ERROR, SourceName, e, msg);
+
+
+								}
+									break;
+
+							}
+						} finally { DebugExitSubRule(12); }
+
+						DebugLocation(126, 6);
 
 						if ((name!=null?name.TokenIndex:0) >= 0)
 						{
@@ -996,42 +996,42 @@ public partial class GroupParser : Antlr.Runtime.Parser
 								enclosingTemplateName = prefix + enclosingTemplateName;
 
 							_group.DefineTemplateOrRegion(templateName, enclosingTemplateName, templateToken,
-					    								 template, name, formalArgs5);
+								template, name, formalArgs5);
 						}
-					    
+
+
+					}
+						break;
+					case 2:
+						DebugEnterAlt(2);
+						// Compiler\\Group.g3:141:6: alias= ID '::=' target= ID
+					{
+						DebugLocation(141, 11);
+						alias=(IToken)Match(input,ID,Follow._ID_in_templateDef434);
+						DebugLocation(141, 15);
+						Match(input,21,Follow._21_in_templateDef436);
+						DebugLocation(141, 27);
+						target=(IToken)Match(input,ID,Follow._ID_in_templateDef440);
+						DebugLocation(141, 32);
+						_group.DefineTemplateAlias(alias, target);
+
+					}
+						break;
 
 				}
-				break;
-			case 2:
-				DebugEnterAlt(2);
-				// Compiler\\Group.g3:141:6: alias= ID '::=' target= ID
-				{
-				DebugLocation(141, 11);
-				alias=(IToken)Match(input,ID,Follow._ID_in_templateDef434); 
-				DebugLocation(141, 15);
-				Match(input,21,Follow._21_in_templateDef436); 
-				DebugLocation(141, 27);
-				target=(IToken)Match(input,ID,Follow._ID_in_templateDef440); 
-				DebugLocation(141, 32);
-				_group.DefineTemplateAlias(alias, target);
-
-				}
-				break;
-
 			}
-		}
-		catch (RecognitionException re)
-		{
-			ReportError(re);
-			Recover(input,re);
-		}
-		finally
-		{
-			TraceOut("templateDef", 6);
-			LeaveRule("templateDef", 6);
-			LeaveRule_templateDef();
-		}
-		DebugLocation(142, 1);
+			catch (RecognitionException re)
+			{
+				ReportError(re);
+				Recover(input,re);
+			}
+			finally
+			{
+				TraceOut("templateDef", 6);
+				LeaveRule("templateDef", 6);
+				LeaveRule_templateDef();
+			}
+			DebugLocation(142, 1);
 		} finally { DebugExitRule(GrammarFileName, "templateDef"); }
 		return;
 
@@ -1064,108 +1064,108 @@ public partial class GroupParser : Antlr.Runtime.Parser
 
 
 		try { DebugEnterRule(GrammarFileName, "formalArgs");
-		DebugLocation(144, 1);
-		try
-		{
-			// Compiler\\Group.g3:148:2: ( formalArg[$args] ( ',' formalArg[$args] )* |)
-			int alt15=2;
-			try { DebugEnterDecision(15, false);
-			int LA15_1 = input.LA(1);
+			DebugLocation(144, 1);
+			try
+			{
+				// Compiler\\Group.g3:148:2: ( formalArg[$args] ( ',' formalArg[$args] )* |)
+				int alt15=2;
+				try { DebugEnterDecision(15, false);
+					int LA15_1 = input.LA(1);
 
-			if ((LA15_1==ID))
-			{
-				alt15 = 1;
-			}
-			else if ((LA15_1==18))
-			{
-				alt15 = 2;
-			}
-			else
-			{
-				NoViableAltException nvae = new NoViableAltException("", 15, 0, input, 1);
-				DebugRecognitionException(nvae);
-				throw nvae;
-			}
-			} finally { DebugExitDecision(15); }
-			switch (alt15)
-			{
-			case 1:
-				DebugEnterAlt(1);
-				// Compiler\\Group.g3:148:4: formalArg[$args] ( ',' formalArg[$args] )*
-				{
-				DebugLocation(148, 4);
-				PushFollow(Follow._formalArg_in_formalArgs461);
-				formalArg(args);
-				PopFollow();
-
-				DebugLocation(148, 21);
-				// Compiler\\Group.g3:148:21: ( ',' formalArg[$args] )*
-				try { DebugEnterSubRule(14);
-				while (true)
-				{
-					int alt14=2;
-					try { DebugEnterDecision(14, false);
-					int LA14_1 = input.LA(1);
-
-					if ((LA14_1==COMMA))
+					if ((LA15_1==ID))
 					{
-						alt14 = 1;
+						alt15 = 1;
 					}
-
-
-					} finally { DebugExitDecision(14); }
-					switch ( alt14 )
+					else if ((LA15_1==18))
 					{
+						alt15 = 2;
+					}
+					else
+					{
+						NoViableAltException nvae = new NoViableAltException("", 15, 0, input, 1);
+						DebugRecognitionException(nvae);
+						throw nvae;
+					}
+				} finally { DebugExitDecision(15); }
+				switch (alt15)
+				{
 					case 1:
 						DebugEnterAlt(1);
-						// Compiler\\Group.g3:148:22: ',' formalArg[$args]
-						{
-						DebugLocation(148, 22);
-						Match(input,COMMA,Follow._COMMA_in_formalArgs465); 
-						DebugLocation(148, 26);
-						PushFollow(Follow._formalArg_in_formalArgs467);
+						// Compiler\\Group.g3:148:4: formalArg[$args] ( ',' formalArg[$args] )*
+					{
+						DebugLocation(148, 4);
+						PushFollow(Follow._formalArg_in_formalArgs461);
 						formalArg(args);
 						PopFollow();
 
+						DebugLocation(148, 21);
+						// Compiler\\Group.g3:148:21: ( ',' formalArg[$args] )*
+						try { DebugEnterSubRule(14);
+							while (true)
+							{
+								int alt14=2;
+								try { DebugEnterDecision(14, false);
+									int LA14_1 = input.LA(1);
 
-						}
+									if ((LA14_1==COMMA))
+									{
+										alt14 = 1;
+									}
+
+
+								} finally { DebugExitDecision(14); }
+								switch ( alt14 )
+								{
+									case 1:
+										DebugEnterAlt(1);
+										// Compiler\\Group.g3:148:22: ',' formalArg[$args]
+									{
+										DebugLocation(148, 22);
+										Match(input,COMMA,Follow._COMMA_in_formalArgs465);
+										DebugLocation(148, 26);
+										PushFollow(Follow._formalArg_in_formalArgs467);
+										formalArg(args);
+										PopFollow();
+
+
+									}
+										break;
+
+									default:
+										goto loop14;
+								}
+							}
+
+							loop14:
+							;
+
+						} finally { DebugExitSubRule(14); }
+
+
+					}
+						break;
+					case 2:
+						DebugEnterAlt(2);
+						// Compiler\\Group.g3:150:2:
+					{
+					}
 						break;
 
-					default:
-						goto loop14;
-					}
 				}
-
-				loop14:
-					;
-
-				} finally { DebugExitSubRule(14); }
-
-
-				}
-				break;
-			case 2:
-				DebugEnterAlt(2);
-				// Compiler\\Group.g3:150:2: 
-				{
-				}
-				break;
-
 			}
-		}
-		catch (RecognitionException re)
-		{
-			ReportError(re);
-			Recover(input,re);
-		}
-		finally
-		{
-			TraceOut("formalArgs", 7);
-			LeaveRule("formalArgs", 7);
-			LeaveRule_formalArgs();
-			formalArgs_scopeAfter(formalArgs_stack.Peek());formalArgs_stack.Pop();
-		}
-		DebugLocation(150, 1);
+			catch (RecognitionException re)
+			{
+				ReportError(re);
+				Recover(input,re);
+			}
+			finally
+			{
+				TraceOut("formalArgs", 7);
+				LeaveRule("formalArgs", 7);
+				LeaveRule_formalArgs();
+				formalArgs_scopeAfter(formalArgs_stack.Peek());formalArgs_stack.Pop();
+			}
+			DebugLocation(150, 1);
 		} finally { DebugExitRule(GrammarFileName, "formalArgs"); }
 		return args;
 
@@ -1186,126 +1186,126 @@ public partial class GroupParser : Antlr.Runtime.Parser
 		IToken ID6 = default(IToken);
 
 		try { DebugEnterRule(GrammarFileName, "formalArg");
-		DebugLocation(152, 4);
-		try
-		{
-			// Compiler\\Group.g3:153:2: ( ID ( '=' a= ( STRING | ANONYMOUS_TEMPLATE | 'true' | 'false' ) | '=' a= '[' ']' |) )
-			DebugEnterAlt(1);
-			// Compiler\\Group.g3:153:4: ID ( '=' a= ( STRING | ANONYMOUS_TEMPLATE | 'true' | 'false' ) | '=' a= '[' ']' |)
+			DebugLocation(152, 4);
+			try
 			{
-			DebugLocation(153, 4);
-			ID6=(IToken)Match(input,ID,Follow._ID_in_formalArg485); 
-			DebugLocation(154, 3);
-			// Compiler\\Group.g3:154:3: ( '=' a= ( STRING | ANONYMOUS_TEMPLATE | 'true' | 'false' ) | '=' a= '[' ']' |)
-			int alt16=3;
-			try { DebugEnterSubRule(16);
-			try { DebugEnterDecision(16, false);
-			int LA16_1 = input.LA(1);
-
-			if ((LA16_1==23))
-			{
-				int LA16_2 = input.LA(2);
-
-				if ((LA16_2==ANONYMOUS_TEMPLATE||LA16_2==FALSE||(LA16_2>=STRING && LA16_2<=TRUE)))
-				{
-					alt16 = 1;
-				}
-				else if ((LA16_2==LBRACK))
-				{
-					alt16 = 2;
-				}
-				else
-				{
-					NoViableAltException nvae = new NoViableAltException("", 16, 1, input, 2);
-					DebugRecognitionException(nvae);
-					throw nvae;
-				}
-			}
-			else if ((LA16_1==COMMA||LA16_1==18))
-			{
-				alt16 = 3;
-			}
-			else
-			{
-				NoViableAltException nvae = new NoViableAltException("", 16, 0, input, 1);
-				DebugRecognitionException(nvae);
-				throw nvae;
-			}
-			} finally { DebugExitDecision(16); }
-			switch (alt16)
-			{
-			case 1:
+				// Compiler\\Group.g3:153:2: ( ID ( '=' a= ( STRING | ANONYMOUS_TEMPLATE | 'true' | 'false' ) | '=' a= '[' ']' |) )
 				DebugEnterAlt(1);
-				// Compiler\\Group.g3:154:5: '=' a= ( STRING | ANONYMOUS_TEMPLATE | 'true' | 'false' )
+				// Compiler\\Group.g3:153:4: ID ( '=' a= ( STRING | ANONYMOUS_TEMPLATE | 'true' | 'false' ) | '=' a= '[' ']' |)
 				{
-				DebugLocation(154, 5);
-				Match(input,23,Follow._23_in_formalArg491); 
-				DebugLocation(154, 10);
+					DebugLocation(153, 4);
+					ID6=(IToken)Match(input,ID,Follow._ID_in_formalArg485);
+					DebugLocation(154, 3);
+					// Compiler\\Group.g3:154:3: ( '=' a= ( STRING | ANONYMOUS_TEMPLATE | 'true' | 'false' ) | '=' a= '[' ']' |)
+					int alt16=3;
+					try { DebugEnterSubRule(16);
+						try { DebugEnterDecision(16, false);
+							int LA16_1 = input.LA(1);
 
-				a=(IToken)input.LT(1);
-				if (input.LA(1)==ANONYMOUS_TEMPLATE||input.LA(1)==FALSE||(input.LA(1)>=STRING && input.LA(1)<=TRUE))
-				{
-					input.Consume();
-					state.errorRecovery=false;
-				}
-				else
-				{
-					MismatchedSetException mse = new MismatchedSetException(null,input);
-					DebugRecognitionException(mse);
-					throw mse;
-				}
+							if ((LA16_1==23))
+							{
+								int LA16_2 = input.LA(2);
 
-				DebugLocation(154, 54);
-				formalArgs_stack.Peek().hasOptionalParameter =  true;
+								if ((LA16_2==ANONYMOUS_TEMPLATE||LA16_2==FALSE||(LA16_2>=STRING && LA16_2<=TRUE)))
+								{
+									alt16 = 1;
+								}
+								else if ((LA16_2==LBRACK))
+								{
+									alt16 = 2;
+								}
+								else
+								{
+									NoViableAltException nvae = new NoViableAltException("", 16, 1, input, 2);
+									DebugRecognitionException(nvae);
+									throw nvae;
+								}
+							}
+							else if ((LA16_1==COMMA||LA16_1==18))
+							{
+								alt16 = 3;
+							}
+							else
+							{
+								NoViableAltException nvae = new NoViableAltException("", 16, 0, input, 1);
+								DebugRecognitionException(nvae);
+								throw nvae;
+							}
+						} finally { DebugExitDecision(16); }
+						switch (alt16)
+						{
+							case 1:
+								DebugEnterAlt(1);
+								// Compiler\\Group.g3:154:5: '=' a= ( STRING | ANONYMOUS_TEMPLATE | 'true' | 'false' )
+							{
+								DebugLocation(154, 5);
+								Match(input,23,Follow._23_in_formalArg491);
+								DebugLocation(154, 10);
+
+								a=(IToken)input.LT(1);
+								if (input.LA(1)==ANONYMOUS_TEMPLATE||input.LA(1)==FALSE||(input.LA(1)>=STRING && input.LA(1)<=TRUE))
+								{
+									input.Consume();
+									state.errorRecovery=false;
+								}
+								else
+								{
+									MismatchedSetException mse = new MismatchedSetException(null,input);
+									DebugRecognitionException(mse);
+									throw mse;
+								}
+
+								DebugLocation(154, 54);
+								formalArgs_stack.Peek().hasOptionalParameter =  true;
+
+							}
+								break;
+							case 2:
+								DebugEnterAlt(2);
+								// Compiler\\Group.g3:155:5: '=' a= '[' ']'
+							{
+								DebugLocation(155, 5);
+								Match(input,23,Follow._23_in_formalArg511);
+								DebugLocation(155, 10);
+								a=(IToken)Match(input,LBRACK,Follow._LBRACK_in_formalArg515);
+								DebugLocation(155, 15);
+								Match(input,RBRACK,Follow._RBRACK_in_formalArg517);
+								DebugLocation(155, 19);
+								formalArgs_stack.Peek().hasOptionalParameter =  true;
+
+							}
+								break;
+							case 3:
+								DebugEnterAlt(3);
+								// Compiler\\Group.g3:156:5:
+							{
+								DebugLocation(156, 5);
+								if (formalArgs_stack.Peek().hasOptionalParameter) _group.ErrorManager.GroupSyntaxError(ErrorType.REQUIRED_PARAMETER_AFTER_OPTIONAL, SourceName, input.LT(1));
+
+							}
+								break;
+
+						}
+					} finally { DebugExitSubRule(16); }
+
+					DebugLocation(158, 3);
+					args.Add(new FormalArgument((ID6!=null?ID6.Text:default(string)), a));
 
 				}
-				break;
-			case 2:
-				DebugEnterAlt(2);
-				// Compiler\\Group.g3:155:5: '=' a= '[' ']'
-				{
-				DebugLocation(155, 5);
-				Match(input,23,Follow._23_in_formalArg511); 
-				DebugLocation(155, 10);
-				a=(IToken)Match(input,LBRACK,Follow._LBRACK_in_formalArg515); 
-				DebugLocation(155, 15);
-				Match(input,RBRACK,Follow._RBRACK_in_formalArg517); 
-				DebugLocation(155, 19);
-				formalArgs_stack.Peek().hasOptionalParameter =  true;
-
-				}
-				break;
-			case 3:
-				DebugEnterAlt(3);
-				// Compiler\\Group.g3:156:5: 
-				{
-				DebugLocation(156, 5);
-				if (formalArgs_stack.Peek().hasOptionalParameter) _group.ErrorManager.GroupSyntaxError(ErrorType.REQUIRED_PARAMETER_AFTER_OPTIONAL, SourceName, input.LT(1));
-
-				}
-				break;
 
 			}
-			} finally { DebugExitSubRule(16); }
-
-			DebugLocation(158, 3);
-			args.Add(new FormalArgument((ID6!=null?ID6.Text:default(string)), a));
-
+			catch (RecognitionException re)
+			{
+				ReportError(re);
+				Recover(input,re);
 			}
-
-		}
-		catch (RecognitionException re)
-		{
-			ReportError(re);
-			Recover(input,re);
-		}
-		finally
-		{
-			TraceOut("formalArg", 8);
-			LeaveRule("formalArg", 8);
-			LeaveRule_formalArg();
-		}
-		DebugLocation(159, 4);
+			finally
+			{
+				TraceOut("formalArg", 8);
+				LeaveRule("formalArg", 8);
+				LeaveRule_formalArg();
+			}
+			DebugLocation(159, 4);
 		} finally { DebugExitRule(GrammarFileName, "formalArg"); }
 		return;
 
@@ -1326,50 +1326,50 @@ public partial class GroupParser : Antlr.Runtime.Parser
 		IDictionary<string,object> dict8 = default(IDictionary<string,object>);
 
 		try { DebugEnterRule(GrammarFileName, "dictDef");
-		DebugLocation(170, 1);
-		try
-		{
-			// Compiler\\Group.g3:171:2: ( ID '::=' dict )
-			DebugEnterAlt(1);
-			// Compiler\\Group.g3:171:4: ID '::=' dict
+			DebugLocation(170, 1);
+			try
 			{
-			DebugLocation(171, 4);
-			ID7=(IToken)Match(input,ID,Follow._ID_in_dictDef550); 
-			DebugLocation(171, 7);
-			Match(input,21,Follow._21_in_dictDef552); 
-			DebugLocation(171, 13);
-			PushFollow(Follow._dict_in_dictDef554);
-			dict8=dict();
-			PopFollow();
+				// Compiler\\Group.g3:171:2: ( ID '::=' dict )
+				DebugEnterAlt(1);
+				// Compiler\\Group.g3:171:4: ID '::=' dict
+				{
+					DebugLocation(171, 4);
+					ID7=(IToken)Match(input,ID,Follow._ID_in_dictDef550);
+					DebugLocation(171, 7);
+					Match(input,21,Follow._21_in_dictDef552);
+					DebugLocation(171, 13);
+					PushFollow(Follow._dict_in_dictDef554);
+					dict8=dict();
+					PopFollow();
 
-			DebugLocation(172, 9);
+					DebugLocation(172, 9);
 
-			        if ( _group.RawGetDictionary((ID7!=null?ID7.Text:default(string)))!=null ) {
+					if ( _group.RawGetDictionary((ID7!=null?ID7.Text:default(string)))!=null ) {
 						_group.ErrorManager.CompiletimeError(ErrorType.MAP_REDEFINITION, null, ID7);
-			        }
-			        else if ( _group.RawGetTemplate((ID7!=null?ID7.Text:default(string)))!=null ) {
+					}
+					else if ( _group.RawGetTemplate((ID7!=null?ID7.Text:default(string)))!=null ) {
 						_group.ErrorManager.CompiletimeError(ErrorType.TEMPLATE_REDEFINITION_AS_MAP, null, ID7);
-			        }
-			        else {
-			            _group.DefineDictionary((ID7!=null?ID7.Text:default(string)), dict8);
-			        }
-			        
+					}
+					else {
+						_group.DefineDictionary((ID7!=null?ID7.Text:default(string)), dict8);
+					}
+
+
+				}
 
 			}
-
-		}
-		catch (RecognitionException re)
-		{
-			ReportError(re);
-			Recover(input,re);
-		}
-		finally
-		{
-			TraceOut("dictDef", 9);
-			LeaveRule("dictDef", 9);
-			LeaveRule_dictDef();
-		}
-		DebugLocation(183, 1);
+			catch (RecognitionException re)
+			{
+				ReportError(re);
+				Recover(input,re);
+			}
+			finally
+			{
+				TraceOut("dictDef", 9);
+				LeaveRule("dictDef", 9);
+				LeaveRule_dictDef();
+			}
+			DebugLocation(183, 1);
 		} finally { DebugExitRule(GrammarFileName, "dictDef"); }
 		return;
 
@@ -1390,38 +1390,38 @@ public partial class GroupParser : Antlr.Runtime.Parser
 
 
 		try { DebugEnterRule(GrammarFileName, "dict");
-		DebugLocation(185, 1);
-		try
-		{
-			// Compiler\\Group.g3:186:2: ( '[' dictPairs[mapping] ']' )
-			DebugEnterAlt(1);
-			// Compiler\\Group.g3:186:6: '[' dictPairs[mapping] ']'
+			DebugLocation(185, 1);
+			try
 			{
-			DebugLocation(186, 6);
-			Match(input,LBRACK,Follow._LBRACK_in_dict581); 
-			DebugLocation(186, 10);
-			PushFollow(Follow._dictPairs_in_dict583);
-			dictPairs(mapping);
-			PopFollow();
+				// Compiler\\Group.g3:186:2: ( '[' dictPairs[mapping] ']' )
+				DebugEnterAlt(1);
+				// Compiler\\Group.g3:186:6: '[' dictPairs[mapping] ']'
+				{
+					DebugLocation(186, 6);
+					Match(input,LBRACK,Follow._LBRACK_in_dict581);
+					DebugLocation(186, 10);
+					PushFollow(Follow._dictPairs_in_dict583);
+					dictPairs(mapping);
+					PopFollow();
 
-			DebugLocation(186, 29);
-			Match(input,RBRACK,Follow._RBRACK_in_dict586); 
+					DebugLocation(186, 29);
+					Match(input,RBRACK,Follow._RBRACK_in_dict586);
+
+				}
 
 			}
-
-		}
-		catch (RecognitionException re)
-		{
-			ReportError(re);
-			Recover(input,re);
-		}
-		finally
-		{
-			TraceOut("dict", 10);
-			LeaveRule("dict", 10);
-			LeaveRule_dict();
-		}
-		DebugLocation(187, 1);
+			catch (RecognitionException re)
+			{
+				ReportError(re);
+				Recover(input,re);
+			}
+			finally
+			{
+				TraceOut("dict", 10);
+				LeaveRule("dict", 10);
+				LeaveRule_dict();
+			}
+			DebugLocation(187, 1);
 		} finally { DebugExitRule(GrammarFileName, "dict"); }
 		return mapping;
 
@@ -1439,169 +1439,169 @@ public partial class GroupParser : Antlr.Runtime.Parser
 		EnterRule("dictPairs", 11);
 		TraceIn("dictPairs", 11);
 		try { DebugEnterRule(GrammarFileName, "dictPairs");
-		DebugLocation(189, 1);
-		try
-		{
-			// Compiler\\Group.g3:190:2: ( keyValuePair[mapping] ( ',' keyValuePair[mapping] )* ( ',' defaultValuePair[mapping] )? | defaultValuePair[mapping] |)
-			int alt19=3;
-			try { DebugEnterDecision(19, false);
-			switch (input.LA(1))
+			DebugLocation(189, 1);
+			try
 			{
-			case STRING:
-				{
-				alt19 = 1;
-				}
-				break;
-			case 25:
-				{
-				alt19 = 2;
-				}
-				break;
-			case RBRACK:
-				{
-				alt19 = 3;
-				}
-				break;
-			default:
-				{
-					NoViableAltException nvae = new NoViableAltException("", 19, 0, input, 1);
-					DebugRecognitionException(nvae);
-					throw nvae;
-				}
-			}
-
-			} finally { DebugExitDecision(19); }
-			switch (alt19)
-			{
-			case 1:
-				DebugEnterAlt(1);
-				// Compiler\\Group.g3:190:4: keyValuePair[mapping] ( ',' keyValuePair[mapping] )* ( ',' defaultValuePair[mapping] )?
-				{
-				DebugLocation(190, 4);
-				PushFollow(Follow._keyValuePair_in_dictPairs598);
-				keyValuePair(mapping);
-				PopFollow();
-
-				DebugLocation(191, 3);
-				// Compiler\\Group.g3:191:3: ( ',' keyValuePair[mapping] )*
-				try { DebugEnterSubRule(17);
-				while (true)
-				{
-					int alt17=2;
-					try { DebugEnterDecision(17, false);
-					int LA17_1 = input.LA(1);
-
-					if ((LA17_1==COMMA))
+				// Compiler\\Group.g3:190:2: ( keyValuePair[mapping] ( ',' keyValuePair[mapping] )* ( ',' defaultValuePair[mapping] )? | defaultValuePair[mapping] |)
+				int alt19=3;
+				try { DebugEnterDecision(19, false);
+					switch (input.LA(1))
 					{
-						int LA17_2 = input.LA(2);
-
-						if ((LA17_2==STRING))
+						case STRING:
 						{
-							alt17 = 1;
+							alt19 = 1;
 						}
-
-
+							break;
+						case 25:
+						{
+							alt19 = 2;
+						}
+							break;
+						case RBRACK:
+						{
+							alt19 = 3;
+						}
+							break;
+						default:
+						{
+							NoViableAltException nvae = new NoViableAltException("", 19, 0, input, 1);
+							DebugRecognitionException(nvae);
+							throw nvae;
+						}
 					}
 
-
-					} finally { DebugExitDecision(17); }
-					switch ( alt17 )
-					{
+				} finally { DebugExitDecision(19); }
+				switch (alt19)
+				{
 					case 1:
 						DebugEnterAlt(1);
-						// Compiler\\Group.g3:191:4: ',' keyValuePair[mapping]
-						{
-						DebugLocation(191, 4);
-						Match(input,COMMA,Follow._COMMA_in_dictPairs604); 
-						DebugLocation(191, 8);
-						PushFollow(Follow._keyValuePair_in_dictPairs606);
+						// Compiler\\Group.g3:190:4: keyValuePair[mapping] ( ',' keyValuePair[mapping] )* ( ',' defaultValuePair[mapping] )?
+					{
+						DebugLocation(190, 4);
+						PushFollow(Follow._keyValuePair_in_dictPairs598);
 						keyValuePair(mapping);
 						PopFollow();
 
+						DebugLocation(191, 3);
+						// Compiler\\Group.g3:191:3: ( ',' keyValuePair[mapping] )*
+						try { DebugEnterSubRule(17);
+							while (true)
+							{
+								int alt17=2;
+								try { DebugEnterDecision(17, false);
+									int LA17_1 = input.LA(1);
 
-						}
+									if ((LA17_1==COMMA))
+									{
+										int LA17_2 = input.LA(2);
+
+										if ((LA17_2==STRING))
+										{
+											alt17 = 1;
+										}
+
+
+									}
+
+
+								} finally { DebugExitDecision(17); }
+								switch ( alt17 )
+								{
+									case 1:
+										DebugEnterAlt(1);
+										// Compiler\\Group.g3:191:4: ',' keyValuePair[mapping]
+									{
+										DebugLocation(191, 4);
+										Match(input,COMMA,Follow._COMMA_in_dictPairs604);
+										DebugLocation(191, 8);
+										PushFollow(Follow._keyValuePair_in_dictPairs606);
+										keyValuePair(mapping);
+										PopFollow();
+
+
+									}
+										break;
+
+									default:
+										goto loop17;
+								}
+							}
+
+							loop17:
+							;
+
+						} finally { DebugExitSubRule(17); }
+
+						DebugLocation(191, 32);
+						// Compiler\\Group.g3:191:32: ( ',' defaultValuePair[mapping] )?
+						int alt18=2;
+						try { DebugEnterSubRule(18);
+							try { DebugEnterDecision(18, false);
+								int LA18_1 = input.LA(1);
+
+								if ((LA18_1==COMMA))
+								{
+									alt18 = 1;
+								}
+							} finally { DebugExitDecision(18); }
+							switch (alt18)
+							{
+								case 1:
+									DebugEnterAlt(1);
+									// Compiler\\Group.g3:191:33: ',' defaultValuePair[mapping]
+								{
+									DebugLocation(191, 33);
+									Match(input,COMMA,Follow._COMMA_in_dictPairs612);
+									DebugLocation(191, 37);
+									PushFollow(Follow._defaultValuePair_in_dictPairs614);
+									defaultValuePair(mapping);
+									PopFollow();
+
+
+								}
+									break;
+
+							}
+						} finally { DebugExitSubRule(18); }
+
+
+					}
+						break;
+					case 2:
+						DebugEnterAlt(2);
+						// Compiler\\Group.g3:192:4: defaultValuePair[mapping]
+					{
+						DebugLocation(192, 4);
+						PushFollow(Follow._defaultValuePair_in_dictPairs622);
+						defaultValuePair(mapping);
+						PopFollow();
+
+
+					}
+						break;
+					case 3:
+						DebugEnterAlt(3);
+						// Compiler\\Group.g3:194:2:
+					{
+					}
 						break;
 
-					default:
-						goto loop17;
-					}
 				}
+			}
+			catch (RecognitionException)
+			{
 
-				loop17:
-					;
-
-				} finally { DebugExitSubRule(17); }
-
-				DebugLocation(191, 32);
-				// Compiler\\Group.g3:191:32: ( ',' defaultValuePair[mapping] )?
-				int alt18=2;
-				try { DebugEnterSubRule(18);
-				try { DebugEnterDecision(18, false);
-				int LA18_1 = input.LA(1);
-
-				if ((LA18_1==COMMA))
-				{
-					alt18 = 1;
-				}
-				} finally { DebugExitDecision(18); }
-				switch (alt18)
-				{
-				case 1:
-					DebugEnterAlt(1);
-					// Compiler\\Group.g3:191:33: ',' defaultValuePair[mapping]
-					{
-					DebugLocation(191, 33);
-					Match(input,COMMA,Follow._COMMA_in_dictPairs612); 
-					DebugLocation(191, 37);
-					PushFollow(Follow._defaultValuePair_in_dictPairs614);
-					defaultValuePair(mapping);
-					PopFollow();
-
-
-					}
-					break;
-
-				}
-				} finally { DebugExitSubRule(18); }
-
-
-				}
-				break;
-			case 2:
-				DebugEnterAlt(2);
-				// Compiler\\Group.g3:192:4: defaultValuePair[mapping]
-				{
-				DebugLocation(192, 4);
-				PushFollow(Follow._defaultValuePair_in_dictPairs622);
-				defaultValuePair(mapping);
-				PopFollow();
-
-
-				}
-				break;
-			case 3:
-				DebugEnterAlt(3);
-				// Compiler\\Group.g3:194:2: 
-				{
-				}
-				break;
+				Error("missing dictionary entry at '"+input.LT(1).Text+"'");
 
 			}
-		}
-		catch (RecognitionException)
-		{
 
-					Error("missing dictionary entry at '"+input.LT(1).Text+"'");
-				
-		}
-
-		finally
-		{
-			TraceOut("dictPairs", 11);
-			LeaveRule("dictPairs", 11);
-			LeaveRule_dictPairs();
-		}
-		DebugLocation(194, 1);
+			finally
+			{
+				TraceOut("dictPairs", 11);
+				LeaveRule("dictPairs", 11);
+				LeaveRule_dictPairs();
+			}
+			DebugLocation(194, 1);
 		} finally { DebugExitRule(GrammarFileName, "dictPairs"); }
 		return;
 
@@ -1621,40 +1621,40 @@ public partial class GroupParser : Antlr.Runtime.Parser
 		object keyValue9 = default(object);
 
 		try { DebugEnterRule(GrammarFileName, "defaultValuePair");
-		DebugLocation(199, 1);
-		try
-		{
-			// Compiler\\Group.g3:200:2: ( 'default' ':' keyValue )
-			DebugEnterAlt(1);
-			// Compiler\\Group.g3:200:4: 'default' ':' keyValue
+			DebugLocation(199, 1);
+			try
 			{
-			DebugLocation(200, 4);
-			Match(input,25,Follow._25_in_defaultValuePair647); 
-			DebugLocation(200, 14);
-			Match(input,20,Follow._20_in_defaultValuePair649); 
-			DebugLocation(200, 18);
-			PushFollow(Follow._keyValue_in_defaultValuePair651);
-			keyValue9=keyValue();
-			PopFollow();
+				// Compiler\\Group.g3:200:2: ( 'default' ':' keyValue )
+				DebugEnterAlt(1);
+				// Compiler\\Group.g3:200:4: 'default' ':' keyValue
+				{
+					DebugLocation(200, 4);
+					Match(input,25,Follow._25_in_defaultValuePair647);
+					DebugLocation(200, 14);
+					Match(input,20,Follow._20_in_defaultValuePair649);
+					DebugLocation(200, 18);
+					PushFollow(Follow._keyValue_in_defaultValuePair651);
+					keyValue9=keyValue();
+					PopFollow();
 
-			DebugLocation(200, 27);
-			mapping[TemplateGroup.DefaultKey] = keyValue9;
+					DebugLocation(200, 27);
+					mapping[TemplateGroup.DefaultKey] = keyValue9;
+
+				}
 
 			}
-
-		}
-		catch (RecognitionException re)
-		{
-			ReportError(re);
-			Recover(input,re);
-		}
-		finally
-		{
-			TraceOut("defaultValuePair", 12);
-			LeaveRule("defaultValuePair", 12);
-			LeaveRule_defaultValuePair();
-		}
-		DebugLocation(201, 1);
+			catch (RecognitionException re)
+			{
+				ReportError(re);
+				Recover(input,re);
+			}
+			finally
+			{
+				TraceOut("defaultValuePair", 12);
+				LeaveRule("defaultValuePair", 12);
+				LeaveRule_defaultValuePair();
+			}
+			DebugLocation(201, 1);
 		} finally { DebugExitRule(GrammarFileName, "defaultValuePair"); }
 		return;
 
@@ -1675,40 +1675,40 @@ public partial class GroupParser : Antlr.Runtime.Parser
 		object keyValue11 = default(object);
 
 		try { DebugEnterRule(GrammarFileName, "keyValuePair");
-		DebugLocation(203, 1);
-		try
-		{
-			// Compiler\\Group.g3:204:2: ( STRING ':' keyValue )
-			DebugEnterAlt(1);
-			// Compiler\\Group.g3:204:4: STRING ':' keyValue
+			DebugLocation(203, 1);
+			try
 			{
-			DebugLocation(204, 4);
-			STRING10=(IToken)Match(input,STRING,Follow._STRING_in_keyValuePair665); 
-			DebugLocation(204, 11);
-			Match(input,20,Follow._20_in_keyValuePair667); 
-			DebugLocation(204, 15);
-			PushFollow(Follow._keyValue_in_keyValuePair669);
-			keyValue11=keyValue();
-			PopFollow();
+				// Compiler\\Group.g3:204:2: ( STRING ':' keyValue )
+				DebugEnterAlt(1);
+				// Compiler\\Group.g3:204:4: STRING ':' keyValue
+				{
+					DebugLocation(204, 4);
+					STRING10=(IToken)Match(input,STRING,Follow._STRING_in_keyValuePair665);
+					DebugLocation(204, 11);
+					Match(input,20,Follow._20_in_keyValuePair667);
+					DebugLocation(204, 15);
+					PushFollow(Follow._keyValue_in_keyValuePair669);
+					keyValue11=keyValue();
+					PopFollow();
 
-			DebugLocation(204, 24);
-			mapping[Utility.ReplaceEscapes(Utility.Strip((STRING10!=null?STRING10.Text:default(string)), 1))] = keyValue11;
+					DebugLocation(204, 24);
+					mapping[Utility.ReplaceEscapes(Utility.Strip((STRING10!=null?STRING10.Text:default(string)), 1))] = keyValue11;
+
+				}
 
 			}
-
-		}
-		catch (RecognitionException re)
-		{
-			ReportError(re);
-			Recover(input,re);
-		}
-		finally
-		{
-			TraceOut("keyValuePair", 13);
-			LeaveRule("keyValuePair", 13);
-			LeaveRule_keyValuePair();
-		}
-		DebugLocation(205, 1);
+			catch (RecognitionException re)
+			{
+				ReportError(re);
+				Recover(input,re);
+			}
+			finally
+			{
+				TraceOut("keyValuePair", 13);
+				LeaveRule("keyValuePair", 13);
+				LeaveRule_keyValuePair();
+			}
+			DebugLocation(205, 1);
 		} finally { DebugExitRule(GrammarFileName, "keyValuePair"); }
 		return;
 
@@ -1731,167 +1731,167 @@ public partial class GroupParser : Antlr.Runtime.Parser
 		IToken a = default(IToken);
 
 		try { DebugEnterRule(GrammarFileName, "keyValue");
-		DebugLocation(207, 1);
-		try
-		{
-			// Compiler\\Group.g3:208:2: (a= BIGSTRING |a= BIGSTRING_NO_NL |a= ANONYMOUS_TEMPLATE |a= STRING | TRUE | FALSE | '[' ']' |{...}? => ID )
-			int alt20=8;
-			try { DebugEnterDecision(20, false);
-			int LA20_1 = input.LA(1);
+			DebugLocation(207, 1);
+			try
+			{
+				// Compiler\\Group.g3:208:2: (a= BIGSTRING |a= BIGSTRING_NO_NL |a= ANONYMOUS_TEMPLATE |a= STRING | TRUE | FALSE | '[' ']' |{...}? => ID )
+				int alt20=8;
+				try { DebugEnterDecision(20, false);
+					int LA20_1 = input.LA(1);
 
-			if ((LA20_1==BIGSTRING))
-			{
-				alt20 = 1;
-			}
-			else if ((LA20_1==BIGSTRING_NO_NL))
-			{
-				alt20 = 2;
-			}
-			else if ((LA20_1==ANONYMOUS_TEMPLATE))
-			{
-				alt20 = 3;
-			}
-			else if ((LA20_1==STRING))
-			{
-				alt20 = 4;
-			}
-			else if ((LA20_1==TRUE))
-			{
-				alt20 = 5;
-			}
-			else if ((LA20_1==FALSE))
-			{
-				alt20 = 6;
-			}
-			else if ((LA20_1==LBRACK))
-			{
-				alt20 = 7;
-			}
-			else if ((LA20_1==ID) && ((input.LT(1).Text.Equals("key"))))
-			{
-				alt20 = 8;
-			}
-			else
-			{
-				NoViableAltException nvae = new NoViableAltException("", 20, 0, input, 1);
-				DebugRecognitionException(nvae);
-				throw nvae;
-			}
-			} finally { DebugExitDecision(20); }
-			switch (alt20)
-			{
-			case 1:
-				DebugEnterAlt(1);
-				// Compiler\\Group.g3:208:4: a= BIGSTRING
+					if ((LA20_1==BIGSTRING))
+					{
+						alt20 = 1;
+					}
+					else if ((LA20_1==BIGSTRING_NO_NL))
+					{
+						alt20 = 2;
+					}
+					else if ((LA20_1==ANONYMOUS_TEMPLATE))
+					{
+						alt20 = 3;
+					}
+					else if ((LA20_1==STRING))
+					{
+						alt20 = 4;
+					}
+					else if ((LA20_1==TRUE))
+					{
+						alt20 = 5;
+					}
+					else if ((LA20_1==FALSE))
+					{
+						alt20 = 6;
+					}
+					else if ((LA20_1==LBRACK))
+					{
+						alt20 = 7;
+					}
+					else if ((LA20_1==ID) && ((input.LT(1).Text.Equals("key"))))
+					{
+						alt20 = 8;
+					}
+					else
+					{
+						NoViableAltException nvae = new NoViableAltException("", 20, 0, input, 1);
+						DebugRecognitionException(nvae);
+						throw nvae;
+					}
+				} finally { DebugExitDecision(20); }
+				switch (alt20)
 				{
-				DebugLocation(208, 5);
-				a=(IToken)Match(input,BIGSTRING,Follow._BIGSTRING_in_keyValue688); 
-				DebugLocation(208, 19);
-				value = _group.CreateSingleton(a);
+					case 1:
+						DebugEnterAlt(1);
+						// Compiler\\Group.g3:208:4: a= BIGSTRING
+					{
+						DebugLocation(208, 5);
+						a=(IToken)Match(input,BIGSTRING,Follow._BIGSTRING_in_keyValue688);
+						DebugLocation(208, 19);
+						value = _group.CreateSingleton(a);
+
+					}
+						break;
+					case 2:
+						DebugEnterAlt(2);
+						// Compiler\\Group.g3:209:4: a= BIGSTRING_NO_NL
+					{
+						DebugLocation(209, 5);
+						a=(IToken)Match(input,BIGSTRING_NO_NL,Follow._BIGSTRING_NO_NL_in_keyValue700);
+						DebugLocation(209, 23);
+						value = _group.CreateSingleton(a);
+
+					}
+						break;
+					case 3:
+						DebugEnterAlt(3);
+						// Compiler\\Group.g3:210:4: a= ANONYMOUS_TEMPLATE
+					{
+						DebugLocation(210, 5);
+						a=(IToken)Match(input,ANONYMOUS_TEMPLATE,Follow._ANONYMOUS_TEMPLATE_in_keyValue710);
+						DebugLocation(210, 25);
+						value = _group.CreateSingleton(a);
+
+					}
+						break;
+					case 4:
+						DebugEnterAlt(4);
+						// Compiler\\Group.g3:211:4: a= STRING
+					{
+						DebugLocation(211, 5);
+						a=(IToken)Match(input,STRING,Follow._STRING_in_keyValue719);
+						DebugLocation(211, 16);
+						value = Utility.ReplaceEscapes(Utility.Strip((a!=null?a.Text:default(string)), 1));
+
+					}
+						break;
+					case 5:
+						DebugEnterAlt(5);
+						// Compiler\\Group.g3:212:4: TRUE
+					{
+						DebugLocation(212, 4);
+						Match(input,TRUE,Follow._TRUE_in_keyValue729);
+						DebugLocation(212, 13);
+						value = true;
+
+					}
+						break;
+					case 6:
+						DebugEnterAlt(6);
+						// Compiler\\Group.g3:213:4: FALSE
+					{
+						DebugLocation(213, 4);
+						Match(input,FALSE,Follow._FALSE_in_keyValue740);
+						DebugLocation(213, 14);
+						value = false;
+
+					}
+						break;
+					case 7:
+						DebugEnterAlt(7);
+						// Compiler\\Group.g3:214:4: '[' ']'
+					{
+						DebugLocation(214, 4);
+						Match(input,LBRACK,Follow._LBRACK_in_keyValue751);
+						DebugLocation(214, 8);
+						Match(input,RBRACK,Follow._RBRACK_in_keyValue753);
+						DebugLocation(214, 16);
+						value = new object[0];
+
+					}
+						break;
+					case 8:
+						DebugEnterAlt(8);
+						// Compiler\\Group.g3:215:4: {...}? => ID
+					{
+						DebugLocation(215, 4);
+						if (!((input.LT(1).Text.Equals("key"))))
+						{
+							throw new FailedPredicateException(input, "keyValue", "input.LT(1).Text.Equals(\"key\")");
+						}
+						DebugLocation(215, 40);
+						Match(input,ID,Follow._ID_in_keyValue767);
+						DebugLocation(216, 9);
+						value = TemplateGroup.DictionaryKey;
+
+					}
+						break;
 
 				}
-				break;
-			case 2:
-				DebugEnterAlt(2);
-				// Compiler\\Group.g3:209:4: a= BIGSTRING_NO_NL
-				{
-				DebugLocation(209, 5);
-				a=(IToken)Match(input,BIGSTRING_NO_NL,Follow._BIGSTRING_NO_NL_in_keyValue700); 
-				DebugLocation(209, 23);
-				value = _group.CreateSingleton(a);
+			}
+			catch (RecognitionException)
+			{
 
-				}
-				break;
-			case 3:
-				DebugEnterAlt(3);
-				// Compiler\\Group.g3:210:4: a= ANONYMOUS_TEMPLATE
-				{
-				DebugLocation(210, 5);
-				a=(IToken)Match(input,ANONYMOUS_TEMPLATE,Follow._ANONYMOUS_TEMPLATE_in_keyValue710); 
-				DebugLocation(210, 25);
-				value = _group.CreateSingleton(a);
-
-				}
-				break;
-			case 4:
-				DebugEnterAlt(4);
-				// Compiler\\Group.g3:211:4: a= STRING
-				{
-				DebugLocation(211, 5);
-				a=(IToken)Match(input,STRING,Follow._STRING_in_keyValue719); 
-				DebugLocation(211, 16);
-				value = Utility.ReplaceEscapes(Utility.Strip((a!=null?a.Text:default(string)), 1));
-
-				}
-				break;
-			case 5:
-				DebugEnterAlt(5);
-				// Compiler\\Group.g3:212:4: TRUE
-				{
-				DebugLocation(212, 4);
-				Match(input,TRUE,Follow._TRUE_in_keyValue729); 
-				DebugLocation(212, 13);
-				value = true;
-
-				}
-				break;
-			case 6:
-				DebugEnterAlt(6);
-				// Compiler\\Group.g3:213:4: FALSE
-				{
-				DebugLocation(213, 4);
-				Match(input,FALSE,Follow._FALSE_in_keyValue740); 
-				DebugLocation(213, 14);
-				value = false;
-
-				}
-				break;
-			case 7:
-				DebugEnterAlt(7);
-				// Compiler\\Group.g3:214:4: '[' ']'
-				{
-				DebugLocation(214, 4);
-				Match(input,LBRACK,Follow._LBRACK_in_keyValue751); 
-				DebugLocation(214, 8);
-				Match(input,RBRACK,Follow._RBRACK_in_keyValue753); 
-				DebugLocation(214, 16);
-				value = new object[0];
-
-				}
-				break;
-			case 8:
-				DebugEnterAlt(8);
-				// Compiler\\Group.g3:215:4: {...}? => ID
-				{
-				DebugLocation(215, 4);
-				if (!((input.LT(1).Text.Equals("key"))))
-				{
-					throw new FailedPredicateException(input, "keyValue", "input.LT(1).Text.Equals(\"key\")");
-				}
-				DebugLocation(215, 40);
-				Match(input,ID,Follow._ID_in_keyValue767); 
-				DebugLocation(216, 9);
-				value = TemplateGroup.DictionaryKey;
-
-				}
-				break;
+				Error("missing value for key at '"+input.LT(1).Text+"'");
 
 			}
-		}
-		catch (RecognitionException)
-		{
 
-					Error("missing value for key at '"+input.LT(1).Text+"'");
-				
-		}
-
-		finally
-		{
-			TraceOut("keyValue", 14);
-			LeaveRule("keyValue", 14);
-			LeaveRule_keyValue();
-		}
-		DebugLocation(217, 1);
+			finally
+			{
+				TraceOut("keyValue", 14);
+				LeaveRule("keyValue", 14);
+				LeaveRule_keyValue();
+			}
+			DebugLocation(217, 1);
 		} finally { DebugExitRule(GrammarFileName, "keyValue"); }
 		return value;
 
@@ -1988,4 +1988,4 @@ public partial class GroupParser : Antlr.Runtime.Parser
 	#endregion Follow sets
 }
 
-} // namespace Antlr4.StringTemplate.Compiler
+// namespace Antlr4.StringTemplate.Compiler

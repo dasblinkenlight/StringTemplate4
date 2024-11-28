@@ -30,130 +30,129 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate.Compiler
+namespace Antlr4.StringTemplate.Compiler;
+
+using Antlr.Runtime;
+using Antlr.Runtime.Tree;
+using Misc;
+
+partial class CodeGenerator
 {
-    using Antlr.Runtime;
-    using Antlr.Runtime.Tree;
-    using Antlr4.StringTemplate.Misc;
+    /// <summary>Name of overall template</summary>
+    private readonly string outermostTemplateName;
+    /// <summary>Overall template token</summary>
+    private readonly IToken templateToken;
+    /// <summary>Overall template text</summary>
+    private readonly string _template;
+    private readonly TemplateCompiler _compiler;
+    private CompiledTemplate outermostImpl;
 
-    partial class CodeGenerator
+    public CodeGenerator(ITreeNodeStream input, TemplateCompiler compiler, string name, string template, IToken templateToken)
+        : this(input, new RecognizerSharedState())
     {
-        /// <summary>Name of overall template</summary>
-        private readonly string outermostTemplateName;
-        /// <summary>Overall template token</summary>
-        private readonly IToken templateToken;
-        /// <summary>Overall template text</summary>
-        private readonly string _template;
-        private readonly TemplateCompiler _compiler;
-        private CompiledTemplate outermostImpl;
+        _compiler = compiler;
+        outermostTemplateName = name;
+        _template = template;
+        this.templateToken = templateToken;
+    }
 
-        public CodeGenerator(ITreeNodeStream input, TemplateCompiler compiler, string name, string template, IToken templateToken)
-            : this(input, new RecognizerSharedState())
+    public ErrorManager errMgr
+    {
+        get
         {
-            this._compiler = compiler;
-            this.outermostTemplateName = name;
-            this._template = template;
-            this.templateToken = templateToken;
+            return _compiler.ErrorManager;
         }
+    }
 
-        public ErrorManager errMgr
+    public TemplateGroup Group
+    {
+        get
         {
-            get
-            {
-                return _compiler.ErrorManager;
-            }
+            return _compiler.Group;
         }
+    }
 
-        public TemplateGroup Group
+    public CompilationState CompilationState
+    {
+        get
         {
-            get
-            {
-                return _compiler.Group;
-            }
+            if (template_stack == null || template_stack.Count == 0)
+                return null;
+
+            return template_stack.Peek().state;
         }
+    }
 
-        public CompilationState CompilationState
-        {
-            get
-            {
-                if (template_stack == null || template_stack.Count == 0)
-                    return null;
+    // convience funcs to hide offensive sending of emit messages to
+    // CompilationState temp data object.
 
-                return template_stack.Peek().state;
-            }
-        }
+    public void emit1(CommonTree opAST, Bytecode opcode, int arg)
+    {
+        CompilationState.Emit1(opAST, opcode, arg);
+    }
 
-        // convience funcs to hide offensive sending of emit messages to
-        // CompilationState temp data object.
+    public void emit1(CommonTree opAST, Bytecode opcode, string arg)
+    {
+        CompilationState.Emit1(opAST, opcode, arg);
+    }
 
-        public void emit1(CommonTree opAST, Bytecode opcode, int arg)
-        {
-            CompilationState.Emit1(opAST, opcode, arg);
-        }
+    public void emit2(CommonTree opAST, Bytecode opcode, int arg, int arg2)
+    {
+        CompilationState.Emit2(opAST, opcode, arg, arg2);
+    }
 
-        public void emit1(CommonTree opAST, Bytecode opcode, string arg)
-        {
-            CompilationState.Emit1(opAST, opcode, arg);
-        }
+    public void emit2(CommonTree opAST, Bytecode opcode, string s, int arg2)
+    {
+        CompilationState.Emit2(opAST, opcode, s, arg2);
+    }
 
-        public void emit2(CommonTree opAST, Bytecode opcode, int arg, int arg2)
-        {
-            CompilationState.Emit2(opAST, opcode, arg, arg2);
-        }
+    public void emit(CommonTree opAST, Bytecode opcode)
+    {
+        CompilationState.Emit(opAST, opcode);
+    }
 
-        public void emit2(CommonTree opAST, Bytecode opcode, string s, int arg2)
-        {
-            CompilationState.Emit2(opAST, opcode, s, arg2);
-        }
+    private void Indent(CommonTree indent)
+    {
+        CompilationState.Indent(indent);
+    }
 
-        public void emit(CommonTree opAST, Bytecode opcode)
-        {
-            CompilationState.Emit(opAST, opcode);
-        }
+    private void Dedent()
+    {
+        CompilationState.Emit(Bytecode.INSTR_DEDENT);
+    }
 
-        private void Indent(CommonTree indent)
-        {
-            CompilationState.Indent(indent);
-        }
+    public void insert(int addr, Bytecode opcode, string s)
+    {
+        CompilationState.Insert(addr, opcode, s);
+    }
 
-        private void Dedent()
-        {
-            CompilationState.Emit(Bytecode.INSTR_DEDENT);
-        }
+    public void setOption(CommonTree id)
+    {
+        CompilationState.SetOption(id);
+    }
 
-        public void insert(int addr, Bytecode opcode, string s)
-        {
-            CompilationState.Insert(addr, opcode, s);
-        }
+    public void write(int addr, short value)
+    {
+        CompilationState.Write(addr, value);
+    }
 
-        public void setOption(CommonTree id)
-        {
-            CompilationState.SetOption(id);
-        }
+    public int address()
+    {
+        return CompilationState.ip;
+    }
 
-        public void write(int addr, short value)
-        {
-            CompilationState.Write(addr, value);
-        }
+    public void func(CommonTree id)
+    {
+        CompilationState.Function(templateToken, id);
+    }
 
-        public int address()
-        {
-            return CompilationState.ip;
-        }
+    public void refAttr(CommonTree id)
+    {
+        CompilationState.ReferenceAttribute(templateToken, id);
+    }
 
-        public void func(CommonTree id)
-        {
-            CompilationState.Function(templateToken, id);
-        }
-
-        public void refAttr(CommonTree id)
-        {
-            CompilationState.ReferenceAttribute(templateToken, id);
-        }
-
-        public int defineString(string s)
-        {
-            return CompilationState.DefineString(s);
-        }
+    public int defineString(string s)
+    {
+        return CompilationState.DefineString(s);
     }
 }
