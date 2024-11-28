@@ -24,6 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="Debug\DebugTemplate.cs" />
     <Compile Remove="Debug\DebugTemplate.cs" />
   </ItemGroup>
 
