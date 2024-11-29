@@ -13,6 +13,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/dasblinkenlight/StringTemplate4</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/dasblinkenlight/StringTemplate4.git</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <LangVersion>latestmajor</LangVersion>
@@ -23,6 +24,13 @@
     <DefineConstants>$(DefineConstants);PORTABLE;NETSTANDARD</DefineConstants>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Include="README.md">
+      <Pack>true</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  
   <ItemGroup>
     <None Include="Debug\DebugTemplate.cs" />
     <Compile Remove="Debug\DebugTemplate.cs" />
