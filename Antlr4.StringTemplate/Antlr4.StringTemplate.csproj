@@ -3,17 +3,17 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>The C# port of StringTemplate 4.</Description>
-    <Version>4.3.0</Version>
-    <FileVersion>4.3.0</FileVersion>
+    <Version>4.4.0</Version>
+    <FileVersion>4.4.0</FileVersion>
     <Title>StringTemplate 4</Title>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Authors>Ken Domino</Authors>
-    <PackageId>Domemtech.StringTemplate4</PackageId>
+    <Authors>Ken Domino, Sergey Kalinichenko</Authors>
+    <PackageId>Dasblinkenlight.StringTemplate4</PackageId>
     <PackageTags>stringtemplate st4 stringtemplate4 template</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/kaby76/stringtemplate4cs</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/kaby76/stringtemplate4cs</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/dasblinkenlight/StringTemplate4</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/dasblinkenlight/StringTemplate4.git</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <LangVersion>latestmajor</LangVersion>
     <Nullable>disable</Nullable>

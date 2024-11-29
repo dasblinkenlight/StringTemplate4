@@ -1,0 +1,11 @@
+﻿<Solution>
+  <Project Path="Antlr4.StringTemplate\Antlr4.StringTemplate.csproj" />
+  <Project Path="Antlr4.Test.StringTemplate\Antlr4.Test.StringTemplate.csproj" Type="Classic C#" />
+  <Project Path="Antlr3.Runtime\Antlr3.Runtime.csproj" Type="Classic C#" />
+  <Folder Name="/Solution Items/">
+    <File Path="README.md" />
+    <File Path="LICENSE" />
+    <File Path="LICENSE.txt" />
+    <File Path="makefile" />
+  </Folder>
+</Solution>
