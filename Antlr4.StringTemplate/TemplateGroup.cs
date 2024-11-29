@@ -1328,6 +1328,9 @@ public class TemplateGroup {
             templateName = prefix + templateName;
         }
         var impl = RawGetTemplate(templateName);
+        if (impl == null) {
+            return null;
+        }
         impl.Prefix = prefix;
         return impl;
     }

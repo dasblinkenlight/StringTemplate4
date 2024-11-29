@@ -654,6 +654,14 @@ public class TestGroups : BaseTest {
     }
 
     [TestMethod]
+    public void TestLoadInvalidTemplate() {
+        var dir = TmpDir;
+        WriteFile(dir, "invalid.st", "mismatched() ::= <<hello>>");
+        var stg = new TemplateGroupDirectory(dir);
+        Assert.IsFalse(stg.IsDefined("invalid"));
+    }
+
+    [TestMethod]
     public void TestUnloadingGroupFile() {
         var dir = TmpDir;
         const string a =

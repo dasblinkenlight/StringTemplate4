@@ -99,4 +99,10 @@ public class TestGroupFromResource : BaseTest {
         Assert.AreEqual(expecting, result);
     }
 
+    [TestMethod]
+    public void TestLoadInvalidTemplateFromResource() {
+        var stg = new TemplateGroupDirectory("org/antlr/templates/dir1");
+        Assert.IsFalse(stg.IsDefined("invalid"));
+    }
+
 }
