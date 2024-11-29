@@ -155,12 +155,14 @@ public class TemplateGroup {
      */
     private static CompiledTemplate NotFoundTemplate { get; } = new();
 
-    private static TemplateGroup _defaultGroup = new();
+    public static ErrorManager DefaultErrorManager { get; } = new();
 
     /** The error manager for entire group; all compilations and executions.
      *  This gets copied to parsers, walkers, and interpreters.
      */
     private ErrorManager _errorManager = DefaultErrorManager;
+
+    private static TemplateGroup _defaultGroup = new();
 
     public TemplateGroup() {
     }
@@ -169,8 +171,6 @@ public class TemplateGroup {
         DelimiterStartChar = delimiterStartChar;
         DelimiterStopChar = delimiterStopChar;
     }
-
-    public static ErrorManager DefaultErrorManager { get; } = new();
 
     public static TemplateGroup DefaultGroup {
         get => _defaultGroup;
