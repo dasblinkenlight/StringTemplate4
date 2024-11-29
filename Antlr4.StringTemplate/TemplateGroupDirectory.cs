@@ -117,10 +117,8 @@ public class TemplateGroupDirectory : TemplateGroup {
         if (Verbose) {
             Console.WriteLine("STGroupDir.load(" + name + ")");
         }
-
         var parent = Utility.GetParent(name); // must have parent; it's fully-qualified
         var prefix = Utility.GetPrefix(name);
-
         //    	if (parent.isEmpty()) {
         //    		// no need to check for a group file as name has no parent
         //            return loadTemplateFile("/", name+TemplateFileExtension); // load t.st file
@@ -129,7 +127,6 @@ public class TemplateGroupDirectory : TemplateGroup {
         if (!Path.IsPathRooted(parent)) {
             throw new ArgumentException();
         }
-
         Uri groupFileURL;
         try {
             // see if parent of template name is a group file
@@ -138,12 +135,10 @@ public class TemplateGroupDirectory : TemplateGroup {
             ErrorManager.InternalError(null, "bad URL: " + TemplateName.GetTemplatePath(root.LocalPath, parent) + GroupFileExtension, e);
             return null;
         }
-
         if (!File.Exists(groupFileURL.LocalPath)) {
             var unqualifiedName = Path.GetFileName(name);
             return LoadTemplateFile(prefix, unqualifiedName + TemplateFileExtension); // load t.st file
         }
-
         LoadGroupFile(prefix, groupFileURL);
         return RawGetTemplate(name);
     }
@@ -153,11 +148,9 @@ public class TemplateGroupDirectory : TemplateGroup {
         if (Path.IsPathRooted(unqualifiedFileName)) {
             throw new ArgumentException();
         }
-
         if (Verbose) {
             Console.WriteLine("loadTemplateFile({0}) in group dir from {1} prefix={2}", unqualifiedFileName, root, prefix);
         }
-
         Uri f;
         try {
             var uriBuilder = new UriBuilder(root);
@@ -167,7 +160,6 @@ public class TemplateGroupDirectory : TemplateGroup {
             ErrorManager.RuntimeError(null, ErrorType.INVALID_TEMPLATE_NAME, me, Path.Combine(root.LocalPath, unqualifiedFileName));
             return null;
         }
-
         ANTLRReaderStream fs;
         try {
             if (TryOpenStream(f, out var inputStream, out _)) {
@@ -187,7 +179,6 @@ public class TemplateGroupDirectory : TemplateGroup {
             //errMgr.IOError(null, ErrorType.NO_SUCH_TEMPLATE, ioe, unqualifiedFileName);
             return null;
         }
-
         return LoadTemplateFile(prefix, unqualifiedFileName, fs);
     }
 

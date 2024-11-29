@@ -77,6 +77,7 @@ using UriFormatException = System.UriFormatException;
  *  Name inside must match filename (minus suffix).
  */
 public class TemplateGroup {
+
     protected const string GroupFileExtension = ".stg";
     protected const string TemplateFileExtension = ".st";
 
@@ -99,7 +100,7 @@ public class TemplateGroup {
     public char DelimiterStopChar { get; private set; } = '>';
 
     /** Maps template name to StringTemplate object. synchronized. */
-    private readonly Dictionary<string, CompiledTemplate> templates = new();
+    private readonly Dictionary<string,CompiledTemplate> templates = new();
 
     /** Maps dict names to HashMap objects.  This is the list of dictionaries
      *  defined by the user like typeInitMap ::= ["int":"0"]
@@ -165,8 +166,8 @@ public class TemplateGroup {
     }
 
     public TemplateGroup(char delimiterStartChar, char delimiterStopChar) {
-        this.DelimiterStartChar = delimiterStartChar;
-        this.DelimiterStopChar = delimiterStopChar;
+        DelimiterStartChar = delimiterStartChar;
+        DelimiterStopChar = delimiterStopChar;
     }
 
     public static ErrorManager DefaultErrorManager { get; } = new();
@@ -249,7 +250,6 @@ public class TemplateGroup {
         } else {
             template = Utility.Strip(templateToken.Text, 1);
         }
-
         var impl = Compile(FileName, null, null, template, templateToken);
         var st = CreateStringTemplateInternally(impl);
         st.Group = this;
@@ -262,19 +262,18 @@ public class TemplateGroup {
     /** Is this template defined in this group or from this group below?
      *  Names must be absolute, fully-qualified names like /a/b
      */
-    protected virtual bool IsDefined(string name) {
+    public virtual bool IsDefined(string name) {
         return LookupTemplate(name) != null;
     }
 
     /** Look up a fully-qualified name */
-    public CompiledTemplate LookupTemplate(string name)
-    {
-        if (name[0] != '/')
+    public CompiledTemplate LookupTemplate(string name) {
+        if (name[0] != '/') {
             name = "/" + name;
-
-        if (Verbose)
+        }
+        if (Verbose) {
             Console.WriteLine("{0}.LookupTemplate({1})", Name, name);
-
+        }
         templates.TryGetValue(name, out var code);
         if (code == NotFoundTemplate) {
             if (Verbose) {
@@ -282,7 +281,6 @@ public class TemplateGroup {
             }
             return null;
         }
-
         // try to load from disk and look up again
         code ??= Load(name) ?? LookupImportedTemplate(name);
 
@@ -292,10 +290,9 @@ public class TemplateGroup {
             }
             templates[name] = NotFoundTemplate;
         }
-
-        if (Verbose && code != null)
+        if (Verbose && code != null) {
             Console.WriteLine("{0}.LookupTemplate({1}) found", Name, name);
-
+        }
         return code;
     }
 
@@ -303,19 +300,16 @@ public class TemplateGroup {
      *  and import relationships.  This essentially forces next GetInstanceOf
      *  to reload templates.
      */
-    public virtual void Unload()
-    {
-        lock (this)
-        {
+    public virtual void Unload() {
+        lock (this) {
             templates.Clear();
             dictionaries.Clear();
-
-            foreach (var import in _imports)
+            foreach (var import in _imports) {
                 import.Unload();
-
-            foreach (var import in _importsToClearOnUnload)
+            }
+            foreach (var import in _importsToClearOnUnload) {
                 _imports.Remove(import);
-
+            }
             _importsToClearOnUnload.Clear();
         }
     }
@@ -323,44 +317,37 @@ public class TemplateGroup {
     /** Load st from disk if dir or load whole group file if .stg file (then
      *  return just one template). name is fully-qualified.
      */
-    protected virtual CompiledTemplate Load(string name)
-    {
+    protected virtual CompiledTemplate Load(string name) {
         return null;
     }
 
     /** Force a load if it makes sense for the group */
-    public virtual void Load()
-    {
+    public virtual void Load() {
     }
 
-    protected internal virtual CompiledTemplate LookupImportedTemplate(string name)
-    {
-        if (_imports == null)
+    protected internal CompiledTemplate LookupImportedTemplate(string name) {
+        if (_imports == null) {
             return null;
-
-        foreach (var g in _imports)
-        {
-            if (Verbose)
+        }
+        foreach (var g in _imports) {
+            if (Verbose) {
                 Console.WriteLine("checking {0} for imported {1}", g.Name, name);
-
+            }
             var code = g.LookupTemplate(name);
-            if (code != null)
-            {
-                if (Verbose)
+            if (code != null) {
+                if (Verbose) {
                     Console.WriteLine("{0}.LookupImportedTemplate({1}) found", g.Name, name);
-
+                }
                 return code;
             }
         }
-
-        if (Verbose)
+        if (Verbose) {
             Console.WriteLine("{0} not found in {1} imports", name, Name);
-
+        }
         return null;
     }
 
-    public CompiledTemplate RawGetTemplate(string name)
-    {
+    public CompiledTemplate RawGetTemplate(string name) {
         templates.TryGetValue(name, out var template);
         return template;
     }
@@ -414,7 +401,6 @@ public class TemplateGroup {
         if (fullyQualifiedTemplateName.IndexOf('.') >= 0) {
             throw new ArgumentException("cannot have '.' in template names", nameof(fullyQualifiedTemplateName));
         }
-
         if (fullyQualifiedTemplateName[0] != '/') {
             throw new ArgumentException("Expected a fully qualified template name.", nameof(fullyQualifiedTemplateName));
         }
@@ -488,7 +474,6 @@ public class TemplateGroup {
                 ErrorManager.CompiletimeError(ErrorType.TEMPLATE_REDEFINITION, null, defT);
                 return;
             }
-
             // ReSharper disable once GrammarMistakeInComment
             /* If this region was previously defined, the following actions should be taken:
              *
@@ -519,7 +504,6 @@ public class TemplateGroup {
              *      Embedded        Embedded       Error    Previous    Multiple embedded definitions of the same region were given in a
              *                                                          template. Give an error and use the previous one.
              */
-
             // handle the Explicit/Explicit and Embedded/Embedded error cases
             if (code.RegionDefType != Template.RegionType.Implicit && code.RegionDefType == prev.RegionDefType) {
                 ErrorManager.CompiletimeError(
@@ -529,7 +513,6 @@ public class TemplateGroup {
                 // keep the previous one
                 return;
             }
-
             switch (code.RegionDefType) {
                 // handle the Explicit/Embedded and Embedded/Explicit warning cases
                 case Template.RegionType.Embedded when prev.RegionDefType == Template.RegionType.Explicit:
@@ -548,7 +531,6 @@ public class TemplateGroup {
                 }
             }
         }
-
         code.NativeGroup = this;
         code.TemplateDefStartToken = defT;
         templates[name] = code;
@@ -563,8 +545,7 @@ public class TemplateGroup {
         string name,
         List<FormalArgument> args,
         string template,
-        IToken templateToken) // for error location
-    {
+        IToken templateToken) {  // for error location
         //System.out.println("TemplateGroup.Compile: "+enclosingTemplateName);
         var c = new TemplateCompiler(this);
         return c.Compile(srcName, name, args, template, templateToken);
@@ -598,23 +579,19 @@ public class TemplateGroup {
         if (openDelimiter == null) {
             throw new ArgumentNullException(nameof(openDelimiter));
         }
-        if (closeDelimiter == null)
+        if (closeDelimiter == null) {
             throw new ArgumentNullException(nameof(closeDelimiter));
-
+        }
         var openDelimiterText = openDelimiter.Text.Trim('"');
-        if (openDelimiterText.Length != 1)
-        {
+        if (openDelimiterText.Length != 1) {
             ErrorManager.CompiletimeError(ErrorType.INVALID_DELIMITER, null, openDelimiter, openDelimiterText);
             return;
         }
-
         var closeDelimiterText = closeDelimiter.Text.Trim('"');
-        if (closeDelimiterText.Length != 1)
-        {
+        if (closeDelimiterText.Length != 1) {
             ErrorManager.CompiletimeError(ErrorType.INVALID_DELIMITER, null, openDelimiter, closeDelimiterText);
             return;
         }
-
         SetDelimiters(openDelimiterText[0], closeDelimiterText[0]);
     }
 
@@ -665,9 +642,7 @@ public class TemplateGroup {
         //Console.WriteLine("import {0}", fileName);
         var isGroupFile = fileName.EndsWith(GroupFileExtension);
         var isTemplateFile = fileName.EndsWith(TemplateFileExtension);
-
         TemplateGroup g;
-
         // search path is: working dir, g.stg's dir, CLASSPATH
         var thisRoot = RootDirUri;
         Uri fileUnderRoot;
@@ -678,7 +653,6 @@ public class TemplateGroup {
             ErrorManager.InternalError(null, $"can't build URL for {thisRoot}/{fileName}", mfe);
             return;
         }
-
         if (isTemplateFile) {
             g = new TemplateGroup(DelimiterStartChar, DelimiterStopChar) {
                 Listener = Listener
@@ -741,7 +715,7 @@ public class TemplateGroup {
             var fs = new ANTLRReaderStream(new StreamReader(stream, Encoding));
             var timer = System.Diagnostics.Stopwatch.StartNew();
             var cachePath = Path.Combine(Path.GetTempPath(), "ST4TemplateCache");
-            if (EnableCache && TryLoadGroupFromCache(cachePath, prefix, fileName)) {
+            if (EnableCache && TryLoadGroupFromCache(cachePath, prefix, fileName, accessTime)) {
                 System.Diagnostics.Debug.WriteLine("Successfully loaded the group from cache {0} in {1}ms.", Name, timer.ElapsedMilliseconds);
             } else {
                 var lexer = new GroupLexer(fs);
@@ -761,7 +735,7 @@ public class TemplateGroup {
         }
     }
 
-    private bool TryLoadGroupFromCache(string cachePath, string prefix, string fileName) {
+    private bool TryLoadGroupFromCache(string cachePath, string prefix, string fileName, DateTime accessTime) {
         var cacheFileName = Path.GetFileNameWithoutExtension(fileName) + (uint)fileName.GetHashCode() +
             prefix.Replace(Path.DirectorySeparatorChar, '_').Replace(Path.AltDirectorySeparatorChar, '_');
         cacheFileName = Path.Combine(cachePath, cacheFileName);
@@ -770,7 +744,7 @@ public class TemplateGroup {
         }
         try {
             var data = File.ReadAllBytes(cacheFileName);
-            return TryLoadCachedGroup(data, File.GetLastWriteTimeUtc(new Uri(fileName).LocalPath));
+            return TryLoadCachedGroup(data, accessTime);
         } catch (IOException) {
             return false;
         }
@@ -783,17 +757,15 @@ public class TemplateGroup {
         if (cacheTime != lastWriteTime) {
             return false;
         }
-        var objects = new Dictionary<int,object> { { 0, null } };
-
+        var objects = new Dictionary<int, object> { { 0, null } };
         // first pass constructs objects
         var objectTableOffset = reader.BaseStream.Position;
         var objectCount = reader.ReadInt32();
         for (var i = 0; i < objectCount; i++) {
             var key = reader.ReadInt32();
-            var obj = CreateGroupObject(reader, key, objects);
+            var obj = CreateGroupObject(reader, objects);
             objects.Add(key, obj);
         }
-
         reader.BaseStream.Seek(objectTableOffset + 4, SeekOrigin.Begin);
         for (var i = 0; i < objectCount; i++) {
             var key = reader.ReadInt32();
@@ -801,8 +773,8 @@ public class TemplateGroup {
         }
 
         var importsToClearOnUnload = new List<TemplateGroup>();
-        var localTemplates = new Dictionary<string,CompiledTemplate>();
-        var localDictionaries = new Dictionary<string,IDictionary<string,object>>();
+        var localTemplates = new Dictionary<string, CompiledTemplate>();
+        var localDictionaries = new Dictionary<string, IDictionary<string, object>>();
 
         // imported groups
         var importCount = reader.ReadInt32();
@@ -835,30 +807,27 @@ public class TemplateGroup {
                 dictionary[key] = value;
             }
         }
-
         _importsToClearOnUnload.AddRange(importsToClearOnUnload);
-        this.DelimiterStartChar = delimiterStartChar;
-        this.DelimiterStopChar = delimiterStopChar;
-
+        DelimiterStartChar = delimiterStartChar;
+        DelimiterStopChar = delimiterStopChar;
         foreach (var pair in localTemplates) {
-            this.templates[pair.Key] = pair.Value;
+            templates[pair.Key] = pair.Value;
         }
-
         foreach (var pair in localDictionaries) {
-            this.dictionaries[pair.Key] = pair.Value;
+            dictionaries[pair.Key] = pair.Value;
         }
 
-        System.Diagnostics.Debug.WriteLine("Successfully loaded the cached group {0} in {1}ms.", Name, timer.ElapsedMilliseconds);
+        System.Diagnostics.Debug.WriteLine(
+            $"Successfully loaded the cached group {Name} in {timer.ElapsedMilliseconds}ms.");
         return true;
     }
 
-    private object CreateGroupObject(BinaryReader reader, int _, Dictionary<int, object> objects) {
+    private object CreateGroupObject(BinaryReader reader, Dictionary<int,object> objects) {
         var typeKey = reader.ReadInt32();
         if (typeKey == 0) {
             // this is a string
             return reader.ReadString();
         }
-
         var typeName = (string)objects[typeKey];
         if (typeName == typeof(bool).FullName) {
             return reader.ReadBoolean();
@@ -899,7 +868,7 @@ public class TemplateGroup {
             var formalArgsLength = reader.ReadInt32();
             if (formalArgsLength > 0) {
                 for (var i = 0; i < formalArgsLength; i++) {
-                    reader.ReadInt32();
+                    reader.ReadInt32(); // formalArgObject
                 }
             }
 
@@ -910,14 +879,11 @@ public class TemplateGroup {
                     compiledTemplate.strings[i] = reader.ReadString();
                 }
             }
-
             var instrsLength = reader.ReadInt32();
             if (instrsLength >= 0) {
                 compiledTemplate.instrs = reader.ReadBytes(instrsLength);
             }
-
             compiledTemplate.codeSize = reader.ReadInt32();
-
             var sourceMapLength = reader.ReadInt32();
             if (sourceMapLength >= 0) {
                 compiledTemplate.sourceMap = new Interval[sourceMapLength];
@@ -949,9 +915,7 @@ public class TemplateGroup {
                 reader.ReadInt32(); // localObject
             }
             reader.ReadInt32(); // groupObject
-            var group = this;
-            var template = new Template(group);
-            return template;
+            return new Template(group:this);
         }
         if (typeName == typeof(TemplateGroupFile).FullName) {
             var isDefaultGroup = reader.ReadBoolean();
@@ -970,14 +934,13 @@ public class TemplateGroup {
         throw new NotImplementedException();
     }
 
-    private void LoadGroupObject(BinaryReader reader, int key, Dictionary<int, object> objects) {
+    private void LoadGroupObject(BinaryReader reader, int key, Dictionary<int,object> objects) {
         var typeKey = reader.ReadInt32();
         if (typeKey == 0) {
             // this is a string, nothing more to load
             reader.ReadString();
             return;
         }
-
         var typeName = (string)objects[typeKey];
         if (typeName == typeof(bool).FullName) {
             // nothing more to load
@@ -1002,16 +965,13 @@ public class TemplateGroup {
             reader.ReadString(); // prefix
             reader.ReadString(); // template
             var templateDefStartTokenObject = reader.ReadInt32();
-            reader.ReadInt32(); // templateDefStartTokenObject
             reader.ReadBoolean(); // hasFormalArgs
             reader.ReadInt32(); // nativeGroupObject
             reader.ReadBoolean(); // isRegion
             reader.ReadInt32(); // regionDefType
             reader.ReadBoolean(); // isAnonSubtemplate
-
             compiledTemplate.TemplateDefStartToken = (IToken)objects[templateDefStartTokenObject];
             compiledTemplate.NativeGroup = this;
-
             var formalArgsLength = reader.ReadInt32();
             if (formalArgsLength >= 0) {
                 var formalArguments = new List<FormalArgument>(formalArgsLength);
@@ -1021,7 +981,6 @@ public class TemplateGroup {
                 }
                 compiledTemplate.FormalArguments = formalArguments;
             }
-
             var stringsLength = reader.ReadInt32();
             for (var i = 0; i < stringsLength; i++) {
                 reader.ReadString();
@@ -1030,32 +989,29 @@ public class TemplateGroup {
             if (instrsLength >= 0) {
                 reader.ReadBytes(instrsLength);
             }
-
             reader.ReadInt32(); // codeSize
-
             var sourceMapLength = reader.ReadInt32();
             for (var i = 0; i < sourceMapLength; i++) {
                 reader.ReadInt32(); // start
                 reader.ReadInt32(); // length
             }
-
             return;
         }
         if (typeName == typeof(FormalArgument).FullName) {
             var formalArgument = (FormalArgument)objects[key];
             reader.ReadString(); // name
             reader.ReadInt32(); // index
+            reader.ReadInt32(); // index of defaultValueToken
             var defaultValueObject = reader.ReadInt32();
             var compiledDefaultValue = reader.ReadInt32();
-
             formalArgument.DefaultValue = objects[defaultValueObject];
             formalArgument.CompiledDefaultValue = (CompiledTemplate)objects[compiledDefaultValue];
-        } else if (typeName == typeof(Template).FullName) {
+            return;
+        }
+        if (typeName == typeof(Template).FullName) {
             var template = (Template)objects[key];
-
             var implObject = reader.ReadInt32();
             template.impl = (CompiledTemplate)objects[implObject];
-
             var localsCount = reader.ReadInt32();
             if (localsCount >= 0) {
                 template.locals = new object[localsCount];
@@ -1064,10 +1020,8 @@ public class TemplateGroup {
                     template.locals[i] = objects[localObject];
                 }
             }
-
             var groupObject = reader.ReadInt32();
             template.Group = (TemplateGroup)objects[groupObject];
-
             return;
         }
         if (typeName == typeof(TemplateGroupFile).FullName) {
@@ -1085,43 +1039,35 @@ public class TemplateGroup {
         var timer = System.Diagnostics.Stopwatch.StartNew();
         var comparer = ObjectReferenceEqualityComparer<object>.Default;
         var serializedObjects = new HashSet<object>(ObjectReferenceEqualityComparer<object>.Default);
-
         // start with the root set
-        serializedObjects.UnionWith(_importsToClearOnUnload.Where(i => i != null));
-        serializedObjects.UnionWith(templates.Values.Where(i => i != null));
-        serializedObjects.UnionWith(dictionaries.Values.SelectMany(i => i.Values).Where(i => i != null));
+        serializedObjects.UnionWith(_importsToClearOnUnload.Where(o => o != null));
+        serializedObjects.UnionWith(templates.Values.Where(o => o != null));
+        serializedObjects.UnionWith(dictionaries.Values.SelectMany(i => i.Values).Where(o => o != null));
         // update to the reachable set
         serializedObjects = CalculateReachableSerializedObjects(serializedObjects.ToArray());
-
         var stream = new MemoryStream();
         var writer = new BinaryWriter(stream, Encoding.UTF8);
         writer.Write(lastWriteTime.Ticks);
-
         // objects
         var orderedObjectsForExport = GetOrderedExports(serializedObjects);
         writer.Write(orderedObjectsForExport.Count);
-        foreach (var obj in orderedObjectsForExport)
-        {
+        foreach (var obj in orderedObjectsForExport) {
             WriteGroupObject(writer, obj);
         }
-
         // imported groups
         writer.Write(_importsToClearOnUnload.Count);
         foreach (var group in _importsToClearOnUnload) {
             writer.Write(comparer.GetHashCode(group));
         }
-
         // delimiters
         writer.Write(DelimiterStartChar);
         writer.Write(DelimiterStopChar);
-
         // templates & aliases
         writer.Write(templates.Count);
         foreach (var template in templates) {
             writer.Write(template.Key);
             writer.Write(comparer.GetHashCode(template.Value));
         }
-
         // dictionaries
         writer.Write(dictionaries.Count);
         foreach (var dictionary in dictionaries) {
@@ -1132,24 +1078,21 @@ public class TemplateGroup {
                 writer.Write(comparer.GetHashCode(dictionaryValue.Value));
             }
         }
-
-        System.Diagnostics.Debug.WriteLine("Successfully cached the group {0} in {1}ms ({2} bytes).", Name, timer.ElapsedMilliseconds, stream.Length);
-
+        System.Diagnostics.Debug.WriteLine(
+            $"Successfully cached the group {Name} in {timer.ElapsedMilliseconds}ms ({stream.Length} bytes).");
         Directory.CreateDirectory(cachePath);
-
-        var cacheFileName = Path.GetFileNameWithoutExtension(fileName) + (uint)fileName.GetHashCode() + prefix.Replace(Path.DirectorySeparatorChar, '_').Replace(Path.AltDirectorySeparatorChar, '_');
+        var cacheFileName = Path.GetFileNameWithoutExtension(fileName) + (uint)fileName.GetHashCode() +
+            prefix.Replace(Path.DirectorySeparatorChar, '_').Replace(Path.AltDirectorySeparatorChar, '_');
         cacheFileName = Path.Combine(cachePath, cacheFileName);
         File.WriteAllBytes(cacheFileName, stream.ToArray());
     }
 
-    private List<object> GetOrderedExports(IEnumerable<object> serializedObjects)
-    {
+    private List<object> GetOrderedExports(IEnumerable<object> serializedObjects) {
         var exportList = new List<object>();
         var visited = new HashSet<object>(ObjectReferenceEqualityComparer<object>.Default);
         foreach (var obj in serializedObjects) {
             GetOrderedExports(obj, exportList, visited);
         }
-
         return exportList;
     }
 
@@ -1157,41 +1100,34 @@ public class TemplateGroup {
         if (currentObject == null || !visited.Add(currentObject)) {
             return;
         }
-
         // constructor dependencies
-        if (!(currentObject is Type) && !(currentObject is string)) {
+        if (currentObject is not Type && currentObject is not string) {
             GetOrderedExports(currentObject.GetType(), exportList, visited);
         }
-
         if (currentObject is FormalArgument formalArgument) {
             GetOrderedExports(formalArgument.DefaultValueToken, exportList, visited);
         }
-
         exportList.Add(currentObject);
     }
 
     private void WriteGroupObjectReference(BinaryWriter writer, object obj) {
-        writer.Write(obj == null ? 0 : ObjectReferenceEqualityComparer<object>.Default.GetHashCode(obj));
+        writer.Write(obj != null ? ObjectReferenceEqualityComparer<object>.Default.GetHashCode(obj) : 0);
     }
 
     private void WriteGroupObject(BinaryWriter writer, object obj) {
         var comparer = ObjectReferenceEqualityComparer<object>.Default;
         writer.Write(comparer.GetHashCode(obj));
-
-        if (obj is string str) {
-            writer.Write(0);
-            writer.Write(str);
-            return;
+        switch (obj) {
+            case string str:
+                writer.Write(0);
+                writer.Write(str);
+                return;
+            case Type type:
+                writer.Write(0);
+                writer.Write(type.FullName!);
+                return;
         }
-
-        if (obj is Type type) {
-            writer.Write(0);
-            writer.Write(type.FullName!);
-            return;
-        }
-
         WriteGroupObjectReference(writer, obj.GetType());
-
         switch (obj) {
             case bool b:
                 writer.Write(b);
@@ -1216,7 +1152,6 @@ public class TemplateGroup {
                 writer.Write(compiledTemplate.IsRegion);
                 writer.Write((int)compiledTemplate.RegionDefType);
                 writer.Write(compiledTemplate.IsAnonSubtemplate);
-
                 if (compiledTemplate.FormalArguments == null) {
                     writer.Write(-1);
                 } else {
@@ -1225,7 +1160,6 @@ public class TemplateGroup {
                         WriteGroupObjectReference(writer, arg);
                     }
                 }
-
                 if (compiledTemplate.strings == null) {
                     writer.Write(-1);
                 } else {
@@ -1234,16 +1168,13 @@ public class TemplateGroup {
                         writer.Write(s);
                     }
                 }
-
                 if (compiledTemplate.instrs == null) {
                     writer.Write(-1);
                 } else {
                     writer.Write(compiledTemplate.instrs.Length);
                     writer.Write(compiledTemplate.instrs);
                 }
-
                 writer.Write(compiledTemplate.codeSize);
-
                 if (compiledTemplate.sourceMap == null) {
                     writer.Write(-1);
                 } else {
@@ -1252,14 +1183,14 @@ public class TemplateGroup {
                         if (interval == null) {
                             writer.Write(-1);
                             writer.Write(-1);
-                        } else {
+                        }
+                        else {
                             writer.Write(interval.Start);
                             writer.Write(interval.Length);
                         }
                     }
                 }
-
-                break;
+                return;
             }
             case FormalArgument formalArgument:
                 writer.Write(formalArgument.Name);
@@ -1267,7 +1198,7 @@ public class TemplateGroup {
                 WriteGroupObjectReference(writer, formalArgument.DefaultValueToken);
                 WriteGroupObjectReference(writer, formalArgument.DefaultValue);
                 WriteGroupObjectReference(writer, formalArgument.CompiledDefaultValue);
-                break;
+                return;
             case Template template: {
                 WriteGroupObjectReference(writer, template.impl);
                 if (template.locals == null) {
@@ -1279,18 +1210,18 @@ public class TemplateGroup {
                     }
                 }
                 WriteGroupObjectReference(writer, template.Group);
-                break;
+                return;
             }
-            default: {
-                if (obj.GetType() == typeof(TemplateGroupFile) || obj == DefaultGroup) {
-                    writer.Write(obj == DefaultGroup);
-                } else {
-                    throw new NotImplementedException();
-                }
-
-                break;
-            }
+            case TemplateGroupFile:
+                writer.Write(false);
+                return;
         }
+
+        if (obj == DefaultGroup) {
+            writer.Write(true);
+            return;
+        }
+        throw new NotImplementedException();
     }
 
     private HashSet<object> CalculateReachableSerializedObjects(ICollection<object> rootSet) {
@@ -1310,7 +1241,6 @@ public class TemplateGroup {
             case bool:
             case string:
             case IToken:
-            // nothing else to do
             case Type:
                 // nothing more to do
                 return;
@@ -1322,19 +1252,19 @@ public class TemplateGroup {
                         CalculateReachableSerializedObjects(argument, reachableObjects);
                     }
                 }
+
                 if (compiledTemplate.ImplicitlyDefinedTemplates != null) {
-                    foreach (var template in compiledTemplate.ImplicitlyDefinedTemplates) {
-                        CalculateReachableSerializedObjects(template, reachableObjects);
+                    foreach (var t in compiledTemplate.ImplicitlyDefinedTemplates) {
+                        CalculateReachableSerializedObjects(t, reachableObjects);
                     }
                 }
-
-                break;
+                return;
             }
             case FormalArgument formalArgument:
                 CalculateReachableSerializedObjects(formalArgument.DefaultValueToken, reachableObjects);
                 CalculateReachableSerializedObjects(formalArgument.DefaultValue, reachableObjects);
                 CalculateReachableSerializedObjects(formalArgument.CompiledDefaultValue, reachableObjects);
-                break;
+                return;
             case Template template: {
                 CalculateReachableSerializedObjects(template.impl, reachableObjects);
                 if (template.locals != null) {
@@ -1344,25 +1274,26 @@ public class TemplateGroup {
                 }
 
                 CalculateReachableSerializedObjects(template.Group, reachableObjects);
-                break;
+                return;
             }
-            default: {
-                if (obj.GetType() == typeof(TemplateGroupFile) || obj == DefaultGroup) {
-                    // these are the only supported groups for now
-                    if (obj != this && obj != DefaultGroup) {
-                        throw new NotSupportedException();
-                    }
-                    return;
+            case TemplateGroupFile: {
+                if (obj != this) {
+                    throw new NotSupportedException();
                 }
-                break;
+                return;
+            }
+            case TemplateGroup: {
+                if (obj != DefaultGroup) {
+                    throw new NotSupportedException();
+                }
+                return;
             }
         }
         throw new NotImplementedException();
     }
 
     /** Load template file into this group using absolute filename */
-    public virtual CompiledTemplate LoadAbsoluteTemplateFile(string fileName)
-    {
+    public CompiledTemplate LoadAbsoluteTemplateFile(string fileName) {
         ANTLRReaderStream fs;
         try {
             fs = new ANTLRReaderStream(new StreamReader(File.OpenRead(fileName), Encoding)) {
@@ -1456,11 +1387,6 @@ public class TemplateGroup {
         return factory;
     }
 
-    /** StringTemplate object factory; each group can have its own. */
-    public Template CreateStringTemplate() {
-        return new Template(this);
-    }
-
     private Template CreateStringTemplate(CompiledTemplate impl) {
         var st = new Template(this) {
             impl = impl
@@ -1551,7 +1477,7 @@ public class TemplateGroup {
         if (uri.IsFile) {
             if (File.Exists(uri.LocalPath)) {
                 inputStream = File.OpenRead(uri.LocalPath);
-                lastModified = File.GetLastWriteTime(uri.LocalPath);
+                lastModified = File.GetLastWriteTimeUtc(uri.LocalPath);
                 return inputStream != null;
             }
         } else {
@@ -1579,10 +1505,12 @@ public class TemplateGroup {
         res.Append('.');
         if (!string.IsNullOrEmpty(ResourceRoot)) {
             res.Append(ResourceRoot);
-            res.Append('.');
+            if (name.Length != 0) {
+                res.Append('.');
+            }
         }
-        res.Append(name.Replace("/", "."));
-        return res.ToString();
+        res.Append(name);
+        return res.ToString().Replace("/", ".");
     }
 
 }

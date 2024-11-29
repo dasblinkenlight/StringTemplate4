@@ -30,20 +30,33 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.Test.StringTemplate;
-
 using Antlr4.StringTemplate;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+namespace Antlr4.Test.StringTemplate;
+
 [TestClass]
-public class TestGroupFromResource : BaseTest {
+public class TestGroupCaching : BaseTest {
 
     private string originalRoot;
 
     [TestInitialize]
     public void Initialize() {
-        TemplateGroup.ResourceAssembly = typeof(TestGroupFromResource).Assembly;
+        TemplateGroup.ResourceAssembly = typeof(TestGroupCaching).Assembly;
         originalRoot = TemplateGroup.ResourceRoot;
+        TemplateGroup.ResourceRoot = "Resources/caching";
+
+        // Warm up cache
+        var tgDir = new TemplateGroupDirectory("") {
+            EnableCache = true
+        };
+        Assert.IsTrue(tgDir.IsDefined("cachingtemplate"));
+        var templateGroup = new TemplateGroupFile("cachinggroup.stg") {
+            EnableCache = true
+        };
+        Assert.IsNotNull(templateGroup);
+        var st = templateGroup.GetInstanceOf("a");
+        Assert.IsNotNull(st);
     }
 
     [TestCleanup]
@@ -53,49 +66,27 @@ public class TestGroupFromResource : BaseTest {
     }
 
     [TestMethod]
-    public void TestLoadTemplateFileFromDir() {
-        var stg = new TemplateGroupDirectory("org/antlr/templates/dir1");
-        var st = stg.GetInstanceOf("sample");
+    public void TestLoadTemplateGroupFromCache() {
+        var stg = new TemplateGroupFile("cachinggroup.stg") {
+            EnableCache = true
+        };
+        Assert.IsTrue(stg.IsDefined("a"));
+        var st = stg.GetInstanceOf("a");
+        st.Add("x", new[] { "one", "two", "three" });
         var result = st.Render();
-        const string expecting = "a test";
+        const string expecting = "foo [one:one] [two:two] [three:three] bar";
         Assert.AreEqual(expecting, result);
     }
 
     [TestMethod]
-    public void TestLoadTemplateFileInSubdir() {
-        var stg = new TemplateGroupDirectory("org/antlr/templates");
-        var st = stg.GetInstanceOf("dir1/sample");
+    public void TestLoadTemplateUnknownGroup() {
+        var tgDir = new TemplateGroupDirectory("") {
+            EnableCache = true
+        };
+        var st = tgDir.GetInstanceOf("cachingtemplate");
+        Assert.IsNotNull(st);
         var result = st.Render();
-        const string expecting = "a test";
-        Assert.AreEqual(expecting, result);
-    }
-
-    [TestMethod]
-    public void TestLoadTemplateGroupFileWithModifiedPrefix() {
-        TemplateGroup.ResourceRoot = "Resources.org.antlr.templates.dir1";
-        var stg = new TemplateGroupFile("testgroupfile.stg");
-        var st = stg.GetInstanceOf("t");
-        var result = st.Render();
-        const string expecting = "foo";
-        Assert.AreEqual(expecting, result);
-    }
-
-    [TestMethod]
-    public void TestLoadTemplateGroupDirectoryWithModifiedPrefix() {
-        TemplateGroup.ResourceRoot = "Resources.org.antlr.templates";
-        var stg = new TemplateGroupDirectory("dir1");
-        var st = stg.GetInstanceOf("sample");
-        var result = st.Render();
-        const string expecting = "a test";
-        Assert.AreEqual(expecting, result);
-    }
-
-    [TestMethod]
-    public void TestLoadTemplateGroupFileFromResource() {
-        var stg = new TemplateGroupFile("org/antlr/templates/dir1/testgroupfile.stg");
-        var st = stg.GetInstanceOf("t");
-        var result = st.Render();
-        const string expecting = "foo";
+        const string expecting = "hello world";
         Assert.AreEqual(expecting, result);
     }
 

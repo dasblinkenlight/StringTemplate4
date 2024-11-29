@@ -1,0 +1,1 @@
+cachingtemplate() ::= <<hello world>>

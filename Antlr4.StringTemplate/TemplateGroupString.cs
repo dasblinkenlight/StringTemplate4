@@ -57,7 +57,7 @@ public class TemplateGroupString : TemplateGroup {
 
     public override string FileName { get; }
 
-    protected override bool IsDefined(string name) {
+    public override bool IsDefined(string name) {
         if (!alreadyLoaded) {
             Load();
         }

@@ -124,7 +124,7 @@ public class TemplateGroupFile : TemplateGroup {
         _fileName = null;
     }
 
-    protected override bool IsDefined(string name) {
+    public override bool IsDefined(string name) {
         if (!_alreadyLoaded) {
             Load();
         }

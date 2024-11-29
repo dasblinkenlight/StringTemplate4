@@ -30,6 +30,8 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\org\antlr\templates\dir1\testgroupfile.stg" />
     <EmbeddedResource Include="Resources\org\antlr\templates\dir1\sample.st" />
+    <EmbeddedResource Include="Resources\caching\cachinggroup.stg" />
+    <EmbeddedResource Include="Resources\caching\cachingtemplate.st" />
   </ItemGroup>
 
 </Project>
