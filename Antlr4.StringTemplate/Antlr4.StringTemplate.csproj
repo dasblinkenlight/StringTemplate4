@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>The C# port of StringTemplate 4.</Description>
-    <Version>4.4.0</Version>
-    <FileVersion>4.4.0</FileVersion>
+    <Version>4.4.1</Version>
+    <FileVersion>4.4.1</FileVersion>
     <Title>StringTemplate 4</Title>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Authors>Ken Domino, Sergey Kalinichenko</Authors>
@@ -15,10 +15,17 @@
     <PackageProjectUrl>https://github.com/dasblinkenlight/StringTemplate4</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/dasblinkenlight/StringTemplate4.git</RepositoryUrl>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
     <RepositoryType>Git</RepositoryType>
     <LangVersion>latestmajor</LangVersion>
     <Nullable>disable</Nullable>
   </PropertyGroup>
+
+  <Target DependsOnTargets="ResolveReferences" Name="CopyProjectReferencesToPackage">
+    <ItemGroup>
+      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))"/>
+    </ItemGroup>
+  </Target>
 
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);PORTABLE;NETSTANDARD</DefineConstants>
@@ -30,14 +37,17 @@
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
-  
+
   <ItemGroup>
     <None Include="Debug\DebugTemplate.cs" />
     <Compile Remove="Debug\DebugTemplate.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Antlr3.Runtime\Antlr3.Runtime.csproj" />
+    <ProjectReference Include="..\Antlr3.Runtime\Antlr3.Runtime.csproj">
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <IncludeAssets>Antlr3.Runtime.dll</IncludeAssets>
+    </ProjectReference>
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
