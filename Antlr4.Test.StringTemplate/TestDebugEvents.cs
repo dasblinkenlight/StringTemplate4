@@ -102,7 +102,7 @@ public class TestDebugEvents : BaseTest {
         //                            012 345
         var g = new TemplateGroupString(templates);
         var st = g.GetInstanceOf("t");
-        st.impl.Dump();
+        TestContext.WriteLine(st.impl.ToString());
         var writer = new StringWriter();
         var events = st.GetEvents(new AutoIndentWriter(writer, "\n"));
         const string expected =

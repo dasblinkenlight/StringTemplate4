@@ -43,7 +43,6 @@ using Misc;
 
 using ArgumentException = ArgumentException;
 using ArgumentNullException = ArgumentNullException;
-using Console = Console;
 using Math = Math;
 using NotSupportedException = NotSupportedException;
 using StringWriter = System.IO.StringWriter;
@@ -292,10 +291,6 @@ public class CompiledTemplate {
     public string GetInstructions() {
         var dis = new BytecodeDisassembler(this);
         return dis.GetInstructions();
-    }
-
-    public void Dump() {
-        Console.Write(Disassemble());
     }
 
     private string Disassemble() {

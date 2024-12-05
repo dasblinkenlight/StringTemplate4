@@ -30,20 +30,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate;
-
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Compiler;
-using Debug;
-using Extensions;
-using Misc;
-
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using ArgumentNullException = System.ArgumentNullException;
 using Array = System.Array;
 using BitConverter = System.BitConverter;
-using Console = System.Console;
 using CultureInfo = System.Globalization.CultureInfo;
 using Environment = System.Environment;
 using Exception = System.Exception;
@@ -56,6 +50,13 @@ using IOException = System.IO.IOException;
 using Math = System.Math;
 using StringBuilder = System.Text.StringBuilder;
 using StringWriter = System.IO.StringWriter;
+
+namespace Antlr4.StringTemplate;
+
+using Compiler;
+using Debug;
+using Extensions;
+using Misc;
 
 /** This class knows how to execute template bytecodes relative to a
  *  particular TemplateGroup. To execute the byte codes, we need an output stream
@@ -76,12 +77,11 @@ using StringWriter = System.IO.StringWriter;
  */
 public sealed class Interpreter {
 
+    private readonly ILogger<Interpreter> _logger = NullLogger<Interpreter>.Instance;
+
     private const int DefaultOperandStackSize = 512;
 
     private static readonly string[] predefinedAnonSubtemplateAttributes = ["i", "i0"];
-
-    /** Dump bytecode instructions as we execute them? */
-    private static bool trace = false;
 
     /** Exec st with respect to this group. Once set in Template.ToString(),
      *  it should be fixed. Template has group also.
@@ -141,9 +141,7 @@ public sealed class Interpreter {
             if (frame.StackDepth > 200) {
                 throw new TemplateException("Template stack overflow.", null);
             }
-            if (trace) {
-                Console.Out.WriteLine("Execute({0})", frame.Template.Name);
-            }
+            _logger.LogTrace("Execute({Name})", frame.Template.Name);
             SetDefaultArguments(frame);
             return ExecuteImpl(@out, frame);
         } catch (Exception e) when (!e.IsCritical()) {
@@ -163,7 +161,7 @@ public sealed class Interpreter {
         var code = self.impl.instrs;        // which code block are we executing
         var ip = 0;
         while (ip < self.impl.codeSize) {
-            if (trace || _debug) {
+            if (_debug) {
                 Trace(frame, ip);
             }
             var opcode = (Bytecode)code[ip];
@@ -520,7 +518,7 @@ public sealed class Interpreter {
                 case Bytecode.INSTR_WRITE_LOCAL:
                 default:
                     _errorManager.InternalError(self, "invalid bytecode @ " + (ip - 1) + ": " + opcode, null);
-                    self.impl.Dump();
+                    _logger.LogError("{CompiledTemplate}", self.impl);
                     break;
             }
 
@@ -1355,9 +1353,7 @@ public sealed class Interpreter {
         tr.Append(frame.GetEnclosingInstanceStackString());
         tr.Append(", sp=" + sp + ", nw=" + nwline);
         var s = tr.ToString();
-        if (trace) {
-            Console.WriteLine(s);
-        }
+        _logger.LogTrace("{Trace}", s);
     }
 
     private void PrintForTrace(StringBuilder tr, TemplateFrame frame, object o) {

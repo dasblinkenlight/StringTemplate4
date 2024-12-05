@@ -30,12 +30,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.Test.StringTemplate;
-
 using Antlr4.StringTemplate;
 using Antlr4.StringTemplate.Misc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Path = System.IO.Path;
+
+namespace Antlr4.Test.StringTemplate;
 
 [TestClass]
 public class TestRegions : BaseTest {
@@ -191,9 +191,7 @@ public class TestRegions : BaseTest {
             ">>\n";
         WriteFile(dir, "g.stg", g);
 
-        var group = new TemplateGroupDirectory(dir) {
-            Verbose = true
-        };
+        var group = new TemplateGroupDirectory(dir);
         var st = group.GetInstanceOf("g/a");
         const string expected = "[foo]";
         var result = st.Render();
@@ -432,7 +430,7 @@ public class TestRegions : BaseTest {
         WriteFile(dir, "group.stg", groupFile);
         var group = new TemplateGroupFile(Path.Combine(dir, "group.stg"));
         var st = group.GetInstanceOf("a");
-        st.impl.Dump();
+        TestContext.WriteLine(st.impl.ToString());
         var expected = $"[{newline}  bar{newline}]";
         var result = st.Render();
         Assert.AreEqual(expected, result);

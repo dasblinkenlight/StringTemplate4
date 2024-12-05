@@ -129,7 +129,7 @@ public class TestScopes : BaseTest {
         var st = group.GetInstanceOf("t");
         st.Add("names", "Ter");
         var result = st.Render();
-        group.GetInstanceOf("u").impl.Dump();
+
 
         var expectedError = "t.stg 2:11: implicitly-defined attribute i not visible" + newline;
         Assert.AreEqual(expectedError, errors.ToString());

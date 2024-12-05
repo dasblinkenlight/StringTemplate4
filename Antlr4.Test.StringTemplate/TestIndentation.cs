@@ -49,7 +49,7 @@ public class TestIndentation : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
         var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
         var t = group.GetInstanceOf("list");
-        t.impl.Dump();
+        TestContext.WriteLine(t.impl.ToString());
         t.Add("a", "Terence");
         t.Add("b", "Jim");
         const string expected = "  TerenceJim";

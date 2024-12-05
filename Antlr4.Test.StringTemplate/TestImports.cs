@@ -268,7 +268,7 @@ public class TestImports : BaseTest {
         var group2 = new TemplateGroupFile(Path.Combine(dir, "y", "group.stg"));
         group1.ImportTemplates(group2);
         var st = group1.GetInstanceOf("a");
-        st.impl.Dump();
+        TestContext.WriteLine(st.impl.ToString());
         const string expected = " group file b ";
         var result = st.Render();
         Assert.AreEqual(expected, result);

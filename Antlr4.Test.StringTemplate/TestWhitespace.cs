@@ -159,7 +159,7 @@ public class TestWhitespace : BaseTest {
            $"    Tom{newline}" +
            $"    Sumana{newline}!";
         var result = st.Render();
-        st.impl.Dump();
+        TestContext.WriteLine(st.impl.ToString());
         Assert.AreEqual(expected, result);
     }
 

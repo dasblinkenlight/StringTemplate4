@@ -91,7 +91,7 @@ public class TestTemplateNames : BaseTest {
         WriteFile(Path.Combine(dir, "subdir"), "a.st", "a() ::= << <b()> >>\n");
         WriteFile(Path.Combine(dir, "subdir"), "b.st", "b() ::= <<bar>>\n");
         var group = new TemplateGroupDirectory(dir);
-        group.GetInstanceOf("/subdir/a").impl.Dump();
+        TestContext.WriteLine(group.GetInstanceOf("/subdir/a").impl.ToString());
         Assert.AreEqual(" bar ", group.GetInstanceOf("/subdir/a").Render());
     }
 

@@ -99,7 +99,7 @@ public class TestCompiler : BaseTest {
         const string template = "<super.foo()>";
         var code = new TemplateCompiler(new TemplateGroup()).Compile(template);
         const string asmExpected = "super_new 0 0, write";
-        code.Dump();
+        TestContext.WriteLine(code.ToString());
         var asmResult = code.GetInstructions();
         Assert.AreEqual(asmExpected, asmResult);
         const string stringsExpected = "[foo]";

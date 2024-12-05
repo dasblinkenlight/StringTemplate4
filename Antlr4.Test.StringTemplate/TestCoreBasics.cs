@@ -300,7 +300,7 @@ public class TestCoreBasics : BaseTest {
         const string template = "Load <box(\"arg\")>;";
         var st = new Template(template);
         st.impl.NativeGroup.DefineTemplate("box", "kewl <x> daddy", ["x"]);
-        st.impl.Dump();
+        TestContext.WriteLine(st.impl.ToString());
         st.Add("name", "Ter");
         const string expected = "Load kewl arg daddy;";
         var result = st.Render();
@@ -324,7 +324,7 @@ public class TestCoreBasics : BaseTest {
         const string template = "load <box({})>;";
         var st = new Template(template);
         st.impl.NativeGroup.DefineTemplate("box", "kewl <x> daddy", ["x"]);
-        st.impl.Dump();
+        TestContext.WriteLine(st.impl.ToString());
         st.Add("name", "Ter");
         const string expected = "load kewl  daddy;";
         var result = st.Render();
@@ -718,7 +718,7 @@ public class TestCoreBasics : BaseTest {
         WriteFile(dir, "group.stg", groupFile);
         var group = new TemplateGroupFile(dir + "/group.stg");
         var st = group.GetInstanceOf("a");
-        st.impl.Dump();
+        TestContext.WriteLine(st.impl.ToString());
         var expected = $"foo{newline}bar";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -1124,7 +1124,7 @@ public class TestCoreBasics : BaseTest {
     public void Playing() {
         const string template = "<a:t(x,y),u()>";
         var st = new Template(template);
-        st.impl.Dump();
+        TestContext.WriteLine(st.impl.ToString());
     }
 
     [TestMethod]

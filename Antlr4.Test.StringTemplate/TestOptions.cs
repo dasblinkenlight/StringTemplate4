@@ -131,7 +131,7 @@ public class TestOptions : BaseTest {
         var group = new TemplateGroup();
         group.DefineTemplate("test", "hi <name; null=\"n/a\", separator=\", \">!", ["name"]);
         var st = group.GetInstanceOf("test");
-        st.impl.Dump();
+        TestContext.WriteLine(st.impl.ToString());
         st.Add("name", "Ter");
         st.Add("name", null);
         st.Add("name", "Sumana");

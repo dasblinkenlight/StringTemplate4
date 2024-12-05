@@ -37,10 +37,9 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Compiler;
 using Extensions;
-
+using Microsoft.Extensions.Logging;
 using ArgumentException = System.ArgumentException;
 using ArgumentNullException = System.ArgumentNullException;
-using Console = System.Console;
 using Encoding = System.Text.Encoding;
 using Exception = System.Exception;
 using File = System.IO.File;
@@ -95,9 +94,7 @@ public class TemplateGroupFile : TemplateGroup {
                 _url = new Uri("file://" + fileName.Replace('\\', '/'));
             }
             _fileName = fileName;
-            if (Verbose) {
-                Console.WriteLine("STGroupFile({0}) == file {1}", fileName, Path.GetFullPath(fileName));
-            }
+            _logger.LogDebug("TemplateGroupFile({FileName}) == file {FullPath}", fileName, Path.GetFullPath(fileName));
         } catch (Exception e) {
             e.PreserveStackTrace();
             if (!e.IsCritical()) {
@@ -153,13 +150,10 @@ public class TemplateGroupFile : TemplateGroup {
         // no prefix since this group file is the entire group, nothing lives
         // beneath it.
         _alreadyLoaded = true;
-        if (Verbose) {
-            Console.WriteLine("loading group file {0}", _url.LocalPath);
-        }
+        _logger.LogDebug("loading group file {Path}", _url.LocalPath);
         LoadGroupFile("/", _url);
-        if (Verbose) {
-            Console.WriteLine("found {0} templates in {1} = {2}", CompiledTemplates.Count, _url, CompiledTemplates);
-        }
+        _logger.LogDebug("found {NumberOfTemplates} templates in {Location} = {CompiledTemplates}",
+            CompiledTemplates.Count, _url, CompiledTemplates);
     }
 
     public override string Show() {

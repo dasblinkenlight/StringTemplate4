@@ -79,7 +79,7 @@ public class TestDictionaries : BaseTest {
         WriteFile(TmpDir, "test.stg", templates);
         var group = new TemplateGroupFile(Path.Combine(TmpDir, "test.stg"));
         var st = group.GetInstanceOf("var");
-        st.impl.Dump();
+        TestContext.WriteLine(st.impl.ToString());
         st.Add("w", "L");
         st.Add("type", "int");
         st.Add("name", "x");
