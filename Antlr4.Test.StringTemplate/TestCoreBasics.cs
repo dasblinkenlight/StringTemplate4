@@ -48,7 +48,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestNullAttr() {
         const string template = "hi <name>!";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         const string expected = "hi !";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -57,7 +57,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestAttr() {
         const string template = "hi <name>!";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("name", "Ter");
         const string expected = "hi Ter!";
         var result = st.Render();
@@ -67,7 +67,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestChainAttr() {
         const string template = "<x>:<names>!";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("names", "Ter").Add("names", "Tom").Add("x", 1);
         const string expected = "1:TerTom!";
         var result = st.Render();
@@ -95,7 +95,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestMultiAttr() {
         const string template = "hi <name>!";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("name", "Ter");
         st.Add("name", "Tom");
         const string expected = "hi TerTom!";
@@ -106,7 +106,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestAttrIsList() {
         const string template = "hi <name>!";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         var names = new List<string>() { "Ter", "Tom" };
         st.Add("name", names);
         st.Add("name", "Sumana"); // shouldn't alter my version of names list!
@@ -121,7 +121,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestAttrIsArray() {
         const string template = "hi <name>!";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         var names = new[] { "Ter", "Tom" };
         st.Add("name", names);
         st.Add("name", "Sumana"); // shouldn't alter my version of names list!
@@ -134,7 +134,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestProp() {
         const string template = "<u.id>: <u.name>"; // checks field and method getter
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("u", new User(1, "parrt"));
         const string expected = "1: parrt";
         var result = st.Render();
@@ -144,7 +144,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestPropWithNoAttr() {
         const string template = "<foo.a>: <ick>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("foo", new Dictionary<string, string>() { { "a", "b" } });
         const string expected = "b: ";
         var result = st.Render();
@@ -154,7 +154,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestMapAcrossDictionaryUsesKeys() {
         const string template = "<foo:{f | <f>}>"; // checks field and method getter
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("foo", new SortedDictionary<string, string>() { { "a", "b" }, { "c", "d" } });
         const string expected = "ac";
         var result = st.Render();
@@ -164,8 +164,8 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestSTProp() {
         const string template = "<t.x>"; // get x attr of template t
-        var st = new Template(template);
-        var t = new Template("<x>");
+        var st = _templateFactory.CreateTemplate(template);
+        var t = _templateFactory.CreateTemplate("<x>");
         t.Add("x", "Ter");
         st.Add("t", t);
         const string expected = "Ter";
@@ -176,7 +176,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestBooleanISProp() {
         const string template = "<t.isManager>"; // call isManager
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("t", new User(32, "Ter"));
         const string expected = "true";
         var result = st.Render();
@@ -186,7 +186,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestBooleanHASProp() {
         const string template = "<t.hasParkingSpot>"; // call hasParkingSpot
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("t", new User(32, "Ter"));
         const string expected = "true";
         var result = st.Render();
@@ -196,7 +196,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestStaticMethod() {
         const string template = "<t.StaticMethod>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("t", new User(32, "Ter"));
         const string expected = "method_result";
         var result = st.Render();
@@ -206,7 +206,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestStaticProperty() {
         const string template = "<t.StaticProperty>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("t", new User(32, "Ter"));
         const string expected = "property_result";
         var result = st.Render();
@@ -216,7 +216,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestStaticField() {
         const string template = "<t.StaticField>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("t", new User(32, "Ter"));
         const string expected = "field_value";
         var result = st.Render();
@@ -226,7 +226,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestNullAttrProp() {
         const string template = "<u.id>: <u.name>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         const string expected = ": ";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -239,7 +239,7 @@ public class TestCoreBasics : BaseTest {
         var group = new TemplateGroup {
             Listener = errors
         };
-        var st = new Template(group, template);
+        var st = _templateFactory.CreateTemplate(template, group);
         st.Add("u", new User(1, "parrt"));
         var result = st.Render();
         Assert.AreEqual(string.Empty, result);
@@ -255,7 +255,7 @@ public class TestCoreBasics : BaseTest {
             Listener = errors
         };
         const string template = "<u.(qqq)>";
-        var st = new Template(group, template);
+        var st = _templateFactory.CreateTemplate(template, group);
         st.Add("u", new User(1, "parrt"));
         st.Add("qqq", null);
         var result = st.Render();
@@ -272,7 +272,7 @@ public class TestCoreBasics : BaseTest {
             Listener = errors
         };
         const string template = "<u.(name)>";
-        var st = new Template(group, template);
+        var st = new Template(template, group);
         st.Add("u", new User(1, "parrt"));
         st.Add("name", 100);
         var result = st.Render();

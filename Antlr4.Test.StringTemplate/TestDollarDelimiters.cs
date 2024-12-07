@@ -42,7 +42,7 @@ public class TestDollarDelimiters : BaseTest {
     [TestMethod]
     public void TestAttr() {
         const string template = "hi $name$!";
-        var st = new Template(template, '$', '$');
+        var st = _templateFactory.CreateTemplate(template, '$', '$');
         st.Add("name", "Ter");
         const string expected = "hi Ter!";
         var result = st.Render();

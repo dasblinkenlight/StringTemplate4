@@ -95,7 +95,7 @@ public class TestLineWrap : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
-        var x = new Template("<\\n>{ <stuff; anchor, separator=\",\\n\"> }<\\n>");
+        var x = _templateFactory.CreateTemplate("<\\n>{ <stuff; anchor, separator=\",\\n\"> }<\\n>");
         x.SetGroup(group);
         x.Add("stuff", "1");
         x.Add("stuff", "2");

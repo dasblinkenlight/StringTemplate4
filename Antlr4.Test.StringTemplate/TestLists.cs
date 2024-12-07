@@ -41,7 +41,7 @@ public class TestLists : BaseTest {
 
     [TestMethod]
     public void TestJustCat() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[names,phones]>"
         );
         e.Add("names", "Ter");
@@ -54,7 +54,7 @@ public class TestLists : BaseTest {
 
     [TestMethod]
     public void TestListLiteralWithEmptyElements() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[\"Ter\",,\"Jesse\"]:{n | <i>:<n>}; separator=\", \", null={foo}>"
         );
         const string expecting = "1:Ter, foo, 2:Jesse";
@@ -63,7 +63,7 @@ public class TestLists : BaseTest {
 
     [TestMethod]
     public void TestListLiteralWithEmptyFirstElement() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[,\"Ter\",\"Jesse\"]:{n | <i>:<n>}; separator=\", \", null={foo}>"
         );
         const string expecting = "foo, 1:Ter, 2:Jesse";
@@ -72,7 +72,7 @@ public class TestLists : BaseTest {
 
     [TestMethod]
     public void TestLength() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<length([names,phones])>"
         );
         e.Add("names", "Ter");
@@ -85,7 +85,7 @@ public class TestLists : BaseTest {
 
     [TestMethod]
     public void TestCat2Attributes() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[names,phones]; separator=\", \">"
         );
         e.Add("names", "Ter");
@@ -98,7 +98,7 @@ public class TestLists : BaseTest {
 
     [TestMethod]
     public void TestCat2AttributesWithApply() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[names,phones]:{a|<a>.}>"
         );
         e.Add("names", "Ter");
@@ -111,7 +111,7 @@ public class TestLists : BaseTest {
 
     [TestMethod]
     public void TestCat3Attributes() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[names,phones,salaries]; separator=\", \">"
         );
         e.Add("names", "Ter");
@@ -126,7 +126,7 @@ public class TestLists : BaseTest {
 
     [TestMethod]
     public void TestCatWithTemplateApplicationAsElement() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[names:{n|<n>!},phones]; separator=\", \">"
         );
         e.Add("names", "Ter");
@@ -139,7 +139,7 @@ public class TestLists : BaseTest {
 
     [TestMethod]
     public void TestCatWithIFAsElement() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[{<if(names)>doh<endif>},phones]; separator=\", \">"
         );
         e.Add("names", "Ter");
@@ -154,7 +154,7 @@ public class TestLists : BaseTest {
     public void TestCatNullValues() {
         // [a, b] must behave like <a><b>; if a==b==null, blank output
         // unless null argument.
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[no,go]; null=\"foo\", separator=\", \">"
         );
         e.Add("phones", "1");
@@ -165,7 +165,7 @@ public class TestLists : BaseTest {
 
     [TestMethod]
     public void TestCatWithNullTemplateApplicationAsElement() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[names:{n|<n>!},\"foo\"]:{a|x}; separator=\", \">"
         );
         e.Add("phones", "1");
@@ -176,7 +176,7 @@ public class TestLists : BaseTest {
 
     [TestMethod]
     public void TestCatWithNestedTemplateApplicationAsElement() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[names, [\"foo\",\"bar\"]:{x | <x>!},phones]; separator=\", \">"
         );
         e.Add("names", "Ter");
@@ -207,7 +207,7 @@ public class TestLists : BaseTest {
 
     [TestMethod]
     public void TestListWithTwoEmptyListsCollapsesToEmptyList() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[[],[]]:{x | <x>!}; separator=\", \">"
         );
         e.Add("names", "Ter");

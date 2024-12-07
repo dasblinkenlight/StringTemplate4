@@ -165,7 +165,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestEmptyExprAsFirstLineGetsNoOutput() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "<users>\n" +
             "end\n");
         var expecting = $"end{newline}";
@@ -175,7 +175,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestEmptyLineWithIndent() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "    \n" +
             "end\n");
@@ -186,7 +186,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestEmptyLine() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "\n" +
             "end\n");
@@ -197,7 +197,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestSizeZeroOnLineByItselfGetsNoOutput() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "<name>\n" +
             "<users>\n" +
@@ -210,7 +210,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestSizeZeroOnLineWithIndentGetsNoOutput() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "  <name>\n" +
             "	<users>\n" +
@@ -223,7 +223,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestSizeZeroOnLineWithMultipleExpr() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "  <name>\n" +
             "	<users><users>\n" +
@@ -235,7 +235,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestIFExpr() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "<if(x)><endif>\n" +
             "end\n");
@@ -246,7 +246,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestIndentedIFExpr() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "    <if(x)><endif>\n" +
             "end\n");
@@ -257,7 +257,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestIFElseExprOnSingleLine() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "<if(users)><else><endif>\n" +
             "end\n");
@@ -268,7 +268,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestIFOnMultipleLines() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "<if(users)>\n" +
             "foo\n" +
@@ -283,7 +283,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestElseifOnMultipleLines() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "<if(a)>\n" +
             "foo\n" +
@@ -298,7 +298,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestElseifOnMultipleLines2() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "<if(a)>\n" +
             "foo\n" +
@@ -314,7 +314,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestElseifOnMultipleLines3() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "  <if(a)>\n" +
             "  foo\n" +
@@ -330,7 +330,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestEndifNotOnLineAlone() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "  <if(users)>\n" +
             "  foo\n" +
@@ -344,7 +344,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestNestedIFOnMultipleLines() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "<if(x)>\n" +
             "<if(y)>\n" +
@@ -362,7 +362,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestIfElseifOnMultipleLines() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "<if(x&&y)>\n" +
             "foo\n" +
@@ -378,7 +378,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestLineBreak() {
-        var st = new Template(
+        var st = _templateFactory.CreateTemplate(
             $"Foo <\\\\>{newline}" +
             $"  \t  bar{newline}"
         );
@@ -391,7 +391,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestLineBreak2() {
-        var st = new Template(
+        var st = _templateFactory.CreateTemplate(
             $"Foo <\\\\>       {newline}" +
             $"  \t  bar{newline}"
         );
@@ -404,7 +404,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestLineBreakNoWhiteSpace() {
-        var st = new Template($"Foo <\\\\>{newline}bar\n");
+        var st = _templateFactory.CreateTemplate($"Foo <\\\\>{newline}bar\n");
         var sw = new StringWriter();
         st.Write(new AutoIndentWriter(sw, "\n")); // force \n as newline
         var result = sw.ToString();

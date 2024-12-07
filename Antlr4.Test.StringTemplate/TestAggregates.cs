@@ -40,7 +40,7 @@ public class TestAggregates : BaseTest {
 
     [TestMethod]
     public void TestApplyAnonymousTemplateToAggregateAttribute() {
-        var st = new Template("<items:{it|<it.id>: <it.lastName>, <it.firstName>\n}>");
+        var st = _templateFactory.CreateTemplate("<items:{it|<it.id>: <it.lastName>, <it.firstName>\n}>");
         // also testing wacky spaces in aggregate spec
         st.AddMany("items.{ firstName ,lastName, id }", "Ter", "Parr", 99);
         st.AddMany("items.{firstName, lastName ,id}", "Tom", "Burns", 34);

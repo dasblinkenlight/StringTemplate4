@@ -114,7 +114,7 @@ public class TestSubtemplates : BaseTest {
 
     [TestMethod]
     public void TestParallelAttributeIteration() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<names,phones,salaries:{n,p,s | <n>@<p>: <s>\n}>"
         );
         e.Add("names", "Ter");
@@ -129,7 +129,7 @@ public class TestSubtemplates : BaseTest {
 
     [TestMethod]
     public void TestParallelAttributeIterationWithNullValue() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<names,phones,salaries:{n,p,s | <n>@<p>: <s>\n}>"
         );
         e.Add("names", "Ter");
@@ -148,7 +148,7 @@ public class TestSubtemplates : BaseTest {
 
     [TestMethod]
     public void TestParallelAttributeIterationHasI() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<names,phones,salaries:{n,p,s | <i0>. <n>@<p>: <s>\n}>"
         );
         e.Add("names", "Ter");
@@ -165,7 +165,7 @@ public class TestSubtemplates : BaseTest {
 
     [TestMethod]
     public void TestParallelAttributeIterationWithDifferentSizes() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<names,phones,salaries:{n,p,s | <n>@<p>: <s>}; separator=\", \">"
         );
         e.Add("names", "Ter");
@@ -180,7 +180,7 @@ public class TestSubtemplates : BaseTest {
 
     [TestMethod]
     public void TestParallelAttributeIterationWithSingletons() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<names,phones,salaries:{n,p,s | <n>@<p>: <s>}; separator=\", \">"
         );
         e.Add("names", "Ter");

@@ -158,7 +158,7 @@ public class TestRenderers : BaseTest {
             "The names: <names; format=\"upper\">";
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.RegisterRenderer(typeof(string), new StringRenderer());
-        var st = new Template(group, template);
+        var st = _templateFactory.CreateTemplate(template, group);
         st.Add("names", "ter");
         st.Add("names", "tom");
         st.Add("names", "sriram");
@@ -173,7 +173,7 @@ public class TestRenderers : BaseTest {
             "The names: <names; separator=\" and \", format=\"upper\">";
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.RegisterRenderer(typeof(string), new StringRenderer());
-        var st = new Template(group, template);
+        var st = _templateFactory.CreateTemplate(template, group);
         st.Add("names", "ter");
         st.Add("names", "tom");
         st.Add("names", "sriram");
@@ -188,7 +188,7 @@ public class TestRenderers : BaseTest {
             "The names: <names; separator=\" and \", null=\"n/a\", format=\"upper\">";
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.RegisterRenderer(typeof(string), new StringRenderer());
-        var st = new Template(group, template);
+        var st = _templateFactory.CreateTemplate(template, group);
         var names = new List<string> { "ter", null, "sriram" };
         st.Add("names", names);
         const string expecting = "The names: TER and N/A and SRIRAM";
@@ -354,7 +354,7 @@ public class TestRenderers : BaseTest {
         st.Add("y", 3.14159);
         // Polish uses ' ' (ASCII 160) for ',' and ',' for '.'
         const string expecting = " -2 100 3,142 "; // Ê
-        var result = st.Render(new CultureInfo("pl"));
+        var result = st.Render(AutoIndentWriter.NoWrap, new CultureInfo("pl"));
         Assert.AreEqual(expecting, result);
     }
 

@@ -235,7 +235,7 @@ public class TestNullAndEmptyValues : BaseTest {
     private IList<T> TestMatrix(T[] tests) {
         IList<T> failed = new List<T>();
         foreach (var t in tests) {
-            var test = new T(t); // dup since we might mod with result
+            var test = new T(t); // dup since we might modify with result
             var group = _templateFactory.CreateTemplateGroup().Build();
             //System.out.println("running "+test);
             group.DefineTemplate("t", "<x>", ["x"]);
@@ -429,7 +429,7 @@ public class TestNullAndEmptyValues : BaseTest {
 
     [TestMethod]
     public void TestSeparatorEmittedForEmptyIteratorValue() {
-        var st = new Template(
+        var st = _templateFactory.CreateTemplate(
             "<values:{v|<if(v)>x<endif>}; separator=\" \">"
         );
         st.Add("values", new[] { true, false, true });
@@ -459,7 +459,7 @@ public class TestNullAndEmptyValues : BaseTest {
 
     [TestMethod]
     public void TestSeparatorEmittedForEmptyIteratorValue2() {
-        var st = new Template(
+        var st = _templateFactory.CreateTemplate(
             "<values; separator=\" \">"
         );
         st.Add("values", new[] { "x", string.Empty, "y" });

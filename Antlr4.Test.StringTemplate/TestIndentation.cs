@@ -187,7 +187,7 @@ public class TestIndentation : BaseTest {
 
     [TestMethod]
     public void TestIndentedIFWithValueExpr() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin" + newline +
             "    <if(x)>foo<endif>" + newline +
             "end" + newline);
@@ -202,7 +202,7 @@ public class TestIndentation : BaseTest {
 
     [TestMethod]
     public void TestIndentedIFWithElse() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin" + newline +
             "    <if(x)>foo<else>bar<endif>" + newline +
             "end" + newline);
@@ -214,7 +214,7 @@ public class TestIndentation : BaseTest {
 
     [TestMethod]
     public void TestIndentedIFWithElse2() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin" + newline +
             "    <if(x)>foo<else>bar<endif>" + newline +
             "end" + newline);
@@ -259,7 +259,7 @@ public class TestIndentation : BaseTest {
 
     [TestMethod]
     public void TestIFWithIndentOnMultipleLines() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin" + newline +
             "   <if(x)>" + newline +
             "   foo" + newline +
@@ -277,7 +277,7 @@ public class TestIndentation : BaseTest {
 
     [TestMethod]
     public void TestIFWithIndentAndExprOnMultipleLines() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin" + newline +
             "   <if(x)>" + newline +
             "   <x>" + newline +
@@ -296,7 +296,7 @@ public class TestIndentation : BaseTest {
 
     [TestMethod]
     public void TestIFWithIndentAndExprWithIndentOnMultipleLines() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin" + newline +
             "   <if(x)>" + newline +
             "     <x>" + newline +
@@ -315,7 +315,7 @@ public class TestIndentation : BaseTest {
 
     [TestMethod]
     public void TestNestedIFWithIndentOnMultipleLines() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin" + newline +
             "   <if(x)>" + newline +
             "      <if(y)>" + newline +
@@ -339,7 +339,7 @@ public class TestIndentation : BaseTest {
 
     [TestMethod]
     public void TestIFInSubtemplate() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "<names:{n |" + newline +
             "   <if(x)>" + newline +
             "   <x>" + newline +

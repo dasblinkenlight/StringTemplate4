@@ -198,8 +198,9 @@ public class TestInterptimeErrors : BaseTest {
         var group = new TemplateGroup {
             Listener = errors
         };
-        var e = new Template(group,
-            "<names,phones,salaries:{n,p | <n>@<p>}; separator=\", \">"
+        var e = _templateFactory.CreateTemplate(
+            "<names,phones,salaries:{n,p | <n>@<p>}; separator=\", \">",
+            group
         );
         e.Add("names", "Ter");
         e.Add("names", "Tom");
@@ -222,7 +223,7 @@ public class TestInterptimeErrors : BaseTest {
         var group = new TemplateGroup {
             Listener = errors
         };
-        var e = new Template(group, "<trim(s)>");
+        var e = _templateFactory.CreateTemplate("<trim(s)>", group);
         e.Add("s", 34);
         e.Render(); // generate the error
         var errorExpecting = $"context [anonymous] 1:1 function trim expects a string not System.Int32{newline}";
@@ -235,7 +236,7 @@ public class TestInterptimeErrors : BaseTest {
         var group = new TemplateGroup {
             Listener = errors
         };
-        var e = new Template(group, "<strlen(s)>");
+        var e = _templateFactory.CreateTemplate("<strlen(s)>", group);
         e.Add("s", 34);
         e.Render(); // generate the error
         var errorExpecting = $"context [anonymous] 1:1 function strlen expects a string not System.Int32{newline}";

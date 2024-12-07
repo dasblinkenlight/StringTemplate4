@@ -43,7 +43,7 @@ public class TestIndirectionAndEarlyEval : BaseTest {
     [TestMethod]
     public void TestEarlyEval() {
         const string template = "<(name)>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("name", "Ter");
         const string expected = "Ter";
         var result = st.Render();
@@ -108,7 +108,7 @@ public class TestIndirectionAndEarlyEval : BaseTest {
     [TestMethod]
     public void TestIndirectProp() {
         const string template = "<u.(propname)>: <u.name>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("u", new User(1, "parrt"));
         st.Add("propname", "id");
         const string expected = "1: parrt";
@@ -134,7 +134,7 @@ public class TestIndirectionAndEarlyEval : BaseTest {
     [TestMethod]
     public void TestNonStringDictLookup() {
         const string template = "<m.(intkey)>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         IDictionary<int, string> m = new Dictionary<int, string>();
         m[36] = "foo";
         st.Add("m", m);

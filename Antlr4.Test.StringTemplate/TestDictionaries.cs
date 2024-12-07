@@ -96,7 +96,7 @@ public class TestDictionaries : BaseTest {
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "test.stg")).Build();
         var st = group.GetInstanceOf("var");
         st.Add("w", "L");
-        st.Add("type", new Template("int"));
+        st.Add("type", _templateFactory.CreateTemplate("int"));
         st.Add("name", "x");
         var expected = "int x = 0L;";
         var result = st.Render();
@@ -295,7 +295,7 @@ public class TestDictionaries : BaseTest {
             {"zip","99999"},
             {"city","San Francisco"},
         });
-        st.Add("line2", new Template("<adr.city>, <adr.zip>"));
+        st.Add("line2", _templateFactory.CreateTemplate("<adr.city>, <adr.zip>"));
         var expected =
             "Terence Parr" + newline +
             "San Francisco, 99999";
