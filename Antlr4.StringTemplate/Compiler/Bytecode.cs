@@ -36,7 +36,6 @@ public enum Bytecode : byte {
 
     Invalid = 0,
 
-    // INSTRUCTION BYTECODES (byte is signed; use a short to keep 0..255)
     INSTR_LOAD_STR,
     INSTR_LOAD_ATTR,
     INSTR_LOAD_LOCAL, // load stuff like it, i, i0
