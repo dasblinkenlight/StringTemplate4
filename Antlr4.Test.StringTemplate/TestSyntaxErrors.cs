@@ -27,10 +27,11 @@
 */
 
 
+using Antlr4.StringTemplate.Debug;
+
 namespace Antlr4.Test.StringTemplate;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Antlr4.StringTemplate;
 using Extensions;
 using Antlr4.StringTemplate.Misc;
 using Antlr4.StringTemplate.Compiler;
@@ -42,9 +43,8 @@ public class TestSyntaxErrors : BaseTest {
     [TestMethod]
     public void TestEmptyExpr() {
         const string template = " <> ";
-        var group = new TemplateGroup();
         var errors = new ErrorBuffer();
-        group.Listener = errors;
+        var group = _templateFactory.CreateTemplateGroup().WithErrorListener(errors).Build();
         try {
             group.DefineTemplate("test", template);
         } catch (TemplateException) {
@@ -62,13 +62,12 @@ public class TestSyntaxErrors : BaseTest {
             $"<@r()>{newline}" +
             ">>";
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
         var errors = new ErrorBuffer();
-        group.Listener = errors;
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load();
         Assert.AreEqual(0, errors.Errors.Count);
 
-        var template = group.GetInstanceOf("main");
+        var template = group.FindTemplate("main");
         var expected = $"a{newline}a";
         var result = template.Render();
         Assert.AreEqual(expected, result);
@@ -77,9 +76,8 @@ public class TestSyntaxErrors : BaseTest {
     [TestMethod]
     public void TestEmptyExpr2() {
         const string template = "hi <> ";
-        var group = new TemplateGroup();
         var errors = new ErrorBuffer();
-        group.Listener = errors;
+        var group = _templateFactory.CreateTemplateGroup().WithErrorListener(errors).Build();
         try {
             group.DefineTemplate("test", template);
         } catch (TemplateException) {
@@ -92,9 +90,8 @@ public class TestSyntaxErrors : BaseTest {
     [TestMethod]
     public void TestUnterminatedExpr() {
         const string template = "hi <t()$";
-        var group = new TemplateGroup();
         var errors = new ErrorBuffer();
-        group.Listener = errors;
+        var group = _templateFactory.CreateTemplateGroup().WithErrorListener(errors).Build();
         try {
             group.DefineTemplate("test", template);
         } catch (TemplateException) {
@@ -109,9 +106,8 @@ public class TestSyntaxErrors : BaseTest {
     [TestMethod]
     public void TestWeirdChar() {
         const string template = "   <*>";
-        var group = new TemplateGroup();
         var errors = new ErrorBuffer();
-        group.Listener = errors;
+        var group = _templateFactory.CreateTemplateGroup().WithErrorListener(errors).Build();
         try {
             group.DefineTemplate("test", template);
         } catch (TemplateException) {
@@ -125,9 +121,8 @@ public class TestSyntaxErrors : BaseTest {
     [TestMethod]
     public void TestWeirdChar2() {
         const string template = "\n<\\\n";
-        var group = new TemplateGroup();
         var errors = new ErrorBuffer();
-        group.Listener = errors;
+        var group = _templateFactory.CreateTemplateGroup().WithErrorListener(errors).Build();
         try {
             group.DefineTemplate("test", template);
         } catch (TemplateException) {
@@ -144,9 +139,7 @@ public class TestSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         var errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         var expected = "t.stg 1:15: doesn't look like an expression" + newline;
         var result = errors.ToString();
@@ -161,9 +154,7 @@ public class TestSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         var errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         const string expected = "[t.stg 1:15: \\n in string, t.stg 1:14: doesn't look like an expression]";
         var result = errors.Errors.ToListString();
@@ -176,9 +167,7 @@ public class TestSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         var errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         var expected = "t.stg 1:29: mismatched input '!' expecting RDELIM" + newline;
         var result = errors.ToString();
@@ -191,9 +180,7 @@ public class TestSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         var errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         var expected = "t.stg 1:34: premature EOF" + newline;
         var result = errors.ToString();
@@ -206,9 +193,7 @@ public class TestSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         var errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         var expected = "t.stg 1:34: premature EOF" + newline;
         var result = errors.ToString();
@@ -221,9 +206,7 @@ public class TestSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         var errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         var expected =
             $"t.stg 1:20: EOF in string{newline}" +
@@ -238,9 +221,7 @@ public class TestSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         var errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         var expected =
             $"t.stg 1:20: Non-terminated comment starting at 1:1: '!>' missing{newline}";
@@ -254,9 +235,7 @@ public class TestSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         var errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         var expected = $"t.stg 1:19: '>' came as a complete surprise to me{newline}";
         var result = errors.ToString();
@@ -269,9 +248,7 @@ public class TestSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         var errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         var expected = $"t.stg 1:19: mismatched input ',' expecting RDELIM{newline}";
         var result = errors.ToString();

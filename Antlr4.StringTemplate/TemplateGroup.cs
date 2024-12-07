@@ -30,8 +30,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate;
-
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -40,15 +38,12 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using Antlr.Runtime;
-using Compiler;
-using Extensions;
-using Misc;
-
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using ArgumentException = System.ArgumentException;
 using ArgumentNullException = System.ArgumentNullException;
 using BinaryReader = System.IO.BinaryReader;
 using BinaryWriter = System.IO.BinaryWriter;
-using Console = System.Console;
 using DateTime = System.DateTime;
 using DateTimeKind = System.DateTimeKind;
 using Directory = System.IO.Directory;
@@ -65,10 +60,16 @@ using SeekOrigin = System.IO.SeekOrigin;
 using Stream = System.IO.Stream;
 using StreamReader = System.IO.StreamReader;
 using StringBuilder = System.Text.StringBuilder;
-using TemplateToken = Compiler.TemplateLexer.TemplateToken;
 using Type = System.Type;
 using Uri = System.Uri;
 using UriFormatException = System.UriFormatException;
+
+namespace Antlr4.StringTemplate;
+
+using Compiler;
+using Extensions;
+using Misc;
+using TemplateToken = Compiler.TemplateLexer.TemplateToken;
 
 /** A directory or directory tree of .st template files and/or group files.
  *  Individual template files contain formal template definitions. In a sense,
@@ -76,7 +77,7 @@ using UriFormatException = System.UriFormatException;
  *  Template v3 had just the pure template inside, not the template name and header.
  *  Name inside must match filename (minus suffix).
  */
-public class TemplateGroup {
+public class TemplateGroup : ITemplateGroup {
 
     protected const string GroupFileExtension = ".stg";
     protected const string TemplateFileExtension = ".st";
@@ -84,6 +85,8 @@ public class TemplateGroup {
     /** When we use key as a value in a dictionary, this is how we signify. */
     public const string DictionaryKey = "key";
     public const string DefaultKey = "default";
+
+    protected ILogger<TemplateGroup> _logger = NullLogger<TemplateGroup>.Instance;
 
     /** Load files using what encoding? */
     private Encoding _encoding = Encoding.UTF8;
@@ -95,9 +98,9 @@ public class TemplateGroup {
 
     private readonly List<TemplateGroup> _importsToClearOnUnload = [];
 
-    public char DelimiterStartChar { get; private set; } = '<'; // Use <expr> by default
+    public char DelimiterStartChar { get; internal set; } // Use <expr> by default
 
-    public char DelimiterStopChar { get; private set; } = '>';
+    public char DelimiterStopChar { get; internal set; }
 
     /** Maps template name to StringTemplate object. synchronized. */
     private readonly Dictionary<string,CompiledTemplate> templates = new();
@@ -144,9 +147,6 @@ public class TemplateGroup {
         {typeof(Aggregate), new AggregateModelAdaptor()},
     };
 
-    /** Watch loading of groups and templates */
-    public bool Verbose { get; set; }
-
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public bool EnableCache { get; set; }
 
@@ -164,10 +164,7 @@ public class TemplateGroup {
 
     private static TemplateGroup _defaultGroup = new();
 
-    public TemplateGroup() {
-    }
-
-    public TemplateGroup(char delimiterStartChar, char delimiterStopChar) {
+    public TemplateGroup(char delimiterStartChar = '<', char delimiterStopChar = '>') {
         DelimiterStartChar = delimiterStartChar;
         DelimiterStopChar = delimiterStopChar;
     }
@@ -179,7 +176,7 @@ public class TemplateGroup {
 
     protected ICollection<CompiledTemplate> CompiledTemplates => templates.Values;
 
-    protected Encoding Encoding {
+    internal Encoding Encoding {
         get => _encoding;
         set => _encoding = value ?? throw new ArgumentNullException(nameof(value));
     }
@@ -207,28 +204,26 @@ public class TemplateGroup {
     /** The primary means of getting an instance of a template from this
      *  group. Names must be absolute, fully-qualified names like a/b
      */
-    public Template GetInstanceOf(string name) {
+    internal Template GetInstanceOf(string name) {
         if (name == null) {
             return null;
         }
         if (!name.StartsWith("/")) {
             name = "/" + name;
         }
-        if (Verbose) {
-            Console.WriteLine("{0}.GetInstanceOf({1})", Name, name);
-        }
+        _logger.LogDebug("{GroupName}.GetInstanceOf({InstanceName})", Name, name);
         var c = LookupTemplate(name);
         return c != null ? CreateStringTemplate(c) : null;
     }
+
+    public ITemplate FindTemplate(string name) => GetInstanceOf(name);
 
     protected internal Template GetEmbeddedInstanceOf(TemplateFrame frame, string name) {
         var fullyQualifiedName = name;
         if (!name.StartsWith("/")) {
             fullyQualifiedName = frame.Template.impl.Prefix + name;
         }
-        if (Verbose) {
-            Console.WriteLine("getEmbeddedInstanceOf({0})", fullyQualifiedName);
-        }
+        _logger.LogDebug("GetEmbeddedInstanceOf({FullyQualifiedName})", fullyQualifiedName);
         var st = GetInstanceOf(fullyQualifiedName);
         if (st == null) {
             ErrorManager.RuntimeError(frame, ErrorType.NO_SUCH_TEMPLATE, fullyQualifiedName);
@@ -267,31 +262,24 @@ public class TemplateGroup {
     }
 
     /** Look up a fully-qualified name */
-    public CompiledTemplate LookupTemplate(string name) {
+    internal CompiledTemplate LookupTemplate(string name) {
         if (name[0] != '/') {
             name = "/" + name;
         }
-        if (Verbose) {
-            Console.WriteLine("{0}.LookupTemplate({1})", Name, name);
-        }
+        _logger.LogDebug("{GroupName}.LookupTemplate({TemplateName})", Name, name);
         templates.TryGetValue(name, out var code);
         if (code == NotFoundTemplate) {
-            if (Verbose) {
-                Console.WriteLine("{0} previously seen as not found", name);
-            }
+            _logger.LogDebug("{TemplateName} previously seen as not found", name);
             return null;
         }
         // try to load from disk and look up again
         code ??= Load(name) ?? LookupImportedTemplate(name);
 
         if (code == null) {
-            if (Verbose) {
-                Console.WriteLine("{0} recorded not found", name);
-            }
+            _logger.LogDebug("{TemplateName} recorded not found", name);
             templates[name] = NotFoundTemplate;
-        }
-        if (Verbose && code != null) {
-            Console.WriteLine("{0}.LookupTemplate({1}) found", Name, name);
+        } else {
+            _logger.LogDebug("{GroupName}.LookupTemplate({TemplateName}) found", Name, name);
         }
         return code;
     }
@@ -330,20 +318,14 @@ public class TemplateGroup {
             return null;
         }
         foreach (var g in _imports) {
-            if (Verbose) {
-                Console.WriteLine("checking {0} for imported {1}", g.Name, name);
-            }
+            _logger.LogDebug("Checking {GroupName} for imported {TemplateName}", g.Name, name);
             var code = g.LookupTemplate(name);
             if (code != null) {
-                if (Verbose) {
-                    Console.WriteLine("{0}.LookupImportedTemplate({1}) found", g.Name, name);
-                }
+                _logger.LogDebug("{GroupName}.LookupImportedTemplate({TemplateName}) found", g.Name, name);
                 return code;
             }
         }
-        if (Verbose) {
-            Console.WriteLine("{0} not found in {1} imports", name, Name);
-        }
+        _logger.LogDebug("{TemplateName} not found in {GroupName} imports", name, Name);
         return null;
     }
 
@@ -367,8 +349,8 @@ public class TemplateGroup {
         }
         try {
             DefineTemplate(name, new CommonToken(GroupParser.ID, name), null, template, null);
-        } catch (TemplateException) {
-            Console.Error.WriteLine("Unable to define template {0}. Bug?", name);
+        } catch (TemplateException ex) {
+            _logger.LogError("BUG: Unable to define template {Name}. {Exception}", name, ex);
         }
     }
 
@@ -389,9 +371,7 @@ public class TemplateGroup {
         List<FormalArgument> args,
         string template,
         IToken templateToken) {
-        if (Verbose) {
-            Console.WriteLine("DefineTemplate({0})", fullyQualifiedTemplateName);
-        }
+        _logger.LogDebug("DefineTemplate({TemplateName})", fullyQualifiedTemplateName);
         if (fullyQualifiedTemplateName == null) {
             throw new ArgumentNullException(nameof(fullyQualifiedTemplateName));
         }
@@ -546,7 +526,7 @@ public class TemplateGroup {
         List<FormalArgument> args,
         string template,
         IToken templateToken) {  // for error location
-        //System.out.println("TemplateGroup.Compile: "+enclosingTemplateName);
+        _logger.LogTrace("TemplateGroup.Compile: {EnclosingTemplateName}", template);
         var c = new TemplateCompiler(this);
         return c.Compile(srcName, name, args, template, templateToken);
     }
@@ -601,8 +581,8 @@ public class TemplateGroup {
     }
 
     /** Make this group import templates/dictionaries from g. */
-    public void ImportTemplates(TemplateGroup g) {
-        ImportTemplates(g, false);
+    public void ImportTemplates(ITemplateGroup g) {
+        ImportTemplates(g as TemplateGroup, false);
     }
 
     /** Make this group import templates/dictionaries from g. */
@@ -630,23 +610,21 @@ public class TemplateGroup {
      */
     public virtual void ImportTemplates(IToken fileNameToken) {
         var fileName = fileNameToken.Text;
-        if (Verbose) {
-            Console.WriteLine("ImportTemplates({0})", fileName);
-        }
+        _logger.LogDebug("ImportTemplates({FileName})", fileName);
         // do nothing upon syntax error
         if (fileName == null || fileName.Equals("<missing STRING>")) {
             return;
         }
         fileName = Utility.Strip(fileName, 1);
 
-        //Console.WriteLine("import {0}", fileName);
+        _logger.LogTrace("import {FileName}", fileName);
         var isGroupFile = fileName.EndsWith(GroupFileExtension);
         var isTemplateFile = fileName.EndsWith(TemplateFileExtension);
         TemplateGroup g;
         // search path is: working dir, g.stg's dir, CLASSPATH
         var thisRoot = RootDirUri;
         Uri fileUnderRoot;
-        //Console.WriteLine("thisRoot={0}", thisRoot);
+        _logger.LogTrace("thisRoot={Root}", thisRoot);
         try {
             fileUnderRoot = new Uri(thisRoot + "/" + fileName);
         } catch (UriFormatException mfe) {
@@ -674,25 +652,22 @@ public class TemplateGroup {
                 g = null;
             }
         } else if (isGroupFile) {
-            //System.out.println("look for fileUnderRoot: "+fileUnderRoot);
+            _logger.LogTrace("Looking for fileUnderRoot: {FileUnderRoot}", fileUnderRoot.LocalPath);
             if (File.Exists(fileUnderRoot.LocalPath)) {
                 g = new TemplateGroupFile(fileUnderRoot, Encoding, DelimiterStartChar, DelimiterStopChar);
-                g.Listener = Listener;
             } else {
-                g = new TemplateGroupFile(fileName, DelimiterStartChar, DelimiterStopChar);
-                g.Listener = Listener;
+                g = new TemplateGroupFile(fileName, Encoding, DelimiterStartChar, DelimiterStopChar);
             }
+            g.Listener = Listener;
         } else /*isGroupDir*/ {
-            //			System.out.println("try dir "+fileUnderRoot);
             if (Directory.Exists(fileUnderRoot.LocalPath)) {
+                _logger.LogTrace("Try dir {Directory}", fileUnderRoot.LocalPath);
                 g = new TemplateGroupDirectory(fileUnderRoot, Encoding, DelimiterStartChar, DelimiterStopChar);
-                g.Listener = Listener;
             } else {
-                // try in CLASSPATH
-                //				System.out.println("try dir in CLASSPATH "+fileName);
-                g = new TemplateGroupDirectory(fileName, DelimiterStartChar, DelimiterStopChar);
-                g.Listener = Listener;
+                _logger.LogTrace("Try in resource {FileName}", fileName);
+                g = new TemplateGroupDirectory(fileName, Encoding, DelimiterStartChar, DelimiterStopChar);
             }
+            g.Listener = Listener;
         }
         if (g == null) {
             ErrorManager.CompiletimeError(ErrorType.CANT_IMPORT, null, fileNameToken, fileName);
@@ -704,10 +679,8 @@ public class TemplateGroup {
     /** Load a group file with full path fileName; it's relative to root by prefix. */
     protected void LoadGroupFile(string prefix, Uri fileUri) {
         var fileName = fileUri.LocalPath;
-        if (Verbose) {
-            Console.Out.WriteLine("{0}.LoadGroupFile(prefix={1}, fileName={2})",
-                GetType().FullName, prefix, fileName);
-        }
+        _logger.LogDebug("{Type}.LoadGroupFile(prefix={Prefix}, fileName={FileName})",
+            GetType().FullName, prefix, fileName);
         try {
             if (!TryOpenStream(fileUri, out var stream, out var accessTime)) {
                 throw new InvalidOperationException($"no such group: {fileUri}");
@@ -1434,30 +1407,32 @@ public class TemplateGroup {
 
     public override string ToString() => Name;
 
-    public virtual string Show() {
-        var buf = new StringBuilder();
-        if (_imports is { Count: > 0 }) {
-            buf.Append(" : " + _imports);
-        }
-        foreach (var n in templates.Keys) {
-            var name = n;
-            var c = templates[name];
-            if (c.IsAnonSubtemplate || c == NotFoundTemplate) {
-                continue;
+    public virtual string Description {
+        get {
+            var buf = new StringBuilder();
+            if (_imports is { Count: > 0 }) {
+                buf.Append(" : " + _imports);
             }
-            var slash = name.LastIndexOf('/');
-            name = name.Substring(slash + 1, name.Length - slash - 1);
-            buf.Append(name);
-            buf.Append('(');
-            if (c.FormalArguments != null) {
-                buf.Append(string.Join(",", c.FormalArguments.Select(i => i.ToString()).ToArray()));
+            foreach (var n in templates.Keys) {
+                var name = n;
+                var c = templates[name];
+                if (c.IsAnonSubtemplate || c == NotFoundTemplate) {
+                    continue;
+                }
+                var slash = name.LastIndexOf('/');
+                name = name.Substring(slash + 1, name.Length - slash - 1);
+                buf.Append(name);
+                buf.Append('(');
+                if (c.FormalArguments != null) {
+                    buf.Append(string.Join(",", c.FormalArguments.Select(i => i.ToString()).ToArray()));
+                }
+                buf.Append(')');
+                buf.Append(" ::= <<" + Environment.NewLine);
+                buf.Append(c.Template + Environment.NewLine);
+                buf.Append(">>" + Environment.NewLine);
             }
-            buf.Append(')');
-            buf.Append(" ::= <<" + Environment.NewLine);
-            buf.Append(c.Template + Environment.NewLine);
-            buf.Append(">>" + Environment.NewLine);
+            return buf.ToString();
         }
-        return buf.ToString();
     }
 
     public ITemplateErrorListener Listener {
@@ -1465,15 +1440,17 @@ public class TemplateGroup {
         set => ErrorManager = new ErrorManager(value);
     }
 
-    public HashSet<string> GetTemplateNames() {
-        Load();
-        var result = new HashSet<string>();
-        foreach (var e in templates) {
-            if (e.Value != NotFoundTemplate) {
-                result.Add(e.Key);
+    public ISet<string> TemplateNames {
+        get {
+            Load();
+            var result = new HashSet<string>();
+            foreach (var e in templates) {
+                if (e.Value != NotFoundTemplate) {
+                    result.Add(e.Key);
+                }
             }
+            return result;
         }
-        return result;
     }
 
     protected bool TryOpenStream(Uri uri, out Stream inputStream, out DateTime lastModified) {

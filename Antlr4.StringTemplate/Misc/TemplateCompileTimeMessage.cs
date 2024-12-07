@@ -46,7 +46,7 @@ public class TemplateCompiletimeMessage : TemplateMessage
     private readonly string _sourceName;
 
     public TemplateCompiletimeMessage(ErrorType error, string sourceName, IToken templateToken, IToken token)
-        : this(error, sourceName, templateToken, token, null)
+    : this(error, sourceName, templateToken, token, null)
     {
     }
 
@@ -92,30 +92,25 @@ public class TemplateCompiletimeMessage : TemplateMessage
         }
     }
 
-    public override string ToString()
-    {
+    public override string ToString() {
         var line = 0;
         var charPos = -1;
-        if (_token != null)
-        {
+        if (_token != null) {
             line = _token.Line;
             charPos = _token.CharPositionInLine;
             // check the input streams - if different then token is embedded in templateToken and we need to adjust the offset
-            if (_templateToken != null && !_templateToken.InputStream.Equals(Token.InputStream))
-            {
+            if (_templateToken != null && !_templateToken.InputStream.Equals(Token.InputStream)) {
                 var templateDelimiterSize = 1;
-                if (_templateToken.Type == GroupParser.BIGSTRING || _templateToken.Type == GroupParser.BIGSTRING_NO_NL)
+                if (_templateToken.Type is GroupParser.BIGSTRING or GroupParser.BIGSTRING_NO_NL) {
                     templateDelimiterSize = 2;
-
+                }
                 line += _templateToken.Line - 1;
                 charPos += _templateToken.CharPositionInLine + templateDelimiterSize;
             }
         }
-
-        var filepos = string.Format("{0}:{1}", line, charPos);
-        if (_sourceName != null)
-            return string.Format("{0} {1}: {2}", _sourceName, filepos, string.Format(Error.Message, Arg, Arg2));
-
-        return string.Format("{0}: {1}", filepos, string.Format(Error.Message, Arg, Arg2));
+        var filepos = $"{line}:{charPos}";
+        return _sourceName != null ?
+            $"{_sourceName} {filepos}: {string.Format(Error.Message, Arg, Arg2)}" :
+            $"{filepos}: {string.Format(Error.Message, Arg, Arg2)}";
     }
 }

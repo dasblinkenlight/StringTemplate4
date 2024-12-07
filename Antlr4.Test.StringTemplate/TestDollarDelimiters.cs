@@ -30,6 +30,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Antlr4.StringTemplate.Debug;
+
 namespace Antlr4.Test.StringTemplate;
 
 using Antlr4.StringTemplate;
@@ -42,7 +44,7 @@ public class TestDollarDelimiters : BaseTest {
     [TestMethod]
     public void TestAttr() {
         const string template = "hi $name$!";
-        var st = new Template(template, '$', '$');
+        var st = _templateFactory.CreateTemplate(template, '$', '$');
         st.Add("name", "Ter");
         const string expected = "hi Ter!";
         var result = st.Render();
@@ -51,9 +53,9 @@ public class TestDollarDelimiters : BaseTest {
 
     [TestMethod]
     public void TestParallelMap() {
-        var group = new TemplateGroup('$', '$');
+        var group = _templateFactory.CreateTemplateGroup().WithDelimiters('$', '$').Build();
         group.DefineTemplate("test", "hi $names,phones:{n,p | $n$:$p$;}$", ["names", "phones"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", "Tom");
         st.Add("names", "Sumana");
@@ -73,8 +75,8 @@ public class TestDollarDelimiters : BaseTest {
         const string b = "b() ::= <<bar>>\n";
         WriteFile(dir, "a.st", a);
         WriteFile(dir, "b.st", b);
-        var group = new TemplateGroupDirectory(dir, '$', '$');
-        var st = group.GetInstanceOf("a");
+        var group = _templateFactory.CreateTemplateGroupDirectory(dir).WithDelimiters('$', '$').Build();
+        var st = group.FindTemplate("a");
         const string expected = " <bar> ";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -89,8 +91,8 @@ public class TestDollarDelimiters : BaseTest {
                 "stat(name,value=\"99\") ::= \"x=$value$; // $name$\"" + newline
             ;
         WriteFile(TmpDir, "group.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "group.stg"), '$', '$');
-        var b = group.GetInstanceOf("method");
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "group.stg")).WithDelimiters('$', '$').Build();
+        var b = group.FindTemplate("method");
         b.Add("name", "foo");
         const string expected = "x=99; // foo";
         var result = b.Render();
@@ -111,8 +113,8 @@ public class TestDollarDelimiters : BaseTest {
                 "stat(name,value=\"99\") ::= \"x=$value$; // $name$\"" + newline
             ;
         WriteFile(TmpDir, "group.stg", templates);
-        var group = new TemplateGroupFile(TmpDir + "/group.stg");
-        var b = group.GetInstanceOf("method");
+        var group = _templateFactory.CreateTemplateGroupFile(TmpDir + "/group.stg").Build();
+        var b = group.FindTemplate("method");
         b.Add("name", "foo");
         const string expected = "x=99; // foo";
         var result = b.Render();
@@ -132,8 +134,8 @@ public class TestDollarDelimiters : BaseTest {
                 ">>" + newline +
                 "stat(name,value=\"99\") ::= \"x=$value$; // $name$\"" + newline
             ;
-        var group = new TemplateGroupString(templates);
-        var b = group.GetInstanceOf("method");
+        var group = _templateFactory.CreateTemplateGroupString(templates).Build();
+        var b = group.FindTemplate("method");
         b.Add("name", "foo");
         const string expected = "x=99; // foo";
         var result = b.Render();
@@ -161,17 +163,17 @@ public class TestDollarDelimiters : BaseTest {
         WriteFile(dir, "GenerateHtml.stg", groupFile);
         WriteFile(dir, "html.st", htmlFile);
 
-        var group = new TemplateGroupFile(dir + "/GenerateHtml.stg", '$', '$');
+        var group = _templateFactory.CreateTemplateGroupFile(dir + "/GenerateHtml.stg").WithDelimiters('$', '$').Build();
 
         // test html template directly
-        var st = group.GetInstanceOf("html");
+        var st = group.FindTemplate("html");
         Assert.IsNotNull(st);
         const string expected1 = "<table style=\"stuff\">";
         var result = st.Render();
         Assert.AreEqual(expected1, result);
 
         // test from entry template
-        st = group.GetInstanceOf("entry");
+        st = group.FindTemplate("entry");
         Assert.IsNotNull(st);
         const string expected2 = "<table style=\"stuff\">";
         result = st.Render();
@@ -199,17 +201,17 @@ public class TestDollarDelimiters : BaseTest {
         WriteFile(dir, "GenerateHtml.stg", groupFile);
         WriteFile(dir, "HtmlTemplates.stg", htmlFile);
 
-        var group = new TemplateGroupFile(dir + "/GenerateHtml.stg", '$', '$');
+        var group = _templateFactory.CreateTemplateGroupFile(dir + "/GenerateHtml.stg").WithDelimiters('$', '$').Build();
 
         // test html template directly
-        var st = group.GetInstanceOf("html");
+        var st = group.FindTemplate("html");
         Assert.IsNotNull(st);
         const string expected1 = "<table style=\"stuff\">";
         var result = st.Render();
         Assert.AreEqual(expected1, result);
 
         // test from entry template
-        st = group.GetInstanceOf("entry");
+        st = group.FindTemplate("entry");
         Assert.IsNotNull(st);
         const string expected2 = "<table style=\"stuff\">";
         result = st.Render();
@@ -238,17 +240,17 @@ public class TestDollarDelimiters : BaseTest {
         WriteFile(dir, "GenerateHtml.stg", groupFile);
         WriteFile(dir, "html.st", htmlFile);
 
-        var group = new TemplateGroupFile(dir + "/GenerateHtml.stg", '<', '>');
+        var group = _templateFactory.CreateTemplateGroupFile(dir + "/GenerateHtml.stg").WithDelimiters('<', '>').Build();
 
         // test html template directly
-        var st = group.GetInstanceOf("html");
+        var st = group.FindTemplate("html");
         Assert.IsNotNull(st);
         const string expected1 = "<table style=\"stuff\">";
         var result = st.Render();
         Assert.AreEqual(expected1, result);
 
         // test from entry template
-        st = group.GetInstanceOf("entry");
+        st = group.FindTemplate("entry");
         Assert.IsNotNull(st);
         const string expected2 = "<table style=\"stuff\">";
         result = st.Render();
@@ -278,17 +280,17 @@ public class TestDollarDelimiters : BaseTest {
         WriteFile(dir, "GenerateHtml.stg", groupFile);
         WriteFile(dir, "HtmlTemplates.stg", htmlFile);
 
-        var group = new TemplateGroupFile(dir + "/GenerateHtml.stg");
+        var group = _templateFactory.CreateTemplateGroupFile(dir + "/GenerateHtml.stg").Build();
 
         // test html template directly
-        var st = group.GetInstanceOf("html");
+        var st = group.FindTemplate("html");
         Assert.IsNotNull(st);
         const string expected1 = "<table style=\"stuff\">";
         var result = st.Render();
         Assert.AreEqual(expected1, result);
 
         // test from entry template
-        st = group.GetInstanceOf("entry");
+        st = group.FindTemplate("entry");
         Assert.IsNotNull(st);
         const string expected2 = "<table style=\"stuff\">";
         result = st.Render();

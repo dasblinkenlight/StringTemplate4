@@ -30,6 +30,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Antlr4.StringTemplate.Debug;
+
 namespace Antlr4.Test.StringTemplate;
 
 using Antlr4.StringTemplate;
@@ -43,7 +45,7 @@ public class TestIndirectionAndEarlyEval : BaseTest {
     [TestMethod]
     public void TestEarlyEval() {
         const string template = "<(name)>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("name", "Ter");
         const string expected = "Ter";
         var result = st.Render();
@@ -52,11 +54,11 @@ public class TestIndirectionAndEarlyEval : BaseTest {
 
     [TestMethod]
     public void TestIndirectTemplateInclude() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("foo", "bar");
         const string template = "<(name)()>";
         group.DefineTemplate("test", template, ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("name", "foo");
         const string expected = "bar";
         var result = st.Render();
@@ -65,11 +67,11 @@ public class TestIndirectionAndEarlyEval : BaseTest {
 
     [TestMethod]
     public void TestIndirectTemplateIncludeWithArgs() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("foo", "<x><y>", ["x", "y"]);
         const string template = "<(name)({1},{2})>";
         group.DefineTemplate("test", template, ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("name", "foo");
         const string expected = "12";
         var result = st.Render();
@@ -85,22 +87,21 @@ public class TestIndirectionAndEarlyEval : BaseTest {
             "main(x=\"hello\",t=\"t1\") ::= <<\n" +
             "<(t)(...)>\n" +
             ">>");
-        var group = new TemplateGroupFile(TmpDir + "/t.stg");
         var errors = new ErrorBuffer();
-        group.Listener = errors;
-        var st = group.GetInstanceOf("main");
+        var group = _templateFactory.CreateTemplateGroupFile(TmpDir + "/t.stg").WithErrorListener(errors).Build();
+        var st = group.FindTemplate("main");
         Assert.AreEqual("t.stg 2:34: mismatched input '...' expecting RPAREN" + newline, errors.ToString());
         Assert.IsNull(st);
     }
 
     [TestMethod]
     public void TestIndirectTemplateIncludeViaTemplate() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("foo", "bar");
         group.DefineTemplate("tname", "foo");
         var template = "<(tname())()>";
         group.DefineTemplate("test", template, ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         const string expected = "bar";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -109,7 +110,7 @@ public class TestIndirectionAndEarlyEval : BaseTest {
     [TestMethod]
     public void TestIndirectProp() {
         const string template = "<u.(propname)>: <u.name>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("u", new User(1, "parrt"));
         st.Add("propname", "id");
         const string expected = "1: parrt";
@@ -119,10 +120,10 @@ public class TestIndirectionAndEarlyEval : BaseTest {
 
     [TestMethod]
     public void TestIndirectMap() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("a", "[<x>]", ["x"]);
         group.DefineTemplate("test", "hi <names:(templateName)()>!", ["names", "templateName"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", "Tom");
         st.Add("names", "Sumana");
@@ -135,7 +136,7 @@ public class TestIndirectionAndEarlyEval : BaseTest {
     [TestMethod]
     public void TestNonStringDictLookup() {
         const string template = "<m.(intkey)>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         IDictionary<int, string> m = new Dictionary<int, string>();
         m[36] = "foo";
         st.Add("m", m);

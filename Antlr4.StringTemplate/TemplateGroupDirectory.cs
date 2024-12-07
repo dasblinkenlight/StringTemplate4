@@ -30,18 +30,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate;
-
-using Antlr.Runtime;
-using Compiler;
-using Misc;
 using System;
 using System.Linq;
 using System.Reflection;
-
+using Antlr.Runtime;
+using Antlr4.StringTemplate.Compiler;
+using Antlr4.StringTemplate.Misc;
+using Microsoft.Extensions.Logging;
 using ArgumentException = System.ArgumentException;
 using ArgumentNullException = System.ArgumentNullException;
-using Console = System.Console;
 using Directory = System.IO.Directory;
 using Encoding = System.Text.Encoding;
 using Exception = System.Exception;
@@ -53,6 +50,8 @@ using StreamReader = System.IO.StreamReader;
 using Uri = System.Uri;
 using UriFormatException = System.UriFormatException;
 
+namespace Antlr4.StringTemplate;
+
 // TODO: caching?
 
 /** A directory or directory tree full of templates and/or group files.
@@ -63,7 +62,7 @@ public class TemplateGroupDirectory : TemplateGroup {
     private readonly string groupDirName;
     private readonly Uri root;
 
-    public TemplateGroupDirectory(string dirName, char delimiterStartChar = '<', char delimiterStopChar =  '>')
+    protected TemplateGroupDirectory(string dirName, char delimiterStartChar = '<', char delimiterStopChar =  '>')
     : base(delimiterStartChar, delimiterStopChar) {
         groupDirName = dirName;
         try {
@@ -79,22 +78,19 @@ public class TemplateGroupDirectory : TemplateGroup {
                     root = new Uri("resource://" + res);
                 }
             }
-
-            if (Verbose) {
-                Console.WriteLine("TemplateGroupDirectory({0}) found at {1}", dirName, root);
-            }
+            _logger.LogDebug("TemplateGroupDirectory({DirName}) found at {Root}", dirName, root);
         } catch (Exception e) {
             ErrorManager.InternalError(null, "can't Load group dir " + dirName, e);
         }
     }
 
-    protected TemplateGroupDirectory(string dirName, Encoding encoding, char delimiterStartChar = '<', char delimiterStopChar = '>')
+    internal TemplateGroupDirectory(string dirName, Encoding encoding, char delimiterStartChar = '<', char delimiterStopChar = '>')
     : this(dirName, delimiterStartChar, delimiterStopChar) {
         Encoding = encoding ?? throw new ArgumentNullException(nameof(encoding));
     }
 
-    public TemplateGroupDirectory(Uri root, Encoding encoding, char delimiterStartChar, char delimiterStopChar)
-        : base(delimiterStartChar, delimiterStopChar) {
+    internal TemplateGroupDirectory(Uri root, Encoding encoding, char delimiterStartChar, char delimiterStopChar)
+    : base(delimiterStartChar, delimiterStopChar) {
         groupDirName = Path.GetFileName(root.AbsolutePath);
         this.root = root;
         Encoding = encoding ?? throw new ArgumentNullException(nameof(encoding));
@@ -114,9 +110,7 @@ public class TemplateGroupDirectory : TemplateGroup {
      * </summary>
      */
     protected override CompiledTemplate Load(string name) {
-        if (Verbose) {
-            Console.WriteLine("STGroupDir.load(" + name + ")");
-        }
+        _logger.LogDebug("STGroupDir.load({TemplateName})", name );
         var parent = Utility.GetParent(name); // must have parent; it's fully-qualified
         var prefix = Utility.GetPrefix(name);
         //    	if (parent.isEmpty()) {
@@ -148,9 +142,8 @@ public class TemplateGroupDirectory : TemplateGroup {
         if (Path.IsPathRooted(unqualifiedFileName)) {
             throw new ArgumentException();
         }
-        if (Verbose) {
-            Console.WriteLine("loadTemplateFile({0}) in group dir from {1} prefix={2}", unqualifiedFileName, root, prefix);
-        }
+        _logger.LogDebug("loadTemplateFile({FileName}) in group dir from {Root} prefix={Prefix}",
+            unqualifiedFileName, root, prefix);
         Uri f;
         try {
             var uriBuilder = new UriBuilder(root);
@@ -167,15 +160,11 @@ public class TemplateGroupDirectory : TemplateGroup {
                     name = unqualifiedFileName
                 };
             } else {
-                if (Verbose) {
-                    Console.WriteLine("{0}/{1} doesn't exist", root, unqualifiedFileName);
-                }
+                _logger.LogDebug("{Root}/{FileName} doesn't exist", root, unqualifiedFileName);
                 return null;
             }
         } catch (IOException) {
-            if (Verbose) {
-                Console.WriteLine("{0}/{1} doesn't exist", root, unqualifiedFileName);
-            }
+            _logger.LogDebug("{Root}/{FileName} doesn't exist", root, unqualifiedFileName);
             //errMgr.IOError(null, ErrorType.NO_SUCH_TEMPLATE, ioe, unqualifiedFileName);
             return null;
         }

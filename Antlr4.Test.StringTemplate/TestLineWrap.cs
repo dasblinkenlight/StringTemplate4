@@ -46,9 +46,9 @@ public class TestLineWrap : BaseTest {
         var templates =
             "array(values) ::= <<int[] a = { <values; wrap=\"\\n\", separator=\",\"> };>>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
-        var a = group.GetInstanceOf("array");
+        var a = group.FindTemplate("array");
         a.Add("values", new [] {
             3,9,20,2,1,4,6,32,5,6,77,888,2,1,6,32,5,6,77,
             4,9,20,2,1,4,63,9,20,2,1,4,6,32,5,6,77,6,32,5,6,77,
@@ -72,9 +72,9 @@ public class TestLineWrap : BaseTest {
         var templates =
             "array(values) ::= <<int[] a = { <values; anchor, wrap, separator=\",\"> };>>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
-        var a = group.GetInstanceOf("array");
+        var a = group.FindTemplate("array");
         a.Add("values", new[] {
             3,9,20,2,1,4,6,32,5,6,77,888,2,1,6,32,5,6,77,
             4,9,20,2,1,4,63,9,20,2,1,4,6,32,5,6,77,6,32,5,6,77,
@@ -93,15 +93,14 @@ public class TestLineWrap : BaseTest {
         var templates =
             "array(values) ::= <<{ <values; anchor, separator=\", \"> }>>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
-        var x = new Template("<\\n>{ <stuff; anchor, separator=\",\\n\"> }<\\n>") {
-            Group = group
-        };
+        var x = _templateFactory.CreateTemplate("<\\n>{ <stuff; anchor, separator=\",\\n\"> }<\\n>");
+        x.SetGroup(group);
         x.Add("stuff", "1");
         x.Add("stuff", "2");
         x.Add("stuff", "3");
-        var a = group.GetInstanceOf("array");
+        var a = group.FindTemplate("array");
         a.Add("values", new List<object>() { "a", x, "b" });
         var expecting =
             "{ a, " +     newline +
@@ -117,9 +116,9 @@ public class TestLineWrap : BaseTest {
         var templates =
             "Function(args) ::= <<       FUNCTION line( <args; wrap=\"\\n      c\", separator=\",\"> )>>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
-        var a = group.GetInstanceOf("Function");
+        var a = group.FindTemplate("Function");
         a.Add("args", new[] { "a", "b", "c", "d", "e", "f" });
         var expecting =
             "       FUNCTION line( a,b,c,d," +     newline +
@@ -132,9 +131,9 @@ public class TestLineWrap : BaseTest {
         var templates =
             "array(values) ::= <<int[] a = { <{1,9,2,<values; wrap, separator=\",\">}; anchor> };>>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
-        var a = group.GetInstanceOf("array");
+        var a = group.FindTemplate("array");
         a.Add("values", new[] {
             3,9,20,2,1,4,6,32,5,6,77,888,2,1,6,32,5,6,77,
             4,9,20,2,1,4,63,9,20,2,1,4,6});
@@ -152,9 +151,9 @@ public class TestLineWrap : BaseTest {
         var templates =
             "duh(chars) ::= \"<chars; wrap={<\\n>}>\"" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
-        var a = group.GetInstanceOf("duh");
+        var a = group.FindTemplate("duh");
         a.Add("chars", new[] { "a", "b", "c", "d", "e" });
         // lineWidth==3 implies that we can have 3 characters at most
         var expecting =
@@ -170,9 +169,9 @@ public class TestLineWrap : BaseTest {
             "<chars; wrap=\"\\n\"\\>" + newline +
             ">>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
-        var a = group.GetInstanceOf("duh");
+        var a = group.FindTemplate("duh");
         a.Add("chars", new[] { "a", "b", "\n", "d", "e" });
         // don't do \n if it's last element anyway
         var expecting =
@@ -188,9 +187,9 @@ public class TestLineWrap : BaseTest {
             "<chars; wrap=\"\\n\"\\>" + newline +
             ">>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
-        var a = group.GetInstanceOf("duh");
+        var a = group.FindTemplate("duh");
         a.Add("chars", new[] { "a", "b", "c", "\n", "d", "e" });
         // Once we wrap, we must dump chars as we see them.  A newline right
         // after a wrap is just an "unfortunate" event.  People will expect
@@ -207,9 +206,9 @@ public class TestLineWrap : BaseTest {
         var templates =
             "duh(data) ::= <<!<data; wrap>!>>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
-        var a = group.GetInstanceOf("duh");
+        var a = group.FindTemplate("duh");
         a.Add("data", new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 });
         var expecting =
             "!123" + newline +
@@ -223,9 +222,9 @@ public class TestLineWrap : BaseTest {
         var templates =
             "duh(data) ::= <<!<data:{v|[<v>]}; wrap>!>>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
-        var a = group.GetInstanceOf("duh");
+        var a = group.FindTemplate("duh");
         a.Add("data", new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 });
         var expecting =
             "![1][2][3]" + newline + // width=9 is the 3 char; don't break til after ]
@@ -239,9 +238,9 @@ public class TestLineWrap : BaseTest {
         var templates =
             "duh(data) ::= <<!<data:{v|[<v>]}; anchor, wrap>!>>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
-        var a = group.GetInstanceOf("duh");
+        var a = group.FindTemplate("duh");
         a.Add("data", new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 });
         var expecting =
             "![1][2][3]" +     newline +
@@ -256,10 +255,10 @@ public class TestLineWrap : BaseTest {
             "top(s) ::= <<  <s>.>>" +
             "str(data) ::= <<!<data:{v|[<v>]}; wrap=\"!+\\n!\">!>>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
-        var t = group.GetInstanceOf("top");
-        var s = group.GetInstanceOf("str");
+        var t = group.FindTemplate("top");
+        var s = group.FindTemplate("str");
         s.Add("data", new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 });
         t.Add("s", s);
         var expecting =
@@ -278,9 +277,9 @@ public class TestLineWrap : BaseTest {
             "    <chars; wrap=\"\\n\">" + newline +
             ">>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
-        var a = group.GetInstanceOf("duh");
+        var a = group.FindTemplate("duh");
         a.Add("chars", new[] { "a", "b", "c", "d", "e" });
         //
         var expecting =
@@ -299,9 +298,9 @@ public class TestLineWrap : BaseTest {
             "    <chars; wrap=\"\\n\">" + newline +
             ">>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
-        var a = group.GetInstanceOf("duh");
+        var a = group.FindTemplate("duh");
         a.Add("chars", new[] { "a", "b", "c", "d", "e" });
         //
         var expecting =
@@ -320,10 +319,10 @@ public class TestLineWrap : BaseTest {
             "  <chars; wrap=\"\\n\">" + newline +
             ">>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
-        var top = group.GetInstanceOf("top");
-        var duh = group.GetInstanceOf("duh");
+        var top = group.FindTemplate("top");
+        var duh = group.FindTemplate("duh");
         duh.Add("chars", new[] { "a", "b", "c", "d", "e" });
         top.Add("d", duh);
         var expecting =
@@ -342,10 +341,10 @@ public class TestLineWrap : BaseTest {
             "x: <chars; anchor, wrap=\"\\n\">" + newline +
             ">>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
-        var top = group.GetInstanceOf("top");
-        var duh = group.GetInstanceOf("duh");
+        var top = group.FindTemplate("top");
+        var duh = group.FindTemplate("duh");
         duh.Add("chars", new[] { "a", "b", "c", "d", "e" });
         top.Add("d", duh);
         //
@@ -361,9 +360,9 @@ public class TestLineWrap : BaseTest {
         var templates =
             "m(args,body) ::= <<[TestMethod] public voidfoo(<args; wrap=\"\\n\",separator=\", \">) throws Ick { <body> }>>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
-        var a = group.GetInstanceOf("m");
+        var a = group.FindTemplate("m");
         a.Add("args", new[] { "a", "b", "c" });
         a.Add("body", "i=3;");
         // make it wrap because of ") throws Ick { " literal
@@ -377,9 +376,9 @@ public class TestLineWrap : BaseTest {
     public void TestSingleValueWrap() {
         var templates = "m(args,body) ::= <<{ <body; anchor, wrap=\"\\n\"> }>>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
-        var m = group.GetInstanceOf("m");
+        var m = group.FindTemplate("m");
         m.Add("body", "i=3;");
         // make it wrap because of ") throws Ick { " literal
         var expecting =
@@ -394,10 +393,10 @@ public class TestLineWrap : BaseTest {
             "top(arrays) ::= <<Arrays: <arrays>done>>" + newline +
             "array(values) ::= <%int[] a = { <values; anchor, wrap=\"\\n\", separator=\",\"> };<\\n>%>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
-        var top = group.GetInstanceOf("top");
-        var a = group.GetInstanceOf("array");
+        var top = group.FindTemplate("top");
+        var a = group.FindTemplate("array");
         a.Add("values", new[] {
             3,9,20,2,1,4,6,32,5,6,77,888,2,1,6,32,5,6,77,
             4,9,20,2,1,4,63,9,20,2,1,4,6,32,5,6,77,6,32,5,6,77,

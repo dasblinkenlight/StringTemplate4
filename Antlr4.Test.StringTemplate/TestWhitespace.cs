@@ -30,6 +30,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Antlr4.StringTemplate.Debug;
+
 namespace Antlr4.Test.StringTemplate;
 
 using System.Collections.Generic;
@@ -42,9 +44,9 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestTrimmedSubtemplates() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n | <n>}>!", ["names"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", "Tom");
         st.Add("names", "Sumana");
@@ -59,8 +61,8 @@ public class TestWhitespace : BaseTest {
             $"a(x) ::= <<{newline}" +
             $"foo{newline}" +
             $">>{newline}";
-        var group = new TemplateGroupString(templates);
-        var st = group.GetInstanceOf("a");
+        var group = _templateFactory.CreateTemplateGroupString(templates).Build();
+        var st = group.FindTemplate("a");
         const string expected = "foo";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -70,8 +72,8 @@ public class TestWhitespace : BaseTest {
     public void TestDontTrimJustSpaceBeforeAfterInTemplate() {
         var templates =
             "a(x) ::= << foo >>\n";
-        var group = new TemplateGroupString(templates);
-        var st = group.GetInstanceOf("a");
+        var group = _templateFactory.CreateTemplateGroupString(templates).Build();
+        var st = group.FindTemplate("a");
         const string expected = " foo ";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -79,10 +81,10 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestTrimmedSubtemplatesNoArgs() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "[<foo({ foo })>]");
         group.DefineTemplate("foo", "<x>", ["x"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         const string expected = "[ foo ]";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -90,9 +92,9 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestTrimmedSubtemplatesArgs() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{x|  foo }>", ["names"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", "Tom");
         st.Add("names", "Sumana");
@@ -103,9 +105,9 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestTrimJustOneWSInSubtemplates() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n |  <n> }>!", ["names"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", "Tom");
         st.Add("names", "Sumana");
@@ -116,10 +118,10 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestTrimNewlineInSubtemplates() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n |\n" +
                                      "<n>}>!", ["names"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", "Tom");
         st.Add("names", "Sumana");
@@ -130,11 +132,11 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestLeaveNewlineOnEndInSubtemplates() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n |\n" +
                                      "<n>\n" +
                                      "}>!", ["names"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", "Tom");
         st.Add("names", "Sumana");
@@ -146,11 +148,11 @@ public class TestWhitespace : BaseTest {
     [Ignore("will revisit the behavior of indented expressions spanning multiple lines for a future release")]
     [TestMethod]
     public void TestTabBeforeEndInSubtemplates() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "  <names:{n |\n" +
                                      "    <n>\n" +
                                      "  }>!", ["names"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", "Tom");
         st.Add("names", "Sumana");
@@ -159,13 +161,13 @@ public class TestWhitespace : BaseTest {
            $"    Tom{newline}" +
            $"    Sumana{newline}!";
         var result = st.Render();
-        st.impl.Dump();
+        TestContext.WriteLine(st.GetCompiledTemplate().ToString());
         Assert.AreEqual(expected, result);
     }
 
     [TestMethod]
     public void TestEmptyExprAsFirstLineGetsNoOutput() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "<users>\n" +
             "end\n");
         var expecting = $"end{newline}";
@@ -175,7 +177,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestEmptyLineWithIndent() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "    \n" +
             "end\n");
@@ -186,7 +188,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestEmptyLine() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "\n" +
             "end\n");
@@ -197,7 +199,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestSizeZeroOnLineByItselfGetsNoOutput() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "<name>\n" +
             "<users>\n" +
@@ -210,7 +212,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestSizeZeroOnLineWithIndentGetsNoOutput() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "  <name>\n" +
             "	<users>\n" +
@@ -223,7 +225,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestSizeZeroOnLineWithMultipleExpr() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "  <name>\n" +
             "	<users><users>\n" +
@@ -235,7 +237,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestIFExpr() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "<if(x)><endif>\n" +
             "end\n");
@@ -246,7 +248,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestIndentedIFExpr() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "    <if(x)><endif>\n" +
             "end\n");
@@ -257,7 +259,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestIFElseExprOnSingleLine() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "<if(users)><else><endif>\n" +
             "end\n");
@@ -268,7 +270,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestIFOnMultipleLines() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "<if(users)>\n" +
             "foo\n" +
@@ -283,7 +285,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestElseifOnMultipleLines() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "<if(a)>\n" +
             "foo\n" +
@@ -298,7 +300,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestElseifOnMultipleLines2() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "<if(a)>\n" +
             "foo\n" +
@@ -314,7 +316,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestElseifOnMultipleLines3() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "  <if(a)>\n" +
             "  foo\n" +
@@ -330,7 +332,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestEndifNotOnLineAlone() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "  <if(users)>\n" +
             "  foo\n" +
@@ -344,7 +346,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestNestedIFOnMultipleLines() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "<if(x)>\n" +
             "<if(y)>\n" +
@@ -362,7 +364,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestIfElseifOnMultipleLines() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "<if(x&&y)>\n" +
             "foo\n" +
@@ -378,7 +380,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestLineBreak() {
-        var st = new Template(
+        var st = _templateFactory.CreateTemplate(
             $"Foo <\\\\>{newline}" +
             $"  \t  bar{newline}"
         );
@@ -391,7 +393,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestLineBreak2() {
-        var st = new Template(
+        var st = _templateFactory.CreateTemplate(
             $"Foo <\\\\>       {newline}" +
             $"  \t  bar{newline}"
         );
@@ -404,7 +406,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestLineBreakNoWhiteSpace() {
-        var st = new Template($"Foo <\\\\>{newline}bar\n");
+        var st = _templateFactory.CreateTemplate($"Foo <\\\\>{newline}bar\n");
         var sw = new StringWriter();
         st.Write(new AutoIndentWriter(sw, "\n")); // force \n as newline
         var result = sw.ToString();

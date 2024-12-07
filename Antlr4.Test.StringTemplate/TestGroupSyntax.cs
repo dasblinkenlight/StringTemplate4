@@ -32,7 +32,6 @@
 
 namespace Antlr4.Test.StringTemplate;
 
-using Antlr4.StringTemplate;
 using Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ErrorBuffer = Antlr4.StringTemplate.Misc.ErrorBuffer;
@@ -46,12 +45,12 @@ public class TestGroupSyntax : BaseTest {
         var templates = $"t() ::= <<foo>>{newline}";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var expected =
             "t() ::= <<" + newline +
             "foo"        + newline +
             ">>"         + newline;
-        var result = group.Show();
+        var result = group.Description;
         Assert.AreEqual(expected, result);
     }
 
@@ -62,12 +61,12 @@ public class TestGroupSyntax : BaseTest {
         var templates = $"setTest(ranges) ::= \"<ranges; separator=\\\"||\\\">\"{newline}";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var expected =
             "setTest(ranges) ::= <<" + newline +
             "<ranges; separator=\"||\">" + newline +
             ">>" + newline;
-        var result = group.Show();
+        var result = group.Description;
         Assert.AreEqual(expected, result);
     }
 
@@ -79,7 +78,7 @@ public class TestGroupSyntax : BaseTest {
             "wow() ::= <<last>>" + newline;
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var expected =
             "ta(x) ::= <<" + newline +
             "[<x>]" + newline +
@@ -90,7 +89,7 @@ public class TestGroupSyntax : BaseTest {
             "wow() ::= <<" + newline +
             "last" + newline +
             ">>" + newline;
-        var result = group.Show();
+        var result = group.Description;
         Assert.AreEqual(expected, result);
     }
 
@@ -101,8 +100,8 @@ public class TestGroupSyntax : BaseTest {
             "ta(x) ::= \"[<x>]\"" +     newline;
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
-        var st = group.GetInstanceOf("ta");
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
+        var st = group.FindTemplate("ta");
         st.Add("x", "hi");
         const string expected = "[hi]";
         var result = st.Render();
@@ -116,8 +115,8 @@ public class TestGroupSyntax : BaseTest {
             "ta(x) ::= \"[%x%]\"" +     newline;
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
-        var st = group.GetInstanceOf("ta");
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
+        var st = group.FindTemplate("ta");
         st.Add("x", "hi");
         const string expected = "[hi]";
         var result = st.Render();
@@ -130,12 +129,12 @@ public class TestGroupSyntax : BaseTest {
             "t(a,b) ::= \"[<a>]\"" + newline;
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var expected =
             "t(a,b) ::= <<" + newline +
             "[<a>]" + newline +
             ">>" + newline;
-        var result = group.Show();
+        var result = group.Description;
         Assert.AreEqual(expected, result);
     }
 
@@ -144,12 +143,12 @@ public class TestGroupSyntax : BaseTest {
         var templates = $"t(a={{def1}},b=\"def2\") ::= \"[<a>]\"{newline}";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var expected =
             "t(a={def1},b=\"def2\") ::= <<" + newline +
             "[<a>]" + newline +
             ">>" + newline;
-        var result = group.Show();
+        var result = group.Description;
         Assert.AreEqual(expected, result);
     }
 
@@ -158,12 +157,12 @@ public class TestGroupSyntax : BaseTest {
         var templates = $"t(x, y, a={{def1}}, b=\"def2\") ::= \"[<a>]\"{newline}";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var expected =
             "t(x,y,a={def1},b=\"def2\") ::= <<" + newline +
             "[<a>]" + newline +
             ">>" + newline;
-        var result = group.Show();
+        var result = group.Description;
         Assert.AreEqual(expected, result);
     }
 
@@ -172,12 +171,12 @@ public class TestGroupSyntax : BaseTest {
         var templates = $"t(a={{x | 2*<x>}}) ::= \"[<a>]\"{newline}";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var expected =
             "t(a={x | 2*<x>}) ::= <<" + newline +
             "[<a>]" + newline +
             ">>" + newline;
-        var result = group.Show();
+        var result = group.Description;
         Assert.AreEqual(expected, result);
     }
 
@@ -189,8 +188,8 @@ public class TestGroupSyntax : BaseTest {
             ">>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg");
-        var st = group.GetInstanceOf("t");
+        var group = _templateFactory.CreateTemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg").Build();
+        var st = group.FindTemplate("t");
         const string expected = "true+";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -204,8 +203,8 @@ public class TestGroupSyntax : BaseTest {
             ">>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg");
-        var st = group.GetInstanceOf("t");
+        var group = _templateFactory.CreateTemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg").Build();
+        var st = group.FindTemplate("t");
         const string expected = "false-";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -219,8 +218,8 @@ public class TestGroupSyntax : BaseTest {
             ">>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg");
-        var st = group.GetInstanceOf("t");
+        var group = _templateFactory.CreateTemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg").Build();
+        var st = group.FindTemplate("t");
         const string expected = "+";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -234,8 +233,8 @@ public class TestGroupSyntax : BaseTest {
             ">>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg");
-        var st = group.GetInstanceOf("t");
+        var group = _templateFactory.CreateTemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg").Build();
+        var st = group.FindTemplate("t");
         const string expected = "-";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -246,12 +245,12 @@ public class TestGroupSyntax : BaseTest {
         var templates = $"t(a) ::= \"<a:{{x | <x:{{y | <y>}}>}}>\"{newline}";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var expected =
             "t(a) ::= <<" +     newline +
             "<a:{x | <x:{y | <y>}>}>" +     newline +
             ">>" +     newline;
-        var result = group.Show();
+        var result = group.Description;
         Assert.AreEqual(expected, result);
     }
 
@@ -260,13 +259,13 @@ public class TestGroupSyntax : BaseTest {
         var templates = "t(a={x | <x:{y|<y>}>}) ::= \"ick\"" + newline;
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.Load();
         var expected =
             "t(a={x | <x:{y|<y>}>}) ::= <<" + newline +
             "ick" + newline +
             ">>" + newline;
-        var result = group.Show();
+        var result = group.Description;
         Assert.AreEqual(expected, result);
     }
 
@@ -276,12 +275,12 @@ public class TestGroupSyntax : BaseTest {
             "t(a={x | \\< <x:{y|<y>\\}}>}) ::= \"[<a>]\"" + newline;
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var expected =
             "t(a={x | \\< <x:{y|<y>\\}}>}) ::= <<" + newline +
             "[<a>]" + newline +
             ">>" + newline;
-        var result = group.Show();
+        var result = group.Description;
         Assert.AreEqual(expected, result);
     }
 
@@ -298,10 +297,8 @@ public class TestGroupSyntax : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         var errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
-        var st = group.GetInstanceOf("main");
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
+        var st = group.FindTemplate("main");
         st.Render();
 
         const string expected =

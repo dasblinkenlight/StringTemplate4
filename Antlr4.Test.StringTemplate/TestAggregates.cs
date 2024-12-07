@@ -40,7 +40,7 @@ public class TestAggregates : BaseTest {
 
     [TestMethod]
     public void TestApplyAnonymousTemplateToAggregateAttribute() {
-        var st = new Template("<items:{it|<it.id>: <it.lastName>, <it.firstName>\n}>");
+        var st = _templateFactory.CreateTemplate("<items:{it|<it.id>: <it.lastName>, <it.firstName>\n}>");
         // also testing wacky spaces in aggregate spec
         st.AddMany("items.{ firstName ,lastName, id }", "Ter", "Parr", 99);
         st.AddMany("items.{firstName, lastName ,id}", "Tom", "Burns", 34);
@@ -70,8 +70,8 @@ public class TestAggregates : BaseTest {
                 "intdecl(decl) ::= \"int <decl.name> = 0;\"" + newline +
                 "intarray(decl) ::= \"int[] <decl.name> = null;\"" + newline
             ;
-        var group = new TemplateGroupString(templates);
-        var f = group.GetInstanceOf("file");
+        var group = _templateFactory.CreateTemplateGroupString(templates).Build();
+        var f = group.FindTemplate("file");
         f.AddMany("variables.{ decl,format }", new Decl("i", "int"), "intdecl");
         f.AddMany("variables.{decl ,  format}", new Decl("a", "int-array"), "intarray");
         //System.out.println("f='"+f+"'");

@@ -14,6 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Antlr3.Runtime\Antlr3.Runtime.csproj" />
     <ProjectReference Include="..\Antlr4.StringTemplate\Antlr4.StringTemplate.csproj" />
   </ItemGroup>
 

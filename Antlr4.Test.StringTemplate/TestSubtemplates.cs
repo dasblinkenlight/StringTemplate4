@@ -30,6 +30,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Antlr4.StringTemplate.Debug;
+
 namespace Antlr4.Test.StringTemplate;
 
 using System.Collections.Generic;
@@ -43,9 +45,9 @@ public class TestSubtemplates : BaseTest {
 
     [TestMethod]
     public void TestSimpleIteration() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n|<n>}>!", ["names"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", "Tom");
         st.Add("names", "Sumana");
@@ -56,9 +58,9 @@ public class TestSubtemplates : BaseTest {
 
     [TestMethod]
     public void TestMapIterationIsByKeys() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<emails:{n|<n>}>!", ["emails"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         var emails = new Dictionary<string, string> {
             ["parrt"] = "Ter",
             ["tombu"] = "Tom",
@@ -72,9 +74,9 @@ public class TestSubtemplates : BaseTest {
 
     [TestMethod]
     public void TestSimpleIterationWithArg() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n | <n>}>!", ["names"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", "Tom");
         st.Add("names", "Sumana");
@@ -85,9 +87,9 @@ public class TestSubtemplates : BaseTest {
 
     [TestMethod]
     public void TestNestedIterationWithArg() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<users:{u | <u.id:{id | <id>=}><u.name>}>!", ["users"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("users", new User(1, "parrt"));
         st.Add("users", new User(2, "tombu"));
         st.Add("users", new User(3, "sri"));
@@ -104,8 +106,8 @@ public class TestSubtemplates : BaseTest {
             "y: <y>\n" +
            $">>{newline}";
         WriteFile(TmpDir, "group.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "group.stg"));
-        var b = group.GetInstanceOf("t");
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "group.stg")).Build();
+        var b = group.FindTemplate("t");
         b.Add("x", "a");
         var expecting = $"x: a{newline}y: aa";
         var result = b.Render();
@@ -114,7 +116,7 @@ public class TestSubtemplates : BaseTest {
 
     [TestMethod]
     public void TestParallelAttributeIteration() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<names,phones,salaries:{n,p,s | <n>@<p>: <s>\n}>"
         );
         e.Add("names", "Ter");
@@ -129,7 +131,7 @@ public class TestSubtemplates : BaseTest {
 
     [TestMethod]
     public void TestParallelAttributeIterationWithNullValue() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<names,phones,salaries:{n,p,s | <n>@<p>: <s>\n}>"
         );
         e.Add("names", "Ter");
@@ -148,7 +150,7 @@ public class TestSubtemplates : BaseTest {
 
     [TestMethod]
     public void TestParallelAttributeIterationHasI() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<names,phones,salaries:{n,p,s | <i0>. <n>@<p>: <s>\n}>"
         );
         e.Add("names", "Ter");
@@ -165,7 +167,7 @@ public class TestSubtemplates : BaseTest {
 
     [TestMethod]
     public void TestParallelAttributeIterationWithDifferentSizes() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<names,phones,salaries:{n,p,s | <n>@<p>: <s>}; separator=\", \">"
         );
         e.Add("names", "Ter");
@@ -180,7 +182,7 @@ public class TestSubtemplates : BaseTest {
 
     [TestMethod]
     public void TestParallelAttributeIterationWithSingletons() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<names,phones,salaries:{n,p,s | <n>@<p>: <s>}; separator=\", \">"
         );
         e.Add("names", "Ter");
@@ -198,8 +200,8 @@ public class TestSubtemplates : BaseTest {
            $"value(x) ::= \"<if(!x)>n/a<else><x><endif>\"{newline}";
         WriteFile(TmpDir, "g.stg", templates);
 
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "g.stg"));
-        var p = group.GetInstanceOf("page");
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "g.stg")).Build();
+        var p = group.FindTemplate("page");
         p.Add("names", "Ter");
         p.Add("names", "Tom");
         p.Add("names", "Sriram");
@@ -218,12 +220,12 @@ public class TestSubtemplates : BaseTest {
         };
         innerGroup.DefineTemplate("test", "<m:samegroup()>", ["m"]);
         innerGroup.DefineTemplate("samegroup", "hi ", ["x"]);
-        var st = innerGroup.GetInstanceOf("test");
+        var st = innerGroup.FindTemplate("test");
         st.Add("m", new[] { 1, 2, 3 });
 
-        var outerGroup = new TemplateGroup();
+        var outerGroup = _templateFactory.CreateTemplateGroup().Build();
         outerGroup.DefineTemplate("errorMessage", "<x>", ["x"]);
-        var outerST = outerGroup.GetInstanceOf("errorMessage");
+        var outerST = outerGroup.FindTemplate("errorMessage");
         outerST.Add("x", st);
 
         const string expected = "hi hi hi ";
@@ -242,12 +244,12 @@ public class TestSubtemplates : BaseTest {
         };
         innerGroup.DefineTemplate("test", "<m:samegroup()>", ["m"]);
         innerGroup.DefineTemplate("samegroup", "hi ", ["x"]);
-        var st = innerGroup.GetInstanceOf("test");
+        var st = innerGroup.FindTemplate("test");
         st.Add("m", 10);
 
-        var outerGroup = new TemplateGroup();
+        var outerGroup = _templateFactory.CreateTemplateGroup().Build();
         outerGroup.DefineTemplate("errorMessage", "<x>", ["x"]);
-        var outerST = outerGroup.GetInstanceOf("errorMessage");
+        var outerST = outerGroup.FindTemplate("errorMessage");
         outerST.Add("x", st);
 
         const string expected = "hi ";
@@ -265,14 +267,14 @@ public class TestSubtemplates : BaseTest {
             Listener = errors
         };
         innerGroup.DefineTemplate("bob", "inner");
-        var st = innerGroup.GetInstanceOf("bob");
+        var st = innerGroup.FindTemplate("bob");
 
         var outerGroup = new TemplateGroup {
             Listener = errors
         };
         outerGroup.DefineTemplate("errorMessage", "<x>", ["x"]);
         outerGroup.DefineTemplate("bob", "outer"); // should not be visible to test() in innerGroup
-        var outerST = outerGroup.GetInstanceOf("errorMessage");
+        var outerST = outerGroup.FindTemplate("errorMessage");
         outerST.Add("x", st);
 
         var expected = "inner";

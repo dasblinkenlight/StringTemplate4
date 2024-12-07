@@ -30,20 +30,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate;
-
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Compiler;
-using Debug;
-using Extensions;
-using Misc;
-
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using ArgumentNullException = System.ArgumentNullException;
 using Array = System.Array;
 using BitConverter = System.BitConverter;
-using Console = System.Console;
 using CultureInfo = System.Globalization.CultureInfo;
 using Environment = System.Environment;
 using Exception = System.Exception;
@@ -56,6 +50,13 @@ using IOException = System.IO.IOException;
 using Math = System.Math;
 using StringBuilder = System.Text.StringBuilder;
 using StringWriter = System.IO.StringWriter;
+
+namespace Antlr4.StringTemplate;
+
+using Compiler;
+using Debug;
+using Extensions;
+using Misc;
 
 /** This class knows how to execute template bytecodes relative to a
  *  particular TemplateGroup. To execute the byte codes, we need an output stream
@@ -76,12 +77,11 @@ using StringWriter = System.IO.StringWriter;
  */
 public sealed class Interpreter {
 
+    private readonly ILogger<Interpreter> _logger = NullLogger<Interpreter>.Instance;
+
     private const int DefaultOperandStackSize = 512;
 
     private static readonly string[] predefinedAnonSubtemplateAttributes = ["i", "i0"];
-
-    /** Dump bytecode instructions as we execute them? */
-    private static bool trace = false;
 
     /** Exec st with respect to this group. Once set in Template.ToString(),
      *  it should be fixed. Template has group also.
@@ -141,9 +141,7 @@ public sealed class Interpreter {
             if (frame.StackDepth > 200) {
                 throw new TemplateException("Template stack overflow.", null);
             }
-            if (trace) {
-                Console.Out.WriteLine("Execute({0})", frame.Template.Name);
-            }
+            _logger.LogTrace("Execute({Name})", frame.Template.Name);
             SetDefaultArguments(frame);
             return ExecuteImpl(@out, frame);
         } catch (Exception e) when (!e.IsCritical()) {
@@ -163,7 +161,7 @@ public sealed class Interpreter {
         var code = self.impl.instrs;        // which code block are we executing
         var ip = 0;
         while (ip < self.impl.codeSize) {
-            if (trace || _debug) {
+            if (_debug) {
                 Trace(frame, ip);
             }
             var opcode = (Bytecode)code[ip];
@@ -233,7 +231,7 @@ public sealed class Interpreter {
                     ip += Instruction.OperandSizeInBytes;
                     // look up in original hierarchy not enclosing template (variable group)
                     // see TestSubtemplates.testEvalSTFromAnotherGroup()
-                    st = self.Group.GetEmbeddedInstanceOf(frame, name);
+                    st = (self.Group as TemplateGroup).GetEmbeddedInstanceOf(frame, name);
                     // get n args and store into st's attr list
                     StoreArguments(frame, nArgs, st);
                     sp -= nArgs;
@@ -244,7 +242,7 @@ public sealed class Interpreter {
                     nArgs = GetShort(code, ip);
                     ip += Instruction.OperandSizeInBytes;
                     name = (string)operands[sp - nArgs];
-                    st = self.Group.GetEmbeddedInstanceOf(frame, name);
+                    st = (self.Group as TemplateGroup).GetEmbeddedInstanceOf(frame, name);
                     StoreArguments(frame, nArgs, st);
                     sp -= nArgs;
                     sp--; // pop template name
@@ -258,7 +256,7 @@ public sealed class Interpreter {
                     var attrs = (IDictionary<string, object>)operands[sp--];
                     // look up in original hierarchy not enclosing template (variable group)
                     // see TestSubtemplates.testEvalSTFromAnotherGroup()
-                    st = self.Group.GetEmbeddedInstanceOf(frame, name);
+                    st = (self.Group as TemplateGroup).GetEmbeddedInstanceOf(frame, name);
                     // get n args and store into st's attr list
                     StoreArguments(frame, attrs, st);
                     operands[++sp] = st;
@@ -520,7 +518,7 @@ public sealed class Interpreter {
                 case Bytecode.INSTR_WRITE_LOCAL:
                 default:
                     _errorManager.InternalError(self, "invalid bytecode @ " + (ip - 1) + ": " + opcode, null);
-                    self.impl.Dump();
+                    _logger.LogError("{CompiledTemplate}", self.impl);
                     break;
             }
 
@@ -542,7 +540,7 @@ public sealed class Interpreter {
         var imported = self.impl.NativeGroup.LookupImportedTemplate(name);
         if (imported == null) {
             _errorManager.RuntimeError(frame, ErrorType.NO_IMPORTED_TEMPLATE, name);
-            st = self.Group.CreateStringTemplateInternally(new CompiledTemplate());
+            st = (self.Group as TemplateGroup).CreateStringTemplateInternally(new CompiledTemplate());
         } else {
             st = imported.NativeGroup.GetEmbeddedInstanceOf(frame, name);
             st.Group = group;
@@ -559,7 +557,7 @@ public sealed class Interpreter {
         var imported = self.impl.NativeGroup.LookupImportedTemplate(name);
         if (imported == null) {
             _errorManager.RuntimeError(frame, ErrorType.NO_IMPORTED_TEMPLATE, name);
-            st = self.Group.CreateStringTemplateInternally(new CompiledTemplate());
+            st = (self.Group as TemplateGroup).CreateStringTemplateInternally(new CompiledTemplate());
         } else {
             st = imported.NativeGroup.CreateStringTemplateInternally(imported);
             st.Group = group;
@@ -791,7 +789,7 @@ public sealed class Interpreter {
             }
         }
 
-        var proxyFactory = frame.Template.Group.GetTypeProxyFactory(o.GetType());
+        var proxyFactory = (frame.Template.Group as TemplateGroup)?.GetTypeProxyFactory(o.GetType());
         if (proxyFactory != null) {
             o = proxyFactory.CreateProxy(frame, o);
         }
@@ -1215,7 +1213,7 @@ public sealed class Interpreter {
                 return null;
             case string str:
                 return str;
-            case IDictionary dictionary when frame.Template.Group.IterateAcrossValues:
+            case IDictionary dictionary when (frame.Template.Group as TemplateGroup)?.IterateAcrossValues == true:
                 return dictionary.Values.GetEnumerator();
             case IDictionary dictionary:
                 return dictionary.Keys.GetEnumerator();
@@ -1259,11 +1257,11 @@ public sealed class Interpreter {
             return null;
         }
         try {
-            var proxyFactory = self.Group.GetTypeProxyFactory(o.GetType());
+            var proxyFactory = (self.Group as TemplateGroup).GetTypeProxyFactory(o.GetType());
             if (proxyFactory != null) {
                 o = proxyFactory.CreateProxy(frame, o);
             }
-            var adap = self.Group.GetModelAdaptor(o.GetType());
+            var adap = (self.Group as TemplateGroup).GetModelAdaptor(o.GetType());
             return adap.GetProperty(this, frame, o, property, ToString(frame, property));
         } catch (TemplateNoSuchPropertyException e) {
             _errorManager.RuntimeError(frame, ErrorType.NO_SUCH_PROPERTY,
@@ -1355,9 +1353,7 @@ public sealed class Interpreter {
         tr.Append(frame.GetEnclosingInstanceStackString());
         tr.Append(", sp=" + sp + ", nw=" + nwline);
         var s = tr.ToString();
-        if (trace) {
-            Console.WriteLine(s);
-        }
+        _logger.LogTrace("{Trace}", s);
     }
 
     private void PrintForTrace(StringBuilder tr, TemplateFrame frame, object o) {
@@ -1392,7 +1388,7 @@ public sealed class Interpreter {
      *  childEvalTemplateEvents list for STViz tree view.
      */
     private void TrackDebugEvent(TemplateFrame frame, InterpEvent e) {
-        //		System.out.println(e);
+        _logger.LogTrace("{Event}", e);
         events.Add(e);
         //		if ( self.debugState==null ) self.debugState = new ST.DebugState();
         //		self.debugState.events.add(e);

@@ -30,66 +30,35 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate.Misc;
-
 using Antlr.Runtime;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using ArgumentNullException = System.ArgumentNullException;
-using Console = System.Console;
 using Exception = System.Exception;
 using Path = System.IO.Path;
 
-public class ErrorManager
-{
-    private static ITemplateErrorListener _defaultErrorListener = new ConsoleErrorListener();
+namespace Antlr4.StringTemplate.Misc;
 
-    private readonly ITemplateErrorListener _listener;
+public class ErrorManager {
 
-    public ErrorManager()
-        : this(DefaultErrorListener)
-    {
+    public static ITemplateErrorListener DefaultErrorListener { get; } = new LoggerErrorListener();
+
+    public ITemplateErrorListener Listener { get; private set; }
+
+    public ErrorManager() : this(DefaultErrorListener) {
     }
 
-    public ErrorManager(ITemplateErrorListener listener)
-    {
-        if (listener == null)
-            throw new ArgumentNullException("listener");
-
-        _listener = listener;
+    public ErrorManager(ITemplateErrorListener listener) {
+        Listener = listener ?? throw new ArgumentNullException(nameof(listener));
     }
 
-    public static ITemplateErrorListener DefaultErrorListener
-    {
-        get
-        {
-            return _defaultErrorListener;
-        }
 
-        set
-        {
-            if (value == null)
-                throw new ArgumentNullException("value");
-
-            _defaultErrorListener = value;
-        }
-    }
-
-    public ITemplateErrorListener Listener
-    {
-        get
-        {
-            return _listener;
-        }
-    }
-
-    public virtual void CompiletimeError(ErrorType error, IToken templateToken, IToken t)
-    {
+    public virtual void CompiletimeError(ErrorType error, IToken templateToken, IToken t) {
         var input = t.InputStream;
         string srcName = null;
-        if (input != null)
-        {
+        if (input != null) {
             srcName = input.SourceName;
-            if (srcName != null)
-                srcName = Path.GetFileName(srcName);
+            srcName = Path.GetFileName(srcName);
         }
 
         Listener.CompileTimeError(new TemplateCompiletimeMessage(error, srcName, templateToken, t, null, t.Text));
@@ -97,17 +66,14 @@ public class ErrorManager
 
     public virtual void LexerError(string srcName, string msg, IToken templateToken, RecognitionException e)
     {
-        if (srcName != null)
-            srcName = Path.GetFileName(srcName);
-
+        srcName = Path.GetFileName(srcName);
         Listener.CompileTimeError(new TemplateLexerMessage(srcName, msg, templateToken, e));
     }
 
     public virtual void CompiletimeError(ErrorType error, IToken templateToken, IToken t, object arg)
     {
-        var srcName = t != null && t.InputStream != null ? t.InputStream.SourceName : null;
-        if (srcName != null)
-            srcName = Path.GetFileName(srcName);
+        var srcName = t is { InputStream: not null } ? t.InputStream.SourceName : null;
+        srcName = Path.GetFileName(srcName);
 
         Listener.CompileTimeError(new TemplateCompiletimeMessage(error, srcName, templateToken, t, null, arg));
     }
@@ -115,105 +81,82 @@ public class ErrorManager
     public virtual void CompiletimeError(ErrorType error, IToken templateToken, IToken t, object arg, object arg2)
     {
         var srcName = t.InputStream.SourceName;
-        if (srcName != null)
-            srcName = Path.GetFileName(srcName);
+        srcName = Path.GetFileName(srcName);
 
         Listener.CompileTimeError(new TemplateCompiletimeMessage(error, srcName, templateToken, t, null, arg, arg2));
     }
 
-    public virtual void GroupSyntaxError(ErrorType error, string sourceName, IToken token)
-    {
+    public virtual void GroupSyntaxError(ErrorType error, string sourceName, IToken token) {
         Listener.CompileTimeError(new TemplateGroupCompiletimeMessage(error, sourceName, token));
     }
 
-    public virtual void GroupSyntaxError(ErrorType error, string sourceName, RecognitionException e, string message)
-    {
+    public virtual void GroupSyntaxError(ErrorType error, string sourceName, RecognitionException e, string message) {
         var token = e.Token;
         Listener.CompileTimeError(new TemplateGroupCompiletimeMessage(error, sourceName, token, e, message));
     }
 
-    public virtual void GroupLexerError(ErrorType error, string srcName, RecognitionException e, string msg)
-    {
+    public virtual void GroupLexerError(ErrorType error, string srcName, RecognitionException e, string msg) {
         Listener.CompileTimeError(new TemplateGroupCompiletimeMessage(error, srcName, e.Token, e, msg));
     }
 
-    public virtual void RuntimeError(TemplateFrame frame, ErrorType error)
-    {
-        Listener.RuntimeError(new TemplateRuntimeMessage(error, frame != null ? frame.InstructionPointer : 0, frame));
+    public virtual void RuntimeError(TemplateFrame frame, ErrorType error) {
+        Listener.RuntimeError(new TemplateRuntimeMessage(error, frame?.InstructionPointer ?? 0, frame));
     }
 
-    public virtual void RuntimeError(TemplateFrame frame, ErrorType error, object arg)
-    {
-        Listener.RuntimeError(new TemplateRuntimeMessage(error, frame != null ? frame.InstructionPointer : 0, frame, arg));
+    public virtual void RuntimeError(TemplateFrame frame, ErrorType error, object arg) {
+        Listener.RuntimeError(new TemplateRuntimeMessage(error, frame?.InstructionPointer ?? 0, frame, arg));
     }
 
-    public virtual void RuntimeError(TemplateFrame frame, ErrorType error, Exception e, object arg)
-    {
-        Listener.RuntimeError(new TemplateRuntimeMessage(error, frame != null ? frame.InstructionPointer : 0, frame, e, arg));
+    public virtual void RuntimeError(TemplateFrame frame, ErrorType error, Exception e, object arg) {
+        Listener.RuntimeError(new TemplateRuntimeMessage(error, frame?.InstructionPointer ?? 0, frame, e, arg));
     }
 
-    public virtual void RuntimeError(TemplateFrame frame, ErrorType error, object arg, object arg2)
-    {
-        Listener.RuntimeError(new TemplateRuntimeMessage(error, frame != null ? frame.InstructionPointer : 0, frame, null, arg, arg2));
+    public virtual void RuntimeError(TemplateFrame frame, ErrorType error, object arg, object arg2) {
+        Listener.RuntimeError(new TemplateRuntimeMessage(error, frame?.InstructionPointer ?? 0, frame, null, arg, arg2));
     }
 
-    public virtual void RuntimeError(TemplateFrame frame, ErrorType error, object arg, object arg2, object arg3)
-    {
-        Listener.RuntimeError(new TemplateRuntimeMessage(error, frame != null ? frame.InstructionPointer : 0, frame, null, arg, arg2, arg3));
+    public virtual void RuntimeError(TemplateFrame frame, ErrorType error, object arg, object arg2, object arg3) {
+        Listener.RuntimeError(new TemplateRuntimeMessage(error, frame?.InstructionPointer ?? 0, frame, null, arg, arg2, arg3));
     }
 
-    public virtual void IOError(Template self, ErrorType error, Exception e)
-    {
+    public virtual void IOError(Template self, ErrorType error, Exception e) {
         Listener.IOError(new TemplateMessage(error, self, e));
     }
 
-    public virtual void IOError(Template self, ErrorType error, Exception e, object arg)
-    {
+    public virtual void IOError(Template self, ErrorType error, Exception e, object arg) {
         Listener.IOError(new TemplateMessage(error, self, e, arg));
     }
 
-    public virtual void InternalError(Template self, string msg, Exception e)
-    {
+    public virtual void InternalError(Template self, string msg, Exception e) {
         Listener.InternalError(new TemplateMessage(ErrorType.INTERNAL_ERROR, self, e, msg));
     }
 
-    private class ConsoleErrorListener : ITemplateErrorListener
-    {
-        public virtual void CompileTimeError(TemplateMessage msg)
-        {
-            Console.Error.WriteLine(msg);
+    private class LoggerErrorListener : ITemplateErrorListener {
+
+        private readonly ILogger<Template> _logger;
+
+        public LoggerErrorListener(ILogger<Template> logger = null) {
+            _logger = logger ?? NullLogger<Template>.Instance;
+        }
+        public void CompileTimeError(TemplateMessage msg) {
+            _logger.LogError("{Message}", msg);
         }
 
-        public virtual void RuntimeError(TemplateMessage msg)
-        {
+        public void RuntimeError(TemplateMessage msg) {
             if (msg.Error != ErrorType.NO_SUCH_PROPERTY)
             {
                 // ignore these
-                Console.Error.WriteLine(msg);
+                _logger.LogError("{Message}", msg);
             }
         }
 
-        public virtual void IOError(TemplateMessage msg)
-        {
-            Console.Error.WriteLine(msg);
+        public void IOError(TemplateMessage msg) {
+            _logger.LogError("{Message}", msg);
         }
 
-        public virtual void InternalError(TemplateMessage msg)
-        {
-            Console.Error.WriteLine(msg);
+        public void InternalError(TemplateMessage msg) {
+            _logger.LogError("{Message}", msg);
             // throw new Error("internal error", msg.cause);
-        }
-
-        public virtual void Error(string s)
-        {
-            Error(s, null);
-        }
-
-        public virtual void Error(string s, Exception e)
-        {
-            Console.Error.WriteLine(s);
-            if (e != null)
-                Console.Error.WriteLine(e.StackTrace);
         }
     }
 }

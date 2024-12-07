@@ -45,7 +45,7 @@ public class TestFunctions : BaseTest {
     [TestMethod]
     public void TestFirst() {
         var template = "<first(names)>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         List<string> names = ["Ter", "Tom"];
         st.Add("names", names);
         var expected = "Ter";
@@ -56,7 +56,7 @@ public class TestFunctions : BaseTest {
     [TestMethod]
     public void TestLength() {
         var template = "<length(names)>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         List<string> names = ["Ter", "Tom"];
         st.Add("names", names);
         var expected = "2";
@@ -67,7 +67,7 @@ public class TestFunctions : BaseTest {
     [TestMethod]
     public void TestLengthWithNullValues() {
         var template = "<length(names)>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         List<string> names = ["Ter", null, "Tom", null];
         st.Add("names", names);
         var expected = "4";
@@ -77,7 +77,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestFirstOp() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<first(names)>"
         );
         e.Add("names", "Ter");
@@ -89,7 +89,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestFirstOpList() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<first(names)>"
         );
         e.Add("names", new List<string>(["Ter", "Tom", "Sriram"]));
@@ -99,7 +99,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestFirstOpArray() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<first(names)>"
         );
         e.Add("names", new[] { "Ter", "Tom", "Sriram" });
@@ -109,7 +109,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestFirstOpPrimitiveArray() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<first(names)>"
         );
         e.Add("names", new[] { 0, 1, 2 });
@@ -119,7 +119,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestTruncOp() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<trunc(names); separator=\", \">"
         );
         e.Add("names", "Ter");
@@ -131,7 +131,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestTruncOpList() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<trunc(names); separator=\", \">"
         );
         e.Add("names", new List<string>(["Ter", "Tom", "Sriram"]));
@@ -141,7 +141,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestTruncOpArray() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<trunc(names); separator=\", \">"
         );
         e.Add("names", new[] { "Ter", "Tom", "Sriram" });
@@ -151,7 +151,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestTruncOpPrimitiveArray() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<trunc(names); separator=\", \">"
         );
         e.Add("names", new[] { 0, 1, 2 });
@@ -161,7 +161,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestRestOp() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<rest(names); separator=\", \">"
         );
         e.Add("names", "Ter");
@@ -173,7 +173,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestRestOpList() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<rest(names); separator=\", \">"
         );
         e.Add("names", new List<string>(["Ter", "Tom", "Sriram"]));
@@ -183,7 +183,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestRestOpArray() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<rest(names); separator=\", \">"
         );
         e.Add("names", new[] { "Ter", "Tom", "Sriram" });
@@ -193,7 +193,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestRestOpPrimitiveArray() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<rest(names); separator=\", \">"
         );
         e.Add("names", new[] { 0, 1, 2 });
@@ -203,7 +203,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestRestOpEmptyList() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<rest(names); separator=\", \">"
         );
         e.Add("names", new List<string>());
@@ -212,7 +212,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestRestOpEmptyArray() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<rest(names); separator=\", \">"
         );
         e.Add("names", Array.Empty<string>());
@@ -221,7 +221,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestRestOpEmptyPrimitiveArray() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<rest(names); separator=\", \">"
         );
         e.Add("names", Array.Empty<int>());
@@ -235,8 +235,8 @@ public class TestFunctions : BaseTest {
                 "b(x) ::= \"<x>, <x>\"" + newline
             ;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
-        var e = group.GetInstanceOf("a");
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
+        var e = group.FindTemplate("a");
         List<string> names = [
             "Ter",
             "Tom"
@@ -253,8 +253,8 @@ public class TestFunctions : BaseTest {
                 "b(x) ::= \"<x>, <x>\"" + newline
             ;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(TmpDir + "/" + "t.stg");
-        var e = group.GetInstanceOf("a");
+        var group = _templateFactory.CreateTemplateGroupFile(TmpDir + "/" + "t.stg").Build();
+        var e = group.FindTemplate("a");
         e.Add("names", new[] { 0, 1 });
         var expected = "1, 1";
         Assert.AreEqual(expected, e.Render());
@@ -262,7 +262,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestLastOp() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<last(names)>"
         );
         e.Add("names", "Ter");
@@ -274,7 +274,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestLastOpList() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<last(names)>"
         );
         e.Add("names", new List<string>(["Ter", "Tom", "Sriram"]));
@@ -284,7 +284,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestLastOpArray() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<last(names)>"
         );
         e.Add("names", new[] { "Ter", "Tom", "Sriram" });
@@ -294,7 +294,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestLastOpPrimitiveArray() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<last(names)>"
         );
         e.Add("names", new[] { 0, 1, 2 });
@@ -304,7 +304,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestStripOp() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<strip(names); null=\"n/a\">"
         );
         e.Add("names", null);
@@ -319,7 +319,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestStripOpList() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<strip(names); null=\"n/a\">"
         );
         e.Add("names", new List<string>([null, "Tom", null, null, "Sriram", null]));
@@ -329,7 +329,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestStripOpArray() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<strip(names); null=\"n/a\">"
         );
         e.Add("names", new[] { null, "Tom", null, null, "Sriram", null });
@@ -483,8 +483,8 @@ public class TestFunctions : BaseTest {
                 "b(x) ::= \"<x>, <x>\"" + newline
             ;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
-        var e = group.GetInstanceOf("a");
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
+        var e = group.FindTemplate("a");
         List<string> mine = [
             "Ter",
             "Tom"

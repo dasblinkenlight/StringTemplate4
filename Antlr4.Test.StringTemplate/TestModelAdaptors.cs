@@ -74,9 +74,9 @@ public class TestModelAdaptors : BaseTest {
     public void TestSimpleAdaptor() {
         const string templates = "foo(x) ::= \"<x.id>: <x.name>\"\n";
         WriteFile(TmpDir, "foo.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "foo.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "foo.stg")).Build();
         group.RegisterModelAdaptor(typeof(User), new UserAdaptor());
-        var st = group.GetInstanceOf("foo");
+        var st = group.FindTemplate("foo");
         st.Add("x", new User(100, "parrt"));
         const string expected = "100: parrt";
         var result = st.Render();
@@ -88,11 +88,9 @@ public class TestModelAdaptors : BaseTest {
         var errors = new ErrorBufferAllErrors();
         const string templates = "foo(x) ::= \"<x.qqq>\"\n";
         WriteFile(TmpDir, "foo.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "foo.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "foo.stg")).WithErrorListener(errors).Build();
         group.RegisterModelAdaptor(typeof(User), new UserAdaptor());
-        var st = group.GetInstanceOf("foo");
+        var st = group.FindTemplate("foo");
         st.Add("x", new User(100, "parrt"));
         var result = st.Render();
         Assert.AreEqual(string.Empty, result);
@@ -106,9 +104,9 @@ public class TestModelAdaptors : BaseTest {
     public void TestAdaptorCoversSubclass() {
         const string templates = "foo(x) ::= \"<x.id>: <x.name>\"\n";
         WriteFile(TmpDir, "foo.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "foo.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "foo.stg")).Build();
         group.RegisterModelAdaptor(typeof(User), new UserAdaptor());
-        var st = group.GetInstanceOf("foo");
+        var st = group.FindTemplate("foo");
         st.Add("x", new SuperUser(100, "parrt")); // create subclass of User
         const string expected = "100: super parrt";
         var result = st.Render();
@@ -119,14 +117,14 @@ public class TestModelAdaptors : BaseTest {
     public void TestWeCanResetAdaptorCacheInvalidatedUponAdaptorReset() {
         const string templates = "foo(x) ::= \"<x.id>: <x.name>\"\n";
         WriteFile(TmpDir, "foo.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "foo.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "foo.stg")).Build();
         group.RegisterModelAdaptor(typeof(User), new UserAdaptor());
         group.GetModelAdaptor(typeof(User)); // get User, SuperUser into cache
         group.GetModelAdaptor(typeof(SuperUser));
 
         group.RegisterModelAdaptor(typeof(User), new UserAdaptorConst());
         // cache should be reset so we see new adaptor
-        var st = group.GetInstanceOf("foo");
+        var st = group.FindTemplate("foo");
         st.Add("x", new User(100, "parrt"));
         const string expected = "const id value: const name value"; // sees UserAdaptorConst
         var result = st.Render();
@@ -137,10 +135,10 @@ public class TestModelAdaptors : BaseTest {
     public void TestSeesMostSpecificAdaptor() {
         const string templates = "foo(x) ::= \"<x.id>: <x.name>\"\n";
         WriteFile(TmpDir, "foo.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(Path.Combine(TmpDir, "foo.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "foo.stg")).Build();
         group.RegisterModelAdaptor(typeof(User), new UserAdaptor());
         group.RegisterModelAdaptor(typeof(SuperUser), new UserAdaptorConst()); // most specific
-        var st = group.GetInstanceOf("foo");
+        var st = group.FindTemplate("foo");
         st.Add("x", new User(100, "parrt"));
         const string expected1 = "100: parrt";
         var result = st.Render();

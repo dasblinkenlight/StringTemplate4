@@ -49,9 +49,7 @@ public class TestGroupSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         ITemplateErrorListener errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         var expected = "t.stg 2:0: mismatched input 'foo' expecting STRING" + newline +
                        "t.stg 2:3: missing EndOfFile at '('" + newline;
@@ -67,9 +65,7 @@ public class TestGroupSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         ITemplateErrorListener errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         var expected = "t.stg 1:7: mismatched input 'Super' expecting STRING" + newline;
         var result = errors.ToString();
@@ -83,9 +79,7 @@ public class TestGroupSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         ITemplateErrorListener errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         var expected = "t.stg 2:0: missing template at '<EOF>'" + newline;
         var result = errors.ToString();
@@ -98,9 +92,7 @@ public class TestGroupSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         ITemplateErrorListener errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         var expected = "t.stg 1:11: missing final '}' in {...} anonymous template" + newline +
                        "t.stg 1:10: no viable alternative at input '{'" + newline;
@@ -114,9 +106,7 @@ public class TestGroupSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         ITemplateErrorListener errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         var expected = "t.stg 1:5: no viable alternative at input '::='" + newline;
         var result = errors.ToString();
@@ -129,9 +119,7 @@ public class TestGroupSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         ITemplateErrorListener errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         var expected = "t.stg 1:11: \\n in string" + newline;
         var result = errors.ToString();
@@ -146,9 +134,7 @@ public class TestGroupSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         ITemplateErrorListener errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         var expected = "t.stg 1:0: garbled template definition starting at 'foo'" + newline;
         var result = errors.ToString();
@@ -161,9 +147,7 @@ public class TestGroupSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         ITemplateErrorListener errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         var expected = "t.stg 1:6: missing ID at ')'" + newline;
         var result = errors.ToString();
@@ -176,9 +160,7 @@ public class TestGroupSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         var errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         const string expected =
             "[t.stg 1:6: missing ID at ',', " +
@@ -193,9 +175,7 @@ public class TestGroupSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         var errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         const string expected = "[t.stg 1:6: no viable alternative at input 'b']";
         var result = errors.Errors.ToListString();
@@ -208,9 +188,7 @@ public class TestGroupSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         var errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         const string expected =
             "[t.stg 1:13: Optional parameters must appear after all required parameters]";
@@ -224,9 +202,7 @@ public class TestGroupSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         var errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         const string expected = "[t.stg 1:15: 'b' came as a complete surprise to me]";
         var result = errors.Errors.ToListString();
@@ -239,9 +215,7 @@ public class TestGroupSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         var errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         const string expected = "[t.stg 1:11: missing value for key at ']']";
         var result = errors.Errors.ToListString();
@@ -254,9 +228,7 @@ public class TestGroupSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         var errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         const string expected = "[t.stg 1:17: invalid character '}']";
         var result = errors.Errors.ToListString();
@@ -269,9 +241,7 @@ public class TestGroupSyntaxErrors : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         var errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         group.Load(); // force load
         const string expected = "[t.stg 1:9: unterminated string, t.stg 1:9: missing template at '<EOF>']";
         var result = errors.Errors.ToListString();

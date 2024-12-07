@@ -47,15 +47,11 @@ public class TestGroupCaching : BaseTest {
         TemplateGroup.ResourceRoot = "Resources/caching";
 
         // Warm up cache
-        var tgDir = new TemplateGroupDirectory("") {
-            EnableCache = true
-        };
+        var tgDir = _templateFactory.CreateTemplateGroupDirectory("").WithCaching().Build();
         Assert.IsTrue(tgDir.IsDefined("cachingtemplate"));
-        var templateGroup = new TemplateGroupFile("cachinggroup.stg") {
-            EnableCache = true
-        };
+        var templateGroup = _templateFactory.CreateTemplateGroupFile("cachinggroup.stg").WithCaching().Build();
         Assert.IsNotNull(templateGroup);
-        var st = templateGroup.GetInstanceOf("a");
+        var st = templateGroup.FindTemplate("a");
         Assert.IsNotNull(st);
     }
 
@@ -67,11 +63,9 @@ public class TestGroupCaching : BaseTest {
 
     [TestMethod]
     public void TestLoadTemplateGroupFromCache() {
-        var stg = new TemplateGroupFile("cachinggroup.stg") {
-            EnableCache = true
-        };
+        var stg = _templateFactory.CreateTemplateGroupFile("cachinggroup.stg").WithCaching().Build();
         Assert.IsTrue(stg.IsDefined("a"));
-        var st = stg.GetInstanceOf("a");
+        var st = stg.FindTemplate("a");
         st.Add("x", new[] { "one", "two", "three" });
         var result = st.Render();
         const string expecting = "foo [one:one] [two:two] [three:three] bar";
@@ -80,10 +74,8 @@ public class TestGroupCaching : BaseTest {
 
     [TestMethod]
     public void TestLoadTemplateUnknownGroup() {
-        var tgDir = new TemplateGroupDirectory("") {
-            EnableCache = true
-        };
-        var st = tgDir.GetInstanceOf("cachingtemplate");
+        var tgDir = _templateFactory.CreateTemplateGroupDirectory("").WithCaching().Build();
+        var st = tgDir.FindTemplate("cachingtemplate");
         Assert.IsNotNull(st);
         var result = st.Render();
         const string expecting = "hello world";

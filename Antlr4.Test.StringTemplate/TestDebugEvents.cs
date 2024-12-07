@@ -30,6 +30,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Antlr4.StringTemplate.Debug;
+
 namespace Antlr4.Test.StringTemplate;
 
 using Antlr4.StringTemplate;
@@ -46,8 +48,8 @@ public class TestDebugEvents : BaseTest {
         var templates = $"t() ::= <<foo>>{newline}";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
-        var st = group.GetInstanceOf("t");
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
+        var st = group.FindTemplate("t");
         var events = st.GetEvents();
         const string expected =
             "[EvalExprEvent{self=/t(), expr='foo', source=[0..3), output=[0..3)}," +
@@ -61,8 +63,8 @@ public class TestDebugEvents : BaseTest {
         var templates = $"t(x) ::= << <x> >>{newline}";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
-        var st = group.GetInstanceOf("t");
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
+        var st = group.FindTemplate("t");
         var events = st.GetEvents();
         const string expected =
             "[IndentEvent{self=/t(x), expr=' <x>', source=[0..4), output=[0..1)}," +
@@ -80,8 +82,8 @@ public class TestDebugEvents : BaseTest {
             "u() ::= << <x> >>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
-        var st = group.GetInstanceOf("t");
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
+        var st = group.FindTemplate("t");
         var events = st.GetEvents();
         const string expected =
             "[EvalExprEvent{self=/t(x), expr='[', source=[0..1), output=[0..1)}," +
@@ -100,9 +102,9 @@ public class TestDebugEvents : BaseTest {
     public void TestEvalExprEventForSpecialCharacter() {
         const string templates = "t() ::= <<[<\\n>]>>\n";
         //                            012 345
-        var g = new TemplateGroupString(templates);
-        var st = g.GetInstanceOf("t");
-        st.impl.Dump();
+        var g = _templateFactory.CreateTemplateGroupString(templates).Build();
+        var st = g.FindTemplate("t");
+        TestContext.WriteLine(st.GetCompiledTemplate().ToString());
         var writer = new StringWriter();
         var events = st.GetEvents(new AutoIndentWriter(writer, "\n"));
         const string expected =

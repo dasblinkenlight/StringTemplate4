@@ -44,14 +44,10 @@ public class TemplateGroupString : TemplateGroup {
     private readonly string text;
     private bool alreadyLoaded;
 
-    public TemplateGroupString(string text)
-    : this("[string]", text) {
-    }
-
     // ReSharper disable once MemberCanBePrivate.Global
     public TemplateGroupString(string sourceName, string text, char delimiterStartChar = '<', char delimiterStopChar = '>')
     : base(delimiterStartChar, delimiterStopChar) {
-        FileName = sourceName;
+        FileName = sourceName ?? "[string]";
         this.text = text;
     }
 

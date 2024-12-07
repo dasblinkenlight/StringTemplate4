@@ -31,23 +31,22 @@
  */
 
 using System;
-
-namespace Antlr4.StringTemplate;
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Compiler;
-using Debug;
-using Extensions;
-using Misc;
-using ArgumentException = ArgumentException;
-using ArgumentNullException = ArgumentNullException;
-using Array = Array;
+using Antlr4.StringTemplate.Compiler;
+using Antlr4.StringTemplate.Debug;
+using Antlr4.StringTemplate.Extensions;
+using Antlr4.StringTemplate.Misc;
+using ArgumentException = System.ArgumentException;
+using ArgumentNullException = System.ArgumentNullException;
+using Array = System.Array;
 using CultureInfo = System.Globalization.CultureInfo;
 using IList = System.Collections.IList;
 using StringWriter = System.IO.StringWriter;
 using TextWriter = System.IO.TextWriter;
+
+namespace Antlr4.StringTemplate;
 
 /** An instance of the StringTemplate. It consists primarily of
  *  a reference to its implementation (shared among all instances)
@@ -59,7 +58,7 @@ using TextWriter = System.IO.TextWriter;
  *  To use templates, you create one (usually via TemplateGroup) and then inject
  *  attributes using Add(). To Render its attacks, use Render().
  */
-public sealed class Template {
+public sealed class Template : ITemplate {
 
     /** &lt;@r()&gt;, &lt;@r&gt;...&lt;@end&gt;, and @t.r() ::= "..." defined manually by coder */
     public enum RegionType {
@@ -127,10 +126,10 @@ public sealed class Template {
     }
 
     /** Used by group creation routine, not by users */
-    internal Template(TemplateGroup group) {
-        groupThatCreatedThisInstance = group ?? throw new ArgumentNullException(nameof(group));
+    internal Template(ITemplateGroup group) {
+        groupThatCreatedThisInstance = group as TemplateGroup ?? throw new ArgumentNullException(nameof(group));
 
-        if (group.TrackCreationEvents) {
+        if (groupThatCreatedThisInstance.TrackCreationEvents) {
             DebugState = new TemplateDebugState {
                 NewTemplateEvent = new ConstructionEvent()
             };
@@ -141,7 +140,7 @@ public sealed class Template {
      *  No formal args are set and there is no enclosing instance.
      */
     public Template(string template)
-    : this(TemplateGroup.DefaultGroup, template) {
+    : this(template, TemplateGroup.DefaultGroup) {
     }
 
     /** Create Template using non-default delimiters; each one of these will live
@@ -149,13 +148,17 @@ public sealed class Template {
      *  alter TemplateGroup.defaultGroup.
      */
     public Template(string template, char delimiterStartChar, char delimiterStopChar)
-    : this(new TemplateGroup(delimiterStartChar, delimiterStopChar), template) {
+    : this(
+        template,
+        new TemplateGroup {
+            DelimiterStartChar = delimiterStartChar,
+            DelimiterStopChar = delimiterStopChar
+        }) {
     }
 
-    public Template(TemplateGroup group, string template)
-    {
-        groupThatCreatedThisInstance = group ?? throw new ArgumentNullException(nameof(group));
-        impl = groupThatCreatedThisInstance.Compile(group.FileName, null, null, template, null);
+    public Template(string template, ITemplateGroup group) {
+        groupThatCreatedThisInstance = group as TemplateGroup ?? throw new ArgumentNullException(nameof(group));
+        impl = groupThatCreatedThisInstance.Compile(groupThatCreatedThisInstance.FileName, null, null, template, null);
         impl.HasFormalArgs = false;
         impl.Name = UnknownName;
         impl.DefineImplicitlyDefinedTemplates(groupThatCreatedThisInstance);
@@ -185,9 +188,13 @@ public sealed class Template {
      */
     public TemplateDebugState DebugState { get; private set; }
 
-    public TemplateGroup Group {
+    public ITemplateGroup Group {
         get => groupThatCreatedThisInstance;
-        set => groupThatCreatedThisInstance = value ?? throw new ArgumentNullException(nameof(value));
+        set => groupThatCreatedThisInstance = value as TemplateGroup ?? throw new ArgumentNullException(nameof(value));
+    }
+
+    public void SetGroup(ITemplateGroup group) {
+        groupThatCreatedThisInstance = group as TemplateGroup ?? throw new ArgumentNullException(nameof(group));
     }
 
     public Template CreateShadow() {
@@ -203,12 +210,12 @@ public sealed class Template {
      *
      *  Return self so we can chain.  t.add("x", 1).add("y", "hi");
      */
-    public Template Add(string name, object value) {
+    public ITemplate Add(string name, object value) {
         lock (this) {
             if (name == null) {
                 throw new ArgumentNullException(nameof(name));
             }
-            if (Group.TrackCreationEvents) {
+            if (groupThatCreatedThisInstance.TrackCreationEvents) {
                 DebugState ??= new TemplateDebugState();
                 DebugState.AddAttributeEvents.Add(name, new AddAttributeEvent(name, value));
             }
@@ -236,7 +243,7 @@ public sealed class Template {
             // copy-on-Write semantics; copy a list injected by user to Add new value
             var multi = ConvertToAttributeList(curvalue);
             locals[arg.Index] = multi; // replace with list
-            // now, Add incoming value to multi-valued attribute
+            // now, Add incoming value to multivalued attribute
             if (value is IList list) {
                 // flatten incoming list into existing list
                 multi.AddRange(list.Cast<object>());
@@ -287,7 +294,7 @@ public sealed class Template {
     }
 
     /** Remove an attribute value entirely (can't Remove attribute definitions). */
-    internal void Remove(string name) {
+    public void Remove(string name) {
         if (impl.FormalArguments == null) {
             if (impl.HasFormalArgs) {
                 throw new ArgumentException("no such attribute: " + name);
@@ -358,25 +365,25 @@ public sealed class Template {
     public bool IsAnonymousSubtemplate => impl.IsAnonSubtemplate;
 
     public int Write(ITemplateWriter @out) {
-        var interp = new Interpreter(Group, impl.NativeGroup.ErrorManager, false);
+        var interp = new Interpreter(groupThatCreatedThisInstance, impl.NativeGroup.ErrorManager, false);
         var frame = new TemplateFrame(this, null);
         return interp.Execute(@out, frame);
     }
 
     private void Write(ITemplateWriter @out, CultureInfo culture) {
-        var interp = new Interpreter(Group, culture, impl.NativeGroup.ErrorManager, false);
+        var interp = new Interpreter(groupThatCreatedThisInstance, culture, impl.NativeGroup.ErrorManager, false);
         var frame = new TemplateFrame(this, null);
         interp.Execute(@out, frame);
     }
 
     public int Write(ITemplateWriter @out, ITemplateErrorListener listener) {
-        var interp = new Interpreter(Group, new ErrorManager(listener), false);
+        var interp = new Interpreter(groupThatCreatedThisInstance, new ErrorManager(listener), false);
         var frame = new TemplateFrame(this, null);
         return interp.Execute(@out, frame);
     }
 
     private int Write(ITemplateWriter @out, CultureInfo culture, ITemplateErrorListener listener) {
-        var interp = new Interpreter(Group, culture, new ErrorManager(listener), false);
+        var interp = new Interpreter(groupThatCreatedThisInstance, culture, new ErrorManager(listener), false);
         var frame = new TemplateFrame(this, null);
         return interp.Execute(@out, frame);
     }
@@ -396,42 +403,21 @@ public sealed class Template {
         return Write(templateWriter, culture, listener);
     }
 
-    public string Render() {
-        return Render(CultureInfo.CurrentCulture);
-    }
-
-    public string Render(int lineWidth) {
-        return Render(CultureInfo.CurrentCulture, lineWidth);
-    }
-
-    public string Render(CultureInfo culture) {
-        return Render(culture, AutoIndentWriter.NoWrap);
-    }
-
-    private string Render(CultureInfo culture, int lineWidth) {
+    public string Render(int lineWidth = AutoIndentWriter.NoWrap, CultureInfo culture = null) {
         var @out = new StringWriter();
         ITemplateWriter wr = new AutoIndentWriter(@out);
         wr.LineWidth = lineWidth;
-        Write(wr, culture);
+        Write(wr, culture ?? CultureInfo.CurrentCulture);
         return @out.ToString();
     }
 
     // TESTING SUPPORT
 
-    internal List<InterpEvent> GetEvents()
-    {
-        return GetEvents(CultureInfo.CurrentCulture);
-    }
+    internal List<InterpEvent> GetEvents() => GetEvents(CultureInfo.CurrentCulture);
 
-    internal List<InterpEvent> GetEvents(int lineWidth)
-    {
-        return GetEvents(CultureInfo.CurrentCulture, lineWidth);
-    }
+    internal List<InterpEvent> GetEvents(int lineWidth) => GetEvents(CultureInfo.CurrentCulture, lineWidth);
 
-    internal List<InterpEvent> GetEvents(ITemplateWriter writer)
-    {
-        return GetEvents(CultureInfo.CurrentCulture, writer);
-    }
+    internal List<InterpEvent> GetEvents(ITemplateWriter writer) => GetEvents(CultureInfo.CurrentCulture, writer);
 
     private List<InterpEvent> GetEvents(CultureInfo locale)
     {
@@ -446,7 +432,7 @@ public sealed class Template {
     }
 
     private List<InterpEvent> GetEvents(CultureInfo culture, ITemplateWriter writer) {
-        var interp = new Interpreter(Group, culture, true);
+        var interp = new Interpreter(groupThatCreatedThisInstance, culture, true);
         var frame = new TemplateFrame(this, null);
         interp.Execute(writer, frame); // Render and track events
         return interp.GetEvents();
