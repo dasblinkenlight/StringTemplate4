@@ -240,7 +240,7 @@ public class TestCoreBasics : BaseTest {
         var group = new TemplateGroup {
             Listener = errors
         };
-        var st = _templateFactory.CreateTemplate(template, group);
+        var st = _templateFactory.CreateTemplateImplicit(template, group);
         st.Add("u", new User(1, "parrt"));
         var result = st.Render();
         Assert.AreEqual(string.Empty, result);
@@ -256,7 +256,7 @@ public class TestCoreBasics : BaseTest {
             Listener = errors
         };
         const string template = "<u.(qqq)>";
-        var st = _templateFactory.CreateTemplate(template, group);
+        var st = _templateFactory.CreateTemplateImplicit(template, group);
         st.Add("u", new User(1, "parrt"));
         st.Add("qqq", null);
         var result = st.Render();
