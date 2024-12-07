@@ -46,7 +46,7 @@ public class TestDebugEvents : BaseTest {
         var templates = $"t() ::= <<foo>>{newline}";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var st = group.GetInstanceOf("t");
         var events = st.GetEvents();
         const string expected =
@@ -61,7 +61,7 @@ public class TestDebugEvents : BaseTest {
         var templates = $"t(x) ::= << <x> >>{newline}";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var st = group.GetInstanceOf("t");
         var events = st.GetEvents();
         const string expected =
@@ -80,7 +80,7 @@ public class TestDebugEvents : BaseTest {
             "u() ::= << <x> >>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var st = group.GetInstanceOf("t");
         var events = st.GetEvents();
         const string expected =
@@ -100,7 +100,7 @@ public class TestDebugEvents : BaseTest {
     public void TestEvalExprEventForSpecialCharacter() {
         const string templates = "t() ::= <<[<\\n>]>>\n";
         //                            012 345
-        var g = new TemplateGroupString(templates);
+        var g = _templateFactory.CreateTemplateGroupString(templates).Build();
         var st = g.GetInstanceOf("t");
         TestContext.WriteLine(st.impl.ToString());
         var writer = new StringWriter();

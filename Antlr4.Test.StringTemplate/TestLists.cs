@@ -194,7 +194,7 @@ public class TestLists : BaseTest {
                 "foo(items) ::= \"<items:{a | *<a>*}>\"" + newline
             ;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var e = group.GetInstanceOf("test");
         e.Add("names", "Ter");
         e.Add("names", "Tom");

@@ -1388,7 +1388,7 @@ public sealed class Interpreter {
      *  childEvalTemplateEvents list for STViz tree view.
      */
     private void TrackDebugEvent(TemplateFrame frame, InterpEvent e) {
-        //		System.out.println(e);
+        _logger.LogTrace("{Event}", e);
         events.Add(e);
         //		if ( self.debugState==null ) self.debugState = new ST.DebugState();
         //		self.debugState.events.add(e);

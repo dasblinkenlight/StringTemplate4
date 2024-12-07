@@ -235,7 +235,7 @@ public class TestFunctions : BaseTest {
                 "b(x) ::= \"<x>, <x>\"" + newline
             ;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var e = group.GetInstanceOf("a");
         List<string> names = [
             "Ter",
@@ -253,7 +253,7 @@ public class TestFunctions : BaseTest {
                 "b(x) ::= \"<x>, <x>\"" + newline
             ;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(TmpDir + "/" + "t.stg");
+        var group = _templateFactory.CreateTemplateGroupFile(TmpDir + "/" + "t.stg").Build();
         var e = group.GetInstanceOf("a");
         e.Add("names", new[] { 0, 1 });
         var expected = "1, 1";
@@ -483,7 +483,7 @@ public class TestFunctions : BaseTest {
                 "b(x) ::= \"<x>, <x>\"" + newline
             ;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var e = group.GetInstanceOf("a");
         List<string> mine = [
             "Ter",

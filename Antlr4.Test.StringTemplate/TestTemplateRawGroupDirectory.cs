@@ -43,7 +43,7 @@ public class TestTemplateRawGroupDirectory : BaseTest {
     public void TestSimpleGroup() {
         var dir = TmpDir;
         WriteFile(dir, "a.st", "foo");
-        var group = new TemplateRawGroupDirectory(dir, '$', '$');
+        var group = _templateFactory.CreateRawGroupDirectory(dir).WithDelimiters('$', '$').Build();
         var st = group.GetInstanceOf("a");
         const string expected = "foo";
         var result = st.Render();
@@ -55,7 +55,7 @@ public class TestTemplateRawGroupDirectory : BaseTest {
         var dir = TmpDir;
         WriteFile(dir, "a.st", "foo");
         WriteFile(dir, "b.st", "$name$");
-        var group = new TemplateRawGroupDirectory(dir, '$', '$');
+        var group = _templateFactory.CreateRawGroupDirectory(dir).WithDelimiters('$', '$').Build();
         var st = group.GetInstanceOf("a");
         const string expected = "foo";
         var result = st.Render();
@@ -71,7 +71,7 @@ public class TestTemplateRawGroupDirectory : BaseTest {
         var dir = TmpDir;
         WriteFile(dir, "a.st", "foo");
         WriteFile(dir, "b.st", "<name>");
-        var group = new TemplateRawGroupDirectory(dir);
+        var group = _templateFactory.CreateRawGroupDirectory(dir).Build();
         var st = group.GetInstanceOf("a");
         const string expected = "foo";
         var result = st.Render();
@@ -86,7 +86,7 @@ public class TestTemplateRawGroupDirectory : BaseTest {
     public void TestAnonymousTemplateInRawTemplate() {
         var dir = TmpDir;
         WriteFile(dir, "template.st", "$values:{foo|[$foo$]}$");
-        var group = new TemplateRawGroupDirectory(dir, '$', '$');
+        var group = _templateFactory.CreateRawGroupDirectory(dir).WithDelimiters('$', '$').Build();
         var template = group.GetInstanceOf("template");
         List<string> values = ["one", "two", "three"];
         template.Add("values", values);
@@ -98,7 +98,7 @@ public class TestTemplateRawGroupDirectory : BaseTest {
         var dir = TmpDir;
         WriteFile(dir, "a.st", "$names:bold()$");
         WriteFile(dir, "bold.st", "<b>$it$</b>");
-        var group = new TemplateRawGroupDirectory(dir, '$', '$');
+        var group = _templateFactory.CreateRawGroupDirectory(dir).WithDelimiters('$', '$').Build();
         var st = group.GetInstanceOf("a");
         List<string> names = ["parrt", "tombu"];
         st.Add("names", names);
@@ -151,7 +151,7 @@ public class TestTemplateRawGroupDirectory : BaseTest {
         WriteFile(dir1, "footerRaw.st", footerRawTemplate);
         WriteFile(dir1, "veryLastLineRaw.st", veryLastLineTemplate);
 
-        var group = new TemplateRawGroupDirectory(dir1, '$', '$');
+        var group = _templateFactory.CreateRawGroupDirectory(dir1).WithDelimiters('$', '$').Build();
         var st = group.GetInstanceOf("mainRaw");
         Assert.IsNotNull(st);
         st.Add("name", "John");

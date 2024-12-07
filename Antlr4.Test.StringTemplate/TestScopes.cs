@@ -32,7 +32,6 @@
 
 namespace Antlr4.Test.StringTemplate;
 
-using Antlr4.StringTemplate;
 using Antlr4.StringTemplate.Misc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Path = System.IO.Path;
@@ -47,8 +46,7 @@ public class TestScopes : BaseTest {
             "u() ::= \"<x><y>\"";
         var errors = new ErrorBuffer();
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
-        group.Listener = errors;
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         var st = group.GetInstanceOf("t");
         st.Add("x", "x");
         st.Add("y", "y");
@@ -68,8 +66,7 @@ public class TestScopes : BaseTest {
             "u(z) ::= \"\"";
         var errors = new ErrorBuffer();
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
-        group.Listener = errors;
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         var st = group.GetInstanceOf("t");
         st.Render();
 
@@ -83,9 +80,7 @@ public class TestScopes : BaseTest {
             "t() ::= \"<x>\"\n";
         var errors = new ErrorBuffer();
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         var st = group.GetInstanceOf("t");
         st.Render();
 
@@ -100,9 +95,7 @@ public class TestScopes : BaseTest {
             "u(y) ::= \"<x><y>\"";
         var errors = new ErrorBuffer();
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         var st = group.GetInstanceOf("t");
         st.Add("x", "x");
         st.Add("y", "y");
@@ -113,7 +106,6 @@ public class TestScopes : BaseTest {
 
         const string expected = "xx";
         Assert.AreEqual(expected, result);
-        group.Listener = ErrorManager.DefaultErrorListener;
     }
 
     [TestMethod]
@@ -123,9 +115,7 @@ public class TestScopes : BaseTest {
             "u(x) ::= \"<i>:<x>\"";
         var errors = new ErrorBuffer();
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
         var st = group.GetInstanceOf("t");
         st.Add("names", "Ter");
         var result = st.Render();
@@ -136,7 +126,6 @@ public class TestScopes : BaseTest {
 
         const string expected = ":Ter";
         Assert.AreEqual(expected, result);
-        group.Listener = ErrorManager.DefaultErrorListener;
     }
 
 }

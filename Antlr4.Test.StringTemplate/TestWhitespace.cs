@@ -42,7 +42,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestTrimmedSubtemplates() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n | <n>}>!", ["names"]);
         var st = group.GetInstanceOf("test");
         st.Add("names", "Ter");
@@ -59,7 +59,7 @@ public class TestWhitespace : BaseTest {
             $"a(x) ::= <<{newline}" +
             $"foo{newline}" +
             $">>{newline}";
-        var group = new TemplateGroupString(templates);
+        var group = _templateFactory.CreateTemplateGroupString(templates).Build();
         var st = group.GetInstanceOf("a");
         const string expected = "foo";
         var result = st.Render();
@@ -70,7 +70,7 @@ public class TestWhitespace : BaseTest {
     public void TestDontTrimJustSpaceBeforeAfterInTemplate() {
         var templates =
             "a(x) ::= << foo >>\n";
-        var group = new TemplateGroupString(templates);
+        var group = _templateFactory.CreateTemplateGroupString(templates).Build();
         var st = group.GetInstanceOf("a");
         const string expected = " foo ";
         var result = st.Render();
@@ -79,7 +79,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestTrimmedSubtemplatesNoArgs() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "[<foo({ foo })>]");
         group.DefineTemplate("foo", "<x>", ["x"]);
         var st = group.GetInstanceOf("test");
@@ -90,7 +90,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestTrimmedSubtemplatesArgs() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{x|  foo }>", ["names"]);
         var st = group.GetInstanceOf("test");
         st.Add("names", "Ter");
@@ -103,7 +103,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestTrimJustOneWSInSubtemplates() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n |  <n> }>!", ["names"]);
         var st = group.GetInstanceOf("test");
         st.Add("names", "Ter");
@@ -116,7 +116,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestTrimNewlineInSubtemplates() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n |\n" +
                                      "<n>}>!", ["names"]);
         var st = group.GetInstanceOf("test");
@@ -130,7 +130,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestLeaveNewlineOnEndInSubtemplates() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n |\n" +
                                      "<n>\n" +
                                      "}>!", ["names"]);
@@ -146,7 +146,7 @@ public class TestWhitespace : BaseTest {
     [Ignore("will revisit the behavior of indented expressions spanning multiple lines for a future release")]
     [TestMethod]
     public void TestTabBeforeEndInSubtemplates() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "  <names:{n |\n" +
                                      "    <n>\n" +
                                      "  }>!", ["names"]);

@@ -62,7 +62,7 @@ public class TestImports : BaseTest {
         WriteFile(dir2, "a.st", a);
         WriteFile(dir2, "b.st", b);
 
-        var group = new TemplateGroupFile(Path.Combine(dir1, "g.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir1, "g.stg")).Build();
         var st = group.GetInstanceOf("b"); // visible only if import worked
         const string expected = "dir2 b";
         var result = st?.Render();
@@ -92,7 +92,7 @@ public class TestImports : BaseTest {
         WriteFile(dir, Path.Combine("subdir", "b.st"), b);
         WriteFile(dir, Path.Combine("subdir", "c.st"), c);
 
-        var group = new TemplateGroupFile(Path.Combine(dir, "g.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "g.stg")).Build();
         var st = group.GetInstanceOf("b"); // visible only if import worked
         const string expected = "subdir b";
         var result = st?.Render();
@@ -116,7 +116,7 @@ public class TestImports : BaseTest {
         const string groupFile2 = "c() ::= \"g2 c\"\n";
         WriteFile(dir, "group2.stg", groupFile2);
 
-        var group1 = new TemplateGroupFile(Path.Combine(dir, "group1.stg"));
+        var group1 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "group1.stg")).Build();
         var st = group1.GetInstanceOf("c"); // should see c()
         const string expected = "g2 c";
         var result = st?.Render();
@@ -140,7 +140,7 @@ public class TestImports : BaseTest {
         const string groupFile2 = "c() ::= \"g2 c\"\n";
         WriteFile(dir, "group2.stg", groupFile2);
 
-        TemplateGroup group1 = new TemplateGroupFile(Path.Combine(dir, "group1.stg"));
+        var group1 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "group1.stg")).Build();
         var st = group1.GetInstanceOf("c"); // should see c()
         const string expected = "g2 c";
         var result = st?.Render();
@@ -166,7 +166,7 @@ public class TestImports : BaseTest {
             "c() ::= \"g2 c\"\n";
         WriteFile(dir, Path.Combine("subdir", "group2.stg"), groupFile2);
 
-        var group1 = new TemplateGroupFile(Path.Combine(dir, "group1.stg"));
+        var group1 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "group1.stg")).Build();
         var st = group1.GetInstanceOf("c"); // should see c()
         const string expected = "g2 c";
         var result = st?.Render();
@@ -188,7 +188,7 @@ public class TestImports : BaseTest {
         WriteFile(dir, "group1.stg", groupFile);
         WriteFile(dir, "c.st", "c() ::= \"c\"\n");
 
-        TemplateGroup group1 = new TemplateGroupFile(Path.Combine(dir, "group1.stg"));
+        var group1 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "group1.stg")).Build();
         var st = group1.GetInstanceOf("c"); // should see c()
         const string expected = "c";
         var result = st?.Render();
@@ -213,7 +213,7 @@ public class TestImports : BaseTest {
         const string stFile = "c() ::= \"c\"\n";
         WriteFile(dir, Path.Combine("subdir", "c.st"), stFile);
 
-        TemplateGroup group1 = new TemplateGroupFile(Path.Combine(dir, "group1.stg"));
+        var group1 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "group1.stg")).Build();
         var st = group1.GetInstanceOf("c"); // should see c()
         var expected = "c";
         var result = st?.Render();
@@ -238,8 +238,8 @@ public class TestImports : BaseTest {
         const string a2 = "a() ::= << <b()> >>\n";
         WriteFile(dir2, "a.st", a2);
 
-        TemplateGroup group1 = new TemplateGroupDirectory(dir1);
-        TemplateGroup group2 = new TemplateGroupDirectory(dir2);
+        var group1 = _templateFactory.CreateTemplateGroupDirectory(dir1).Build();
+        var group2 = _templateFactory.CreateTemplateGroupDirectory(dir2).Build();
         group2.ImportTemplates(group1);
         var st = group2.GetInstanceOf("b");
         const string expected1 = "dir1 b";
@@ -264,8 +264,8 @@ public class TestImports : BaseTest {
             "c() ::= \"group file c\"\n";
         WriteFile(dir, Path.Combine("y", "group.stg"), groupFile);
 
-        var group1 = new TemplateGroupDirectory(Path.Combine(dir, "x"));
-        var group2 = new TemplateGroupFile(Path.Combine(dir, "y", "group.stg"));
+        var group1 = _templateFactory.CreateTemplateGroupDirectory(Path.Combine(dir, "x")).Build();
+        var group2 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "y", "group.stg")).Build();
         group1.ImportTemplates(group2);
         var st = group1.GetInstanceOf("a");
         TestContext.WriteLine(st.impl.ToString());
@@ -287,8 +287,8 @@ public class TestImports : BaseTest {
             "c() ::= \"g2 c\"\n";
         WriteFile(dir, Path.Combine("y", "group.stg"), groupFile2);
 
-        TemplateGroup group1 = new TemplateGroupFile(Path.Combine(dir, "x", "group.stg"));
-        TemplateGroup group2 = new TemplateGroupFile(Path.Combine(dir, "y", "group.stg"));
+        var group1 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "x", "group.stg")).Build();
+        var group2 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "y", "group.stg")).Build();
         group1.ImportTemplates(group2);
         var st = group1.GetInstanceOf("b");
         var expected = "g2 c";
@@ -305,8 +305,8 @@ public class TestImports : BaseTest {
         WriteFile(dir, Path.Combine("x", "subdir", "a.st"), a);
         WriteFile(dir, Path.Combine("y", "subdir", "b.st"), b);
 
-        TemplateGroup group1 = new TemplateGroupDirectory(Path.Combine(dir, "x"));
-        TemplateGroup group2 = new TemplateGroupDirectory(Path.Combine(dir, "y"));
+        var group1 = _templateFactory.CreateTemplateGroupDirectory(Path.Combine(dir, "x")).Build();
+        var group2 = _templateFactory.CreateTemplateGroupDirectory(Path.Combine(dir, "y")).Build();
         group1.ImportTemplates(group2);
         var st = group1.GetInstanceOf("subdir/a");
         const string expected = " x's subdir/b ";
@@ -326,8 +326,8 @@ public class TestImports : BaseTest {
             "b() ::= \"group file: b\"\n";
         WriteFile(dir, Path.Combine("y", "subdir.stg"), groupFile);
 
-        TemplateGroup group1 = new TemplateGroupDirectory(Path.Combine(dir, "x"));
-        TemplateGroup group2 = new TemplateGroupDirectory(Path.Combine(dir, "y"));
+        var group1 = _templateFactory.CreateTemplateGroupDirectory(Path.Combine(dir, "x")).Build();
+        var group2 = _templateFactory.CreateTemplateGroupDirectory(Path.Combine(dir, "y")).Build();
         group1.ImportTemplates(group2);
 
         var st = group1.GetInstanceOf("subdir/a");
@@ -351,8 +351,8 @@ public class TestImports : BaseTest {
         WriteFile(dir2, "a.st", a);
         WriteFile(dir2, "b.st", b);
 
-        TemplateGroup group1 = new TemplateGroupDirectory(dir1);
-        TemplateGroup group2 = new TemplateGroupDirectory(dir2);
+        var group1 = _templateFactory.CreateTemplateGroupDirectory(dir1).Build();
+        var group2 = _templateFactory.CreateTemplateGroupDirectory(dir2).Build();
         group1.ImportTemplates(group2);
 
         // normal lookup; a created from dir2 calls dir2.b
@@ -379,8 +379,8 @@ public class TestImports : BaseTest {
         a = "a() ::= << [<super.a()>] >>\n";
         WriteFile(dir2, "a.st", a);
 
-        TemplateGroup group1 = new TemplateGroupDirectory(dir1);
-        TemplateGroup group2 = new TemplateGroupDirectory(dir2);
+        var group1 = _templateFactory.CreateTemplateGroupDirectory(dir1).Build();
+        var group2 = _templateFactory.CreateTemplateGroupDirectory(dir2).Build();
         group2.ImportTemplates(group1);
         var st = group2.GetInstanceOf("a");
         var expected = " [dir1 a] ";
@@ -399,8 +399,8 @@ public class TestImports : BaseTest {
         const string a2 = "a() ::= << <b()> >>\n";
         WriteFile(dir2, "a.st", a2);
 
-        TemplateGroup group1 = new TemplateGroupDirectory(dir1);
-        TemplateGroup group2 = new TemplateGroupDirectory(dir2);
+        var group1 = _templateFactory.CreateTemplateGroupDirectory(dir1).Build();
+        var group2 = _templateFactory.CreateTemplateGroupDirectory(dir2).Build();
         group2.ImportTemplates(group1);
 
         var st = group2.GetInstanceOf("a");
@@ -430,7 +430,7 @@ public class TestImports : BaseTest {
             "import \"g1.stg\"\n\nmain() ::= <<\nv1-<f()>\n>>");
         WriteFile(TmpDir, "g1.stg", "f() ::= \"g1\"");
         WriteFile(TmpDir, "g2.stg", "f() ::= \"g2\"\nf2() ::= \"f2\"\n");
-        var group = new TemplateGroupFile(TmpDir + "/t.stg");
+        var group = _templateFactory.CreateTemplateGroupFile(TmpDir + "/t.stg").Build();
         var st = group.GetInstanceOf("main");
         Assert.AreEqual("v1-g1", st?.Render());
 
@@ -457,8 +457,7 @@ public class TestImports : BaseTest {
             "b() ::= \"b\"\n";
         WriteFile(dir, "imported.stg", importedFile);
         ITemplateErrorListener errors = new ErrorBuffer();
-        var group = new TemplateGroupDirectory(dir);
-        group.Listener = errors;
+        var group = _templateFactory.CreateTemplateGroupDirectory(dir).WithErrorListener(errors).Build();
         group.GetInstanceOf("/group/a");
         var result = errors.ToString();
         const string substring =
@@ -484,7 +483,7 @@ public class TestImports : BaseTest {
         WriteFile(dir, "subdir/b.st", "b() ::= \"b: <c()>\"\n");
         WriteFile(dir, "subdir/c.st", "c() ::= <<subdir c>>\n");
 
-        var group = new TemplateGroupFile(dir + "/g.stg");
+        var group = _templateFactory.CreateTemplateGroupFile(dir + "/g.stg").Build();
         var st = group.GetInstanceOf("a");
         const string expected = "a: b: subdir c";
         var result = st?.Render();

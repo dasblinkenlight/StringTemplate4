@@ -77,7 +77,7 @@ using TemplateToken = Compiler.TemplateLexer.TemplateToken;
  *  Template v3 had just the pure template inside, not the template name and header.
  *  Name inside must match filename (minus suffix).
  */
-public class TemplateGroup {
+public class TemplateGroup : ITemplateGroup {
 
     protected const string GroupFileExtension = ".stg";
     protected const string TemplateFileExtension = ".st";
@@ -98,9 +98,9 @@ public class TemplateGroup {
 
     private readonly List<TemplateGroup> _importsToClearOnUnload = [];
 
-    public char DelimiterStartChar { get; private set; } = '<'; // Use <expr> by default
+    public char DelimiterStartChar { get; internal set; } // Use <expr> by default
 
-    public char DelimiterStopChar { get; private set; } = '>';
+    public char DelimiterStopChar { get; internal set; }
 
     /** Maps template name to StringTemplate object. synchronized. */
     private readonly Dictionary<string,CompiledTemplate> templates = new();
@@ -164,10 +164,7 @@ public class TemplateGroup {
 
     private static TemplateGroup _defaultGroup = new();
 
-    public TemplateGroup() {
-    }
-
-    public TemplateGroup(char delimiterStartChar, char delimiterStopChar) {
+    public TemplateGroup(char delimiterStartChar = '<', char delimiterStopChar = '>') {
         DelimiterStartChar = delimiterStartChar;
         DelimiterStopChar = delimiterStopChar;
     }
@@ -179,7 +176,7 @@ public class TemplateGroup {
 
     protected ICollection<CompiledTemplate> CompiledTemplates => templates.Values;
 
-    protected Encoding Encoding {
+    internal Encoding Encoding {
         get => _encoding;
         set => _encoding = value ?? throw new ArgumentNullException(nameof(value));
     }
@@ -344,7 +341,7 @@ public class TemplateGroup {
     }
 
     // for testing
-    internal void DefineTemplate(string name, string template) {
+    public /*???*/ void DefineTemplate(string name, string template) {
         if (name[0] != '/') {
             name = "/" + name;
         }
@@ -356,7 +353,7 @@ public class TemplateGroup {
     }
 
     // for testing
-    internal void DefineTemplate(string name, string template, string[] arguments) {
+    public /*???*/ void DefineTemplate(string name, string template, string[] arguments) {
         if (name[0] != '/') {
             name = "/" + name;
         }
@@ -527,7 +524,7 @@ public class TemplateGroup {
         List<FormalArgument> args,
         string template,
         IToken templateToken) {  // for error location
-        //System.out.println("TemplateGroup.Compile: "+enclosingTemplateName);
+        _logger.LogTrace("TemplateGroup.Compile: {EnclosingTemplateName}", template);
         var c = new TemplateCompiler(this);
         return c.Compile(srcName, name, args, template, templateToken);
     }
@@ -582,8 +579,8 @@ public class TemplateGroup {
     }
 
     /** Make this group import templates/dictionaries from g. */
-    public void ImportTemplates(TemplateGroup g) {
-        ImportTemplates(g, false);
+    public void ImportTemplates(ITemplateGroup g) {
+        ImportTemplates(g as TemplateGroup, false);
     }
 
     /** Make this group import templates/dictionaries from g. */
@@ -653,25 +650,22 @@ public class TemplateGroup {
                 g = null;
             }
         } else if (isGroupFile) {
-            //System.out.println("look for fileUnderRoot: "+fileUnderRoot);
+            _logger.LogTrace("Looking for fileUnderRoot: {FileUnderRoot}", fileUnderRoot.LocalPath);
             if (File.Exists(fileUnderRoot.LocalPath)) {
                 g = new TemplateGroupFile(fileUnderRoot, Encoding, DelimiterStartChar, DelimiterStopChar);
-                g.Listener = Listener;
             } else {
-                g = new TemplateGroupFile(fileName, DelimiterStartChar, DelimiterStopChar);
-                g.Listener = Listener;
+                g = new TemplateGroupFile(fileName, Encoding, DelimiterStartChar, DelimiterStopChar);
             }
+            g.Listener = Listener;
         } else /*isGroupDir*/ {
-            //			System.out.println("try dir "+fileUnderRoot);
             if (Directory.Exists(fileUnderRoot.LocalPath)) {
+                _logger.LogTrace("Try dir {Directory}", fileUnderRoot.LocalPath);
                 g = new TemplateGroupDirectory(fileUnderRoot, Encoding, DelimiterStartChar, DelimiterStopChar);
-                g.Listener = Listener;
             } else {
-                // try in CLASSPATH
-                //				System.out.println("try dir in CLASSPATH "+fileName);
-                g = new TemplateGroupDirectory(fileName, DelimiterStartChar, DelimiterStopChar);
-                g.Listener = Listener;
+                _logger.LogTrace("Try in resource {FileName}", fileName);
+                g = new TemplateGroupDirectory(fileName, Encoding, DelimiterStartChar, DelimiterStopChar);
             }
+            g.Listener = Listener;
         }
         if (g == null) {
             ErrorManager.CompiletimeError(ErrorType.CANT_IMPORT, null, fileNameToken, fileName);
@@ -1411,30 +1405,32 @@ public class TemplateGroup {
 
     public override string ToString() => Name;
 
-    public virtual string Show() {
-        var buf = new StringBuilder();
-        if (_imports is { Count: > 0 }) {
-            buf.Append(" : " + _imports);
-        }
-        foreach (var n in templates.Keys) {
-            var name = n;
-            var c = templates[name];
-            if (c.IsAnonSubtemplate || c == NotFoundTemplate) {
-                continue;
+    public virtual string Description {
+        get {
+            var buf = new StringBuilder();
+            if (_imports is { Count: > 0 }) {
+                buf.Append(" : " + _imports);
             }
-            var slash = name.LastIndexOf('/');
-            name = name.Substring(slash + 1, name.Length - slash - 1);
-            buf.Append(name);
-            buf.Append('(');
-            if (c.FormalArguments != null) {
-                buf.Append(string.Join(",", c.FormalArguments.Select(i => i.ToString()).ToArray()));
+            foreach (var n in templates.Keys) {
+                var name = n;
+                var c = templates[name];
+                if (c.IsAnonSubtemplate || c == NotFoundTemplate) {
+                    continue;
+                }
+                var slash = name.LastIndexOf('/');
+                name = name.Substring(slash + 1, name.Length - slash - 1);
+                buf.Append(name);
+                buf.Append('(');
+                if (c.FormalArguments != null) {
+                    buf.Append(string.Join(",", c.FormalArguments.Select(i => i.ToString()).ToArray()));
+                }
+                buf.Append(')');
+                buf.Append(" ::= <<" + Environment.NewLine);
+                buf.Append(c.Template + Environment.NewLine);
+                buf.Append(">>" + Environment.NewLine);
             }
-            buf.Append(')');
-            buf.Append(" ::= <<" + Environment.NewLine);
-            buf.Append(c.Template + Environment.NewLine);
-            buf.Append(">>" + Environment.NewLine);
+            return buf.ToString();
         }
-        return buf.ToString();
     }
 
     public ITemplateErrorListener Listener {
@@ -1442,15 +1438,17 @@ public class TemplateGroup {
         set => ErrorManager = new ErrorManager(value);
     }
 
-    public HashSet<string> GetTemplateNames() {
-        Load();
-        var result = new HashSet<string>();
-        foreach (var e in templates) {
-            if (e.Value != NotFoundTemplate) {
-                result.Add(e.Key);
+    public ISet<string> TemplateNames {
+        get {
+            Load();
+            var result = new HashSet<string>();
+            foreach (var e in templates) {
+                if (e.Value != NotFoundTemplate) {
+                    result.Add(e.Key);
+                }
             }
+            return result;
         }
-        return result;
     }
 
     protected bool TryOpenStream(Uri uri, out Stream inputStream, out DateTime lastModified) {

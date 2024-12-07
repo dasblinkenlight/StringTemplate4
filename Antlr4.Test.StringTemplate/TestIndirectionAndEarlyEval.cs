@@ -52,7 +52,7 @@ public class TestIndirectionAndEarlyEval : BaseTest {
 
     [TestMethod]
     public void TestIndirectTemplateInclude() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("foo", "bar");
         const string template = "<(name)()>";
         group.DefineTemplate("test", template, ["name"]);
@@ -65,7 +65,7 @@ public class TestIndirectionAndEarlyEval : BaseTest {
 
     [TestMethod]
     public void TestIndirectTemplateIncludeWithArgs() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("foo", "<x><y>", ["x", "y"]);
         const string template = "<(name)({1},{2})>";
         group.DefineTemplate("test", template, ["name"]);
@@ -85,9 +85,8 @@ public class TestIndirectionAndEarlyEval : BaseTest {
             "main(x=\"hello\",t=\"t1\") ::= <<\n" +
             "<(t)(...)>\n" +
             ">>");
-        var group = new TemplateGroupFile(TmpDir + "/t.stg");
         var errors = new ErrorBuffer();
-        group.Listener = errors;
+        var group = _templateFactory.CreateTemplateGroupFile(TmpDir + "/t.stg").WithErrorListener(errors).Build();
         var st = group.GetInstanceOf("main");
         Assert.AreEqual("t.stg 2:34: mismatched input '...' expecting RPAREN" + newline, errors.ToString());
         Assert.IsNull(st);
@@ -95,7 +94,7 @@ public class TestIndirectionAndEarlyEval : BaseTest {
 
     [TestMethod]
     public void TestIndirectTemplateIncludeViaTemplate() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("foo", "bar");
         group.DefineTemplate("tname", "foo");
         var template = "<(tname())()>";
@@ -119,7 +118,7 @@ public class TestIndirectionAndEarlyEval : BaseTest {
 
     [TestMethod]
     public void TestIndirectMap() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("a", "[<x>]", ["x"]);
         group.DefineTemplate("test", "hi <names:(templateName)()>!", ["names", "templateName"]);
         var st = group.GetInstanceOf("test");

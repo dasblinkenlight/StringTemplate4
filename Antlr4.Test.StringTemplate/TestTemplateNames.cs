@@ -32,7 +32,6 @@
 
 namespace Antlr4.Test.StringTemplate;
 
-using Antlr4.StringTemplate;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Path = System.IO.Path;
 
@@ -45,7 +44,7 @@ public class TestTemplateNames : BaseTest {
         var dir = TmpDir;
         WriteFile(dir, "a.st", "a(x) ::= << </subdir/b()> >>\n");
         WriteFile(Path.Combine(dir, "subdir"), "b.st", "b() ::= <<bar>>\n");
-        var group = new TemplateGroupDirectory(dir);
+        var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
         Assert.AreEqual(" bar ", group.GetInstanceOf("a").Render());
         Assert.AreEqual(" bar ", group.GetInstanceOf("/a").Render());
         Assert.AreEqual("bar", group.GetInstanceOf("/subdir/b").Render());
@@ -58,7 +57,7 @@ public class TestTemplateNames : BaseTest {
         var dir = TmpDir;
         WriteFile(dir, "a.st", "a(x) ::= << <subdir/b()> >>\n");
         WriteFile(Path.Combine(dir, "subdir"), "b.st", "b() ::= <<bar>>\n");
-        var group = new TemplateGroupDirectory(dir);
+        var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
         Assert.AreEqual(" bar ", group.GetInstanceOf("a").Render());
     }
 
@@ -68,7 +67,7 @@ public class TestTemplateNames : BaseTest {
         var dir = TmpDir;
         WriteFile(dir, "a.st", "a(x) ::= << </subdir/b()> >>\n");
         WriteFile(Path.Combine(dir, "subdir"), "b.st", "b() ::= <<bar>>\n");
-        var group = new TemplateGroupDirectory(dir);
+        var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
         Assert.AreEqual(" bar ", group.GetInstanceOf("a").Render());
     }
 
@@ -77,7 +76,7 @@ public class TestTemplateNames : BaseTest {
         var dir = TmpDir;
         WriteFile(dir, "a.st", "a() ::= << <b()> >>\n");
         WriteFile(dir, "b.st", "b() ::= <<bar>>\n");
-        var group = new TemplateGroupDirectory(dir);
+        var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
         var st = group.GetInstanceOf("a");
         const string expected = " bar ";
         var result = st.Render();
@@ -90,7 +89,7 @@ public class TestTemplateNames : BaseTest {
         var dir = TmpDir;
         WriteFile(Path.Combine(dir, "subdir"), "a.st", "a() ::= << <b()> >>\n");
         WriteFile(Path.Combine(dir, "subdir"), "b.st", "b() ::= <<bar>>\n");
-        var group = new TemplateGroupDirectory(dir);
+        var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
         TestContext.WriteLine(group.GetInstanceOf("/subdir/a").impl.ToString());
         Assert.AreEqual(" bar ", group.GetInstanceOf("/subdir/a").Render());
     }
@@ -99,7 +98,7 @@ public class TestTemplateNames : BaseTest {
     public void TestFullyQualifiedGetInstanceOf() {
         var dir = TmpDir;
         WriteFile(dir, "a.st", "a(x) ::= <<foo>>");
-        var group = new TemplateGroupDirectory(dir);
+        var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
         Assert.AreEqual("foo", group.GetInstanceOf("a").Render());
         Assert.AreEqual("foo", group.GetInstanceOf("/a").Render());
     }
@@ -110,7 +109,7 @@ public class TestTemplateNames : BaseTest {
         var dir = TmpDir;
         WriteFile(Path.Combine(dir, "subdir"), "a.st", "a() ::= << </subdir/b()> >>\n");
         WriteFile(Path.Combine(dir, "subdir"), "b.st", "b() ::= <<bar>>\n");
-        var group = new TemplateGroupDirectory(dir);
+        var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
 
         var template = group.GetInstanceOf("/subdir/a");
         Assert.IsNotNull(template);
@@ -130,7 +129,7 @@ public class TestTemplateNames : BaseTest {
             "b() ::= \"bar\"\n" +
             "c() ::= \"</a()>\"\n";
         WriteFile(dir, "group.stg", groupFile);
-        var group = new TemplateGroupDirectory(dir);
+        var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
 
         var st1 = group.GetInstanceOf("/a");
         Assert.IsNotNull(st1);
@@ -148,7 +147,7 @@ public class TestTemplateNames : BaseTest {
         WriteFile(dir, "a.st", "a(x) ::= << </subdir/c()> >>\n");
         WriteFile(Path.Combine(dir, "subdir"), "b.st", "b() ::= <<bar>>\n");
         WriteFile(Path.Combine(dir, "subdir"), "c.st", "c() ::= << <b()> >>\n");
-        var group = new TemplateGroupDirectory(dir);
+        var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
         Assert.AreEqual("  bar  ", group.GetInstanceOf("a").Render());
     }
 

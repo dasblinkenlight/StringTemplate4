@@ -55,6 +55,8 @@ public abstract class BaseTest {
 
     public TestContext TestContext { get; set; }
 
+    protected ITemplateFactory _templateFactory = new TemplateFactory();
+
     [TestInitialize]
     public void SetUp() {
         // Ideally we wanted en-US, but invariant provides a suitable default for testing.
@@ -63,7 +65,7 @@ public abstract class BaseTest {
 #else
         Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 #endif
-        TemplateGroup.DefaultGroup = new TemplateGroup();
+        TemplateGroup.DefaultGroup = (TemplateGroup)_templateFactory.CreateTemplateGroup().Build();
         TemplateCompiler.subtemplateCount = 0;
 
         // new output dir for each test

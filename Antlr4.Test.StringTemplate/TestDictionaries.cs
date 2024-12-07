@@ -48,7 +48,7 @@ public class TestDictionaries : BaseTest {
                 "typeInit ::= [\"int\":\"0\", \"float\":\"0.0\"] " + newline +
                 "var(type,name) ::= \"<type> <name> = <typeInit.(type)>;\"" + newline;
         WriteFile(TmpDir, "test.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "test.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "test.stg")).Build();
         var st = group.GetInstanceOf("var");
         st.Add("type", "int");
         st.Add("name", "x");
@@ -64,9 +64,7 @@ public class TestDictionaries : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
 
         var errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.Load(); // force load
         Assert.AreEqual(0, errors.Errors.Count);
     }
@@ -77,7 +75,7 @@ public class TestDictionaries : BaseTest {
             "typeInit ::= [\"int\":{0<w>}, \"float\":{0.0<w>}] " + newline +
             "var(type,w,name) ::= \"<type> <name> = <typeInit.(type)>;\"" + newline;
         WriteFile(TmpDir, "test.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "test.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "test.stg")).Build();
         var st = group.GetInstanceOf("var");
         TestContext.WriteLine(st.impl.ToString());
         st.Add("w", "L");
@@ -95,7 +93,7 @@ public class TestDictionaries : BaseTest {
             "typeInit ::= [\"int\":{0<w>}, \"float\":{0.0<w>}] " + newline +
             "var(type,w,name) ::= \"<type> <name> = <typeInit.(type)>;\"" + newline;
         WriteFile(TmpDir, "test.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "test.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "test.stg")).Build();
         var st = group.GetInstanceOf("var");
         st.Add("w", "L");
         st.Add("type", new Template("int"));
@@ -112,7 +110,7 @@ public class TestDictionaries : BaseTest {
                 "foo(m,k) ::= \"<m.(k)>\"" + newline
             ;
         WriteFile(TmpDir, "test.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "test.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "test.stg")).Build();
         var st = group.GetInstanceOf("foo");
         IDictionary<HashableUser, string> m = new Dictionary<HashableUser, string>();
         m[new HashableUser(99, "parrt")] = "first";
@@ -132,7 +130,7 @@ public class TestDictionaries : BaseTest {
                 "var(type,w,name) ::= \"<type> <name> = <typeInit.(type)>;\"" + newline
             ;
         WriteFile(TmpDir, "test.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "test.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "test.stg")).Build();
         var st = group.GetInstanceOf("var");
         st.Add("w", "L");
         st.Add("type", "double"); // double not in typeInit map
@@ -149,7 +147,7 @@ public class TestDictionaries : BaseTest {
                 "var(type,w,name) ::= \"<type> <name> = <typeInit.(type)>;\"" + newline
             ;
         WriteFile(TmpDir, "test.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(Path.Combine(TmpDir, "test.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "test.stg")).Build();
         var st = group.GetInstanceOf("var");
         st.Add("w", "L");
         st.Add("type", null); // double not in typeInit map
@@ -166,7 +164,7 @@ public class TestDictionaries : BaseTest {
                 "var(typeInit,type,name) ::= \"<type> <name> = <typeInit.(type)>;\"" + newline
             ;
         WriteFile(TmpDir, "test.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(Path.Combine(TmpDir, "test.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "test.stg")).Build();
         var st = group.GetInstanceOf("var");
         st.Add("type", "int");
         st.Add("name", "x");
@@ -182,7 +180,7 @@ public class TestDictionaries : BaseTest {
                 "var(type,name) ::= \"<type> <name> = <typeInit.(type)>;\"" + newline
             ;
         WriteFile(TmpDir, "test.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(Path.Combine(TmpDir, "test.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "test.stg")).Build();
         var st = group.GetInstanceOf("var");
         st.Add("type", "float");
         st.Add("name", "x");
@@ -198,7 +196,7 @@ public class TestDictionaries : BaseTest {
                 "var(type,name) ::= \"<type> <name> = <typeInit.(type)>;\"" + newline
             ;
         WriteFile(TmpDir, "test.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(Path.Combine(TmpDir, "test.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "test.stg")).Build();
         var st = group.GetInstanceOf("var");
         st.Add("type", "UserRecord");
         st.Add("name", "x");
@@ -214,7 +212,7 @@ public class TestDictionaries : BaseTest {
                 "var(type,name) ::= \"<type> <name> = <typeInit.(type)>;\"" + newline
             ;
         WriteFile(TmpDir, "test.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(Path.Combine(TmpDir, "test.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "test.stg")).Build();
         var st = group.GetInstanceOf("var");
         // missing or set to null: st.Add("type", null);
         st.Add("name", "x");
@@ -231,9 +229,7 @@ public class TestDictionaries : BaseTest {
             ;
         WriteFile(TmpDir, "test.stg", templates);
         var errors = new ErrorBuffer();
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "test.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "test.stg")).WithErrorListener(errors).Build();
         group.Load();
         const string expected = "[test.stg 1:33: missing value for key at ']']";
         var result = errors.Errors.ToListString();
@@ -247,7 +243,7 @@ public class TestDictionaries : BaseTest {
                 "var(type,name) ::= \"<type> <name> = <typeInit.(type)>;\"" + newline
             ;
         WriteFile(TmpDir, "test.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(Path.Combine(TmpDir, "test.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "test.stg")).Build();
         var st = group.GetInstanceOf("var");
         st.Add("type", "UserRecord");
         st.Add("name", "x");
@@ -265,7 +261,7 @@ public class TestDictionaries : BaseTest {
             ">>";
 
         WriteFile(TmpDir, "test.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(Path.Combine(TmpDir, "test.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "test.stg")).Build();
         var st = group.GetInstanceOf("t2");
         st.Add("adr", new Dictionary<string, string>()
         {
@@ -290,7 +286,7 @@ public class TestDictionaries : BaseTest {
             ">>";
 
         WriteFile(TmpDir, "test.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(Path.Combine(TmpDir, "test.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "test.stg")).Build();
         var st = group.GetInstanceOf("t2");
         st.Add("adr", new Dictionary<string, string>()
         {
@@ -319,7 +315,7 @@ public class TestDictionaries : BaseTest {
             ">>" + newline;
 
         WriteFile(TmpDir, "test.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(Path.Combine(TmpDir, "test.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "test.stg")).Build();
         var st = group.GetInstanceOf("t3");
         st.Add("adr", new Dictionary<string, string>()
         {
@@ -345,7 +341,7 @@ public class TestDictionaries : BaseTest {
                 "var(type,name) ::= \"<type> <name> = <typeInit.(type)>;\"" + newline
             ;
         WriteFile(TmpDir, "test.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(Path.Combine(TmpDir, "test.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "test.stg")).Build();
         var st = group.GetInstanceOf("var");
         st.Add("type", "default");
         st.Add("name", "x");
@@ -364,7 +360,7 @@ public class TestDictionaries : BaseTest {
                 "t() ::= << <map.(\"1\")> >>" + newline
             ;
         WriteFile(TmpDir, "test.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(Path.Combine(TmpDir, "test.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "test.stg")).Build();
         var st = group.GetInstanceOf("t");
         const string expected = " default ";
         var result = st.Render();
@@ -379,7 +375,7 @@ public class TestDictionaries : BaseTest {
                 "var(type,name) ::= \"<type> <name> = <typeInit.(type)>;\"" + newline
             ;
         WriteFile(TmpDir, "test.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(Path.Combine(TmpDir, "test.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "test.stg")).Build();
         var st = group.GetInstanceOf("intermediate");
         st.Add("type", "int");
         st.Add("name", "x");
@@ -396,7 +392,7 @@ public class TestDictionaries : BaseTest {
                 "var(type,name) ::= \"<type> <name> = <typeInit.(type)>;\"" + newline
             ;
         WriteFile(TmpDir, "test.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(Path.Combine(TmpDir, "test.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "test.stg")).Build();
         var interm = group.GetInstanceOf("intermediate");
         var var = group.GetInstanceOf("var");
         var.Add("type", "int");
@@ -418,7 +414,7 @@ public class TestDictionaries : BaseTest {
             "]\n";
         WriteFile(dir, "g.stg", g);
 
-        TemplateGroup group = new TemplateGroupFile(Path.Combine(dir, "g.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "g.stg")).Build();
         var st = group.GetInstanceOf("a");
         const string expected = "[foo]";
         var result = st.Render();
@@ -439,7 +435,7 @@ public class TestDictionaries : BaseTest {
             "]\n";
         WriteFile(dir, "g.stg", g);
 
-        TemplateGroup group = new TemplateGroupFile(Path.Combine(dir, "g.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "g.stg")).Build();
         var st = group.GetInstanceOf("a");
         const string expected = "[foo]";
         var result = st.Render();
@@ -466,7 +462,7 @@ public class TestDictionaries : BaseTest {
             "  <makeTmpl(\"I\", \"foo\")>\n" +
             ">>\n";
         WriteFile(TmpDir, "t.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg");
+        var group = _templateFactory.CreateTemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg").Build();
         var st = group.GetInstanceOf("top");
         Assert.IsNotNull(st);
         var expected =
@@ -496,7 +492,7 @@ public class TestDictionaries : BaseTest {
             "  <makeTmpl(\"I\", \"foo\")>\n" +
             ">>\n";
         WriteFile(TmpDir, "t.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg");
+        var group = _templateFactory.CreateTemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg").Build();
         var st = group.GetInstanceOf("top");
         Assert.IsNotNull(st);
         var expected =
@@ -519,7 +515,7 @@ public class TestDictionaries : BaseTest {
             ">>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg");
+        var group = _templateFactory.CreateTemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg").Build();
         var st = group.GetInstanceOf("t");
         const string expected = "true+";
         var result = st.Render();
@@ -539,7 +535,7 @@ public class TestDictionaries : BaseTest {
             ">>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg");
+        var group = _templateFactory.CreateTemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg").Build();
         var st = group.GetInstanceOf("t");
         const string expected = "false-";
         var result = st.Render();
@@ -559,7 +555,7 @@ public class TestDictionaries : BaseTest {
             ">>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg");
+        var group = _templateFactory.CreateTemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg").Build();
         var st = group.GetInstanceOf("t");
         const string expected = "+";
         var result = st.Render();
@@ -579,7 +575,7 @@ public class TestDictionaries : BaseTest {
             ">>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg");
+        var group = _templateFactory.CreateTemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg").Build();
         var st = group.GetInstanceOf("t");
         const string expected = "-";
         var result = st.Render();
@@ -603,7 +599,7 @@ public class TestDictionaries : BaseTest {
             ">>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg");
+        var group = _templateFactory.CreateTemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg").Build();
         var st = group.GetInstanceOf("t");
         const string expected = "hi";
         var result = st.Render();
@@ -624,7 +620,7 @@ identifier ::= [
 ";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
         // try with mapped values
         var template = group.GetInstanceOf("t").Add("id", "keyword");
@@ -661,7 +657,7 @@ identifier ::= [
 ";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
         // try with mapped values
         var template = group.GetInstanceOf("t").Add("id", "keyword");

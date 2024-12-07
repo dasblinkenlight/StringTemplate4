@@ -47,7 +47,7 @@ public class TestIndentation : BaseTest {
             ">>" + newline;
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var t = group.GetInstanceOf("list");
         TestContext.WriteLine(t.impl.ToString());
         t.Add("a", "Terence");
@@ -64,7 +64,7 @@ public class TestIndentation : BaseTest {
             ">>" + newline;
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var t = group.GetInstanceOf("list");
         t.Add("names", "Terence");
         t.Add("names", "Jim");
@@ -83,7 +83,7 @@ public class TestIndentation : BaseTest {
             "  <names; separator=\"\n\">" + newline +
             ">>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var t = group.GetInstanceOf("list");
         t.Add("names", "Terence\nis\na\nmaniac");
         t.Add("names", "Jim");
@@ -107,7 +107,7 @@ public class TestIndentation : BaseTest {
             "  <names>" + newline +
             ">>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var t = group.GetInstanceOf("list");
         t.Add("names", "Terence\n\nis a maniac");
         var expected =
@@ -126,7 +126,7 @@ public class TestIndentation : BaseTest {
             "after" + newline +
             ">>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var t = group.GetInstanceOf("list");
         t.Add("names", "Terence");
         t.Add("names", "Jim");
@@ -156,7 +156,7 @@ public class TestIndentation : BaseTest {
                 "assign(lhs,expr) ::= <<<lhs>=<expr>;>>" + newline
             ;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var t = group.GetInstanceOf("method");
         t.Add("name", "foo");
         var s1 = group.GetInstanceOf("assign");
@@ -226,12 +226,12 @@ public class TestIndentation : BaseTest {
 
     [TestMethod]
     public void TestIndentedIFWithNewlineBeforeText() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("t",
             "begin" + newline +
             "    <if(x)>\n" +
             "foo\n" +  // no indent; ignore IF indent
-            "    <endif>" + newline +	  // ignore indent on if-tags on line by themselves
+            "    <endif>" + newline +	  // ignore indent on if-tags on lines by themselves
             "end" + newline,
             ["x"]);
         var t = group.GetInstanceOf("t");
@@ -243,11 +243,11 @@ public class TestIndentation : BaseTest {
 
     [TestMethod]
     public void TestIndentedIFWithEndifNextLine() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("t",
             "begin" + newline +
             "    <if(x)>foo\n" +      // use indent and keep newline
-            "    <endif>" + newline +	  // ignore indent on if-tags on line by themselves
+            "    <endif>" + newline +	  // ignore indent on if-tags on lines by themselves
             "end" + newline,
             ["x"]);
         var t = group.GetInstanceOf("t");

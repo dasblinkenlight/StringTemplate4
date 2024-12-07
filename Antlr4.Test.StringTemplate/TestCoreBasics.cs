@@ -79,11 +79,8 @@ public class TestCoreBasics : BaseTest {
     public void TestSetUnknownAttr() {
         const string templates =
             "t() ::= <<hi <name>!>>\n";
-        var errors = new ErrorBuffer();
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg")) {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var st = group.GetInstanceOf("t");
         string result = null;
         try {
@@ -348,7 +345,7 @@ public class TestCoreBasics : BaseTest {
         const string templates =
             "a(x,y) ::= \"<b(...)>\"\n" +
             "b(x,y) ::= \"<x><y>\"\n";
-        var group = new TemplateGroupString(templates);
+        var group = _templateFactory.CreateTemplateGroupString(templates).Build();
         var a = group.GetInstanceOf("a");
         a.Add("x", "x");
         a.Add("y", "y");
@@ -362,7 +359,7 @@ public class TestCoreBasics : BaseTest {
         const string templates =
             "a(x,y) ::= \"<b(...)>\"\n" + // should not set y when it sees "no value" from above
             "b(x,y={99}) ::= \"<x><y>\"\n";
-        var group = new TemplateGroupString(templates);
+        var group = _templateFactory.CreateTemplateGroupString(templates).Build();
         var a = group.GetInstanceOf("a");
         a.Add("x", "x");
         const string expected = "x99";
@@ -375,7 +372,7 @@ public class TestCoreBasics : BaseTest {
         const string templates =
             "a(x) ::= \"<b(...)>\"\n" + // should not set y when it sees "no definition" from above
             "b(x,y={99}) ::= \"<x><y>\"\n";
-        var group = new TemplateGroupString(templates);
+        var group = _templateFactory.CreateTemplateGroupString(templates).Build();
         var a = group.GetInstanceOf("a");
         a.Add("x", "x");
         const string expected = "x99";
@@ -388,7 +385,7 @@ public class TestCoreBasics : BaseTest {
         const string templates =
             "a(x,y) ::= \"<b(y={99},...)>\"\n" +
             "b(x,y) ::= \"<x><y>\"\n";
-        var group = new TemplateGroupString(templates);
+        var group = _templateFactory.CreateTemplateGroupString(templates).Build();
         var a = group.GetInstanceOf("a");
         a.Add("x", "x");
         a.Add("y", "y");
@@ -402,7 +399,7 @@ public class TestCoreBasics : BaseTest {
         const string templates =
             "a(x,y) ::= \"<b(y={99},x={1},...)>\"\n" +
             "b(x,y) ::= \"<x><y>\"\n";
-        var group = new TemplateGroupString(templates);
+        var group = _templateFactory.CreateTemplateGroupString(templates).Build();
         var a = group.GetInstanceOf("a");
         a.Add("x", "x");
         a.Add("y", "y");
@@ -413,7 +410,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestDefineTemplate() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("inc", "<x>+1", ["x"]);
         group.DefineTemplate("test", "hi <name>!", ["name"]);
         var st = group.GetInstanceOf("test");
@@ -427,7 +424,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestMap() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("inc", "[<x>]", ["x"]);
         group.DefineTemplate("test", "hi <name:inc()>!", ["name"]);
         var st = group.GetInstanceOf("test");
@@ -441,7 +438,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestIndirectMap() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("inc", "[<x>]", ["x"]);
         group.DefineTemplate("test", "<name:(t)()>!", ["t", "name"]);
         var st = group.GetInstanceOf("test");
@@ -461,7 +458,7 @@ public class TestCoreBasics : BaseTest {
             "test(name) ::= \"<name:(d.foo)()>\"\n" +
             "bold(x) ::= <<*<x>*>>\n";
         WriteFile(TmpDir, "t.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var st = group.GetInstanceOf("test");
         st.Add("name", "Ter");
         st.Add("name", "Tom");
@@ -473,7 +470,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestParallelMap() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "hi <names,phones:{n,p | <n>:<p>;}>", ["names", "phones"]);
         var st = group.GetInstanceOf("test");
         st.Add("names", "Ter");
@@ -489,7 +486,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestParallelMapWith3Versus2Elements() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "hi <names,phones:{n,p | <n>:<p>;}>", ["names", "phones"]);
         var st = group.GetInstanceOf("test");
         st.Add("names", "Ter");
@@ -504,7 +501,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestParallelMapThenMap() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("bold", "[<x>]", ["x"]);
         group.DefineTemplate("test", "hi <names,phones:{n,p | <n>:<p>;}:bold()>", ["names", "phones"]);
         var st = group.GetInstanceOf("test");
@@ -520,7 +517,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestMapThenParallelMap() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("bold", "[<x>]", ["x"]);
         group.DefineTemplate("test", "hi <[names:bold()],phones:{n,p | <n>:<p>;}>", ["names", "phones"]);
         var st = group.GetInstanceOf("test");
@@ -536,7 +533,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestMapIndexes() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("inc", "<i>:<x>", ["x", "i"]);
         group.DefineTemplate("test", "<name:{n|<inc(n,i)>}; separator=\", \">", ["name"]);
         var st = group.GetInstanceOf("test");
@@ -551,7 +548,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestMapIndexes2() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<name:{n | <i>:<n>}; separator=\", \">", ["name"]);
         var st = group.GetInstanceOf("test");
         st.Add("name", "Ter");
@@ -565,7 +562,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestMapSingleValue() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("a", "[<x>]", ["x"]);
         group.DefineTemplate("test", "hi <name:a()>!", ["name"]);
         var st = group.GetInstanceOf("test");
@@ -577,7 +574,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestMapNullValue() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("a", "[<x>]", ["x"]);
         group.DefineTemplate("test", "hi <name:a()>!", ["name"]);
         var st = group.GetInstanceOf("test");
@@ -588,7 +585,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestMapNullValueInList() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<name; separator=\", \">", ["name"]);
         var st = group.GetInstanceOf("test");
         st.Add("name", "Ter");
@@ -602,7 +599,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestRepeatedMap() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("a", "[<x>]", ["x"]);
         group.DefineTemplate("b", "(<x>)", ["x"]);
         group.DefineTemplate("test", "hi <name:a():b()>!", ["name"]);
@@ -617,7 +614,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestRepeatedMapWithNullValue() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("a", "[<x>]", ["x"]);
         group.DefineTemplate("b", "(<x>)", ["x"]);
         group.DefineTemplate("test", "hi <name:a():b()>!", ["name"]);
@@ -632,7 +629,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestRepeatedMapWithNullValueAndNullOption() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("a", "[<x>]", ["x"]);
         group.DefineTemplate("b", "(<x>)", ["x"]);
         group.DefineTemplate("test", "hi <name:a():b(); null={x}>!", ["name"]);
@@ -647,7 +644,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestRoundRobinMap() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("a", "[<x>]", ["x"]);
         group.DefineTemplate("b", "(<x>)", ["x"]);
         group.DefineTemplate("test", "hi <name:a(),b()>!", ["name"]);
@@ -716,7 +713,7 @@ public class TestCoreBasics : BaseTest {
             "bar\n" +
             ">>\n";
         WriteFile(dir, "group.stg", groupFile);
-        var group = new TemplateGroupFile(dir + "/group.stg");
+        var group = _templateFactory.CreateTemplateGroupFile(dir + "/group.stg").Build();
         var st = group.GetInstanceOf("a");
         TestContext.WriteLine(st.impl.ToString());
         var expected = $"foo{newline}bar";
@@ -935,7 +932,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestSeparator() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n | case <n>}; separator=\", \">", ["names"]);
         var st = group.GetInstanceOf("test");
         st.Add("names", "Ter");
@@ -947,7 +944,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestSeparatorInList() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n | case <n>}; separator=\", \">", ["names"]);
         var st = group.GetInstanceOf("test");
         st.Add("names", new List<string>() { "Ter", "Tom" });
@@ -958,7 +955,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestSeparatorInList2() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n | case <n>}; separator=\", \">", ["names"]);
         var st = group.GetInstanceOf("test");
         st.Add("names", "Ter");
@@ -970,7 +967,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestSeparatorInArray() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n | case <n>}; separator=\", \">", ["names"]);
         var st = group.GetInstanceOf("test");
         st.Add("names", new[] { "Ter", "Tom" });
@@ -981,7 +978,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestSeparatorInArray2() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n | case <n>}; separator=\", \">", ["names"]);
         var st = group.GetInstanceOf("test");
         st.Add("names", "Ter");
@@ -993,7 +990,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestSeparatorInPrimitiveArray() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n | case <n>}; separator=\", \">", ["names"]);
         var st = group.GetInstanceOf("test");
         st.Add("names", new[] { 0, 1 });
@@ -1004,7 +1001,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestSeparatorInPrimitiveArray2() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n | case <n>}; separator=\", \">", ["names"]);
         var st = group.GetInstanceOf("test");
         st.Add("names", 0);
@@ -1035,7 +1032,7 @@ public class TestCoreBasics : BaseTest {
             ">>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var st = group.GetInstanceOf("main");
         var result = st.Render();
         var expected =
@@ -1058,7 +1055,7 @@ public class TestCoreBasics : BaseTest {
             ">>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         var st = group.GetInstanceOf("main");
         var sw = new StringWriter();
         var w = new NoIndentWriter(sw);

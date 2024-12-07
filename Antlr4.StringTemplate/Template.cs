@@ -127,10 +127,10 @@ public sealed class Template {
     }
 
     /** Used by group creation routine, not by users */
-    internal Template(TemplateGroup group) {
-        groupThatCreatedThisInstance = group ?? throw new ArgumentNullException(nameof(group));
+    internal Template(ITemplateGroup group) {
+        groupThatCreatedThisInstance = group as TemplateGroup ?? throw new ArgumentNullException(nameof(group));
 
-        if (group.TrackCreationEvents) {
+        if (groupThatCreatedThisInstance.TrackCreationEvents) {
             DebugState = new TemplateDebugState {
                 NewTemplateEvent = new ConstructionEvent()
             };
@@ -149,13 +149,17 @@ public sealed class Template {
      *  alter TemplateGroup.defaultGroup.
      */
     public Template(string template, char delimiterStartChar, char delimiterStopChar)
-    : this(new TemplateGroup(delimiterStartChar, delimiterStopChar), template) {
+    : this(new TemplateGroup {
+        DelimiterStartChar = delimiterStartChar,
+        DelimiterStopChar = delimiterStopChar
+        },
+        template) {
     }
 
-    public Template(TemplateGroup group, string template)
+    public Template(ITemplateGroup group, string template)
     {
-        groupThatCreatedThisInstance = group ?? throw new ArgumentNullException(nameof(group));
-        impl = groupThatCreatedThisInstance.Compile(group.FileName, null, null, template, null);
+        groupThatCreatedThisInstance = group as TemplateGroup ?? throw new ArgumentNullException(nameof(group));
+        impl = groupThatCreatedThisInstance.Compile(groupThatCreatedThisInstance.FileName, null, null, template, null);
         impl.HasFormalArgs = false;
         impl.Name = UnknownName;
         impl.DefineImplicitlyDefinedTemplates(groupThatCreatedThisInstance);
@@ -190,6 +194,10 @@ public sealed class Template {
         set => groupThatCreatedThisInstance = value ?? throw new ArgumentNullException(nameof(value));
     }
 
+    public void SetGroup(ITemplateGroup group) {
+        groupThatCreatedThisInstance = group as TemplateGroup ?? throw new ArgumentNullException(nameof(group));
+    }
+
     public Template CreateShadow() {
         return new Template(this, true);
     }
@@ -208,7 +216,7 @@ public sealed class Template {
             if (name == null) {
                 throw new ArgumentNullException(nameof(name));
             }
-            if (Group.TrackCreationEvents) {
+            if (groupThatCreatedThisInstance.TrackCreationEvents) {
                 DebugState ??= new TemplateDebugState();
                 DebugState.AddAttributeEvents.Add(name, new AddAttributeEvent(name, value));
             }
@@ -287,7 +295,7 @@ public sealed class Template {
     }
 
     /** Remove an attribute value entirely (can't Remove attribute definitions). */
-    internal void Remove(string name) {
+    public void Remove(string name) {
         if (impl.FormalArguments == null) {
             if (impl.HasFormalArgs) {
                 throw new ArgumentException("no such attribute: " + name);
@@ -418,17 +426,17 @@ public sealed class Template {
 
     // TESTING SUPPORT
 
-    internal List<InterpEvent> GetEvents()
+    public /*???*/ List<InterpEvent> GetEvents()
     {
         return GetEvents(CultureInfo.CurrentCulture);
     }
 
-    internal List<InterpEvent> GetEvents(int lineWidth)
+    public /*???*/ List<InterpEvent> GetEvents(int lineWidth)
     {
         return GetEvents(CultureInfo.CurrentCulture, lineWidth);
     }
 
-    internal List<InterpEvent> GetEvents(ITemplateWriter writer)
+    public /*???*/ List<InterpEvent> GetEvents(ITemplateWriter writer)
     {
         return GetEvents(CultureInfo.CurrentCulture, writer);
     }

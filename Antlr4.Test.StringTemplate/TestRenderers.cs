@@ -48,7 +48,7 @@ public class TestRenderers : BaseTest {
         const string templates =
             "dateThing(created) ::= \"datetime: <created>\"\n";
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(DateTime), new DateRenderer());
         group.RegisterRenderer(typeof(DateTimeOffset), new DateRenderer());
         var st = group.GetInstanceOf("dateThing");
@@ -63,7 +63,7 @@ public class TestRenderers : BaseTest {
         const string templates =
             "dateThing(created) ::= << date: <created; format=\"yyyy.MM.dd\"> >>\n";
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(DateTime), new DateRenderer());
         group.RegisterRenderer(typeof(DateTimeOffset), new DateRenderer());
         var st = group.GetInstanceOf("dateThing");
@@ -78,7 +78,7 @@ public class TestRenderers : BaseTest {
         const string templates =
             "dateThing(created) ::= << datetime: <created; format=\"short\"> >>\n";
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(DateTime), new DateRenderer());
         group.RegisterRenderer(typeof(DateTimeOffset), new DateRenderer());
         var st = group.GetInstanceOf("dateThing");
@@ -93,7 +93,7 @@ public class TestRenderers : BaseTest {
         const string templates =
             "dateThing(created) ::= << datetime: <created; format=\"full\"> >>\n";
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(DateTime), new DateRenderer());
         group.RegisterRenderer(typeof(DateTimeOffset), new DateRenderer());
         var st = group.GetInstanceOf("dateThing");
@@ -110,7 +110,7 @@ public class TestRenderers : BaseTest {
             "dateThing(created) ::= << date: <created; format=\"date:medium\"> >>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(DateTime), new DateRenderer());
         group.RegisterRenderer(typeof(DateTimeOffset), new DateRenderer());
         var st = group.GetInstanceOf("dateThing");
@@ -127,7 +127,7 @@ public class TestRenderers : BaseTest {
             "dateThing(created) ::= << time: <created; format=\"time:medium\"> >>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(DateTime), new DateRenderer());
         group.RegisterRenderer(typeof(DateTimeOffset), new DateRenderer());
         var st = group.GetInstanceOf("dateThing");
@@ -143,7 +143,7 @@ public class TestRenderers : BaseTest {
             "foo(x) ::= << <x; format=\"{0,6}\"> >>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(string), new StringRenderer());
         var st = group.GetInstanceOf("foo");
         st.Add("x", "hi");
@@ -156,7 +156,7 @@ public class TestRenderers : BaseTest {
     public void TestRendererWithFormatAndList() {
         const string template =
             "The names: <names; format=\"upper\">";
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.RegisterRenderer(typeof(string), new StringRenderer());
         var st = new Template(group, template);
         st.Add("names", "ter");
@@ -171,7 +171,7 @@ public class TestRenderers : BaseTest {
     public void TestRendererWithFormatAndSeparator() {
         const string template =
             "The names: <names; separator=\" and \", format=\"upper\">";
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.RegisterRenderer(typeof(string), new StringRenderer());
         var st = new Template(group, template);
         st.Add("names", "ter");
@@ -186,7 +186,7 @@ public class TestRenderers : BaseTest {
     public void TestRendererWithFormatAndSeparatorAndNull() {
         const string template =
             "The names: <names; separator=\" and \", null=\"n/a\", format=\"upper\">";
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.RegisterRenderer(typeof(string), new StringRenderer());
         var st = new Template(group, template);
         var names = new List<string> { "ter", null, "sriram" };
@@ -202,7 +202,7 @@ public class TestRenderers : BaseTest {
             "foo(x) ::= << <x; format=\"cap\"> >>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(string), new StringRenderer());
         var st = group.GetInstanceOf("foo");
         st.Add("x", "hi");
@@ -219,7 +219,7 @@ public class TestRenderers : BaseTest {
             "t() ::= <<ack>>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         //Interpreter.trace = true;
         group.RegisterRenderer(typeof(string), new StringRenderer());
         var st = group.GetInstanceOf("foo");
@@ -236,7 +236,7 @@ public class TestRenderers : BaseTest {
             "foo(x) ::= << <({ack}); format=\"cap\"> >>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         //Interpreter.trace = true;
         group.RegisterRenderer(typeof(string), new StringRenderer());
         var st = group.GetInstanceOf("foo");
@@ -252,7 +252,7 @@ public class TestRenderers : BaseTest {
             "foo(x) ::= << <x; format=\"cap\"> >>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(string), new StringRenderer());
         var st = group.GetInstanceOf("foo");
         st.Add("x", "");
@@ -267,7 +267,7 @@ public class TestRenderers : BaseTest {
             "foo(x) ::= << <x; format=\"url-encode\"> >>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(string), new StringRenderer());
         var st = group.GetInstanceOf("foo");
         st.Add("x", "a b");
@@ -282,7 +282,7 @@ public class TestRenderers : BaseTest {
             "foo(x) ::= << <x; format=\"xml-encode\"> >>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(string), new StringRenderer());
         var st = group.GetInstanceOf("foo");
         st.Add("x", "a<b> &\t\b");
@@ -297,7 +297,7 @@ public class TestRenderers : BaseTest {
             "foo(x) ::= << <x; format=\"xml-encode\"> >>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(string), new StringRenderer());
         var st = group.GetInstanceOf("foo");
         st.Add("x", null);
@@ -312,7 +312,7 @@ public class TestRenderers : BaseTest {
         const string templates = "foo(x,y) ::= << <x; format=\"{0}\"> <y; format=\"{0:0.000}\"> >>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(int), new NumberRenderer());
         group.RegisterRenderer(typeof(double), new NumberRenderer());
         var st = group.GetInstanceOf("foo");
@@ -328,7 +328,7 @@ public class TestRenderers : BaseTest {
         const string templates =
             "numberThing(x,y,z) ::= \"numbers: <x>, <y>; <z>\"\n";
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(int), new NumberRenderer());
         group.RegisterRenderer(typeof(double), new NumberRenderer());
         var st = group.GetInstanceOf("numberThing");
@@ -346,7 +346,7 @@ public class TestRenderers : BaseTest {
         const string templates = "foo(x,y) ::= << <x; format=\"{0:#,#}\"> <y; format=\"{0:0.000}\"> >>\n";
 
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(int), new NumberRenderer());
         group.RegisterRenderer(typeof(double), new NumberRenderer());
         var st = group.GetInstanceOf("foo");

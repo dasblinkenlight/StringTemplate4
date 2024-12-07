@@ -46,7 +46,7 @@ public class TestLineWrap : BaseTest {
         var templates =
             "array(values) ::= <<int[] a = { <values; wrap=\"\\n\", separator=\",\"> };>>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
         var a = group.GetInstanceOf("array");
         a.Add("values", new [] {
@@ -72,7 +72,7 @@ public class TestLineWrap : BaseTest {
         var templates =
             "array(values) ::= <<int[] a = { <values; anchor, wrap, separator=\",\"> };>>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
         var a = group.GetInstanceOf("array");
         a.Add("values", new[] {
@@ -93,11 +93,10 @@ public class TestLineWrap : BaseTest {
         var templates =
             "array(values) ::= <<{ <values; anchor, separator=\", \"> }>>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
-        var x = new Template("<\\n>{ <stuff; anchor, separator=\",\\n\"> }<\\n>") {
-            Group = group
-        };
+        var x = new Template("<\\n>{ <stuff; anchor, separator=\",\\n\"> }<\\n>");
+        x.SetGroup(group);
         x.Add("stuff", "1");
         x.Add("stuff", "2");
         x.Add("stuff", "3");
@@ -117,7 +116,7 @@ public class TestLineWrap : BaseTest {
         var templates =
             "Function(args) ::= <<       FUNCTION line( <args; wrap=\"\\n      c\", separator=\",\"> )>>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
         var a = group.GetInstanceOf("Function");
         a.Add("args", new[] { "a", "b", "c", "d", "e", "f" });
@@ -132,7 +131,7 @@ public class TestLineWrap : BaseTest {
         var templates =
             "array(values) ::= <<int[] a = { <{1,9,2,<values; wrap, separator=\",\">}; anchor> };>>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
         var a = group.GetInstanceOf("array");
         a.Add("values", new[] {
@@ -152,7 +151,7 @@ public class TestLineWrap : BaseTest {
         var templates =
             "duh(chars) ::= \"<chars; wrap={<\\n>}>\"" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
         var a = group.GetInstanceOf("duh");
         a.Add("chars", new[] { "a", "b", "c", "d", "e" });
@@ -170,7 +169,7 @@ public class TestLineWrap : BaseTest {
             "<chars; wrap=\"\\n\"\\>" + newline +
             ">>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
         var a = group.GetInstanceOf("duh");
         a.Add("chars", new[] { "a", "b", "\n", "d", "e" });
@@ -188,7 +187,7 @@ public class TestLineWrap : BaseTest {
             "<chars; wrap=\"\\n\"\\>" + newline +
             ">>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
         var a = group.GetInstanceOf("duh");
         a.Add("chars", new[] { "a", "b", "c", "\n", "d", "e" });
@@ -207,7 +206,7 @@ public class TestLineWrap : BaseTest {
         var templates =
             "duh(data) ::= <<!<data; wrap>!>>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
         var a = group.GetInstanceOf("duh");
         a.Add("data", new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 });
@@ -223,7 +222,7 @@ public class TestLineWrap : BaseTest {
         var templates =
             "duh(data) ::= <<!<data:{v|[<v>]}; wrap>!>>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
         var a = group.GetInstanceOf("duh");
         a.Add("data", new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 });
@@ -239,7 +238,7 @@ public class TestLineWrap : BaseTest {
         var templates =
             "duh(data) ::= <<!<data:{v|[<v>]}; anchor, wrap>!>>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
         var a = group.GetInstanceOf("duh");
         a.Add("data", new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 });
@@ -256,7 +255,7 @@ public class TestLineWrap : BaseTest {
             "top(s) ::= <<  <s>.>>" +
             "str(data) ::= <<!<data:{v|[<v>]}; wrap=\"!+\\n!\">!>>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
         var t = group.GetInstanceOf("top");
         var s = group.GetInstanceOf("str");
@@ -278,7 +277,7 @@ public class TestLineWrap : BaseTest {
             "    <chars; wrap=\"\\n\">" + newline +
             ">>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
         var a = group.GetInstanceOf("duh");
         a.Add("chars", new[] { "a", "b", "c", "d", "e" });
@@ -299,7 +298,7 @@ public class TestLineWrap : BaseTest {
             "    <chars; wrap=\"\\n\">" + newline +
             ">>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
         var a = group.GetInstanceOf("duh");
         a.Add("chars", new[] { "a", "b", "c", "d", "e" });
@@ -320,7 +319,7 @@ public class TestLineWrap : BaseTest {
             "  <chars; wrap=\"\\n\">" + newline +
             ">>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
         var top = group.GetInstanceOf("top");
         var duh = group.GetInstanceOf("duh");
@@ -342,7 +341,7 @@ public class TestLineWrap : BaseTest {
             "x: <chars; anchor, wrap=\"\\n\">" + newline +
             ">>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
         var top = group.GetInstanceOf("top");
         var duh = group.GetInstanceOf("duh");
@@ -361,7 +360,7 @@ public class TestLineWrap : BaseTest {
         var templates =
             "m(args,body) ::= <<[TestMethod] public voidfoo(<args; wrap=\"\\n\",separator=\", \">) throws Ick { <body> }>>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
         var a = group.GetInstanceOf("m");
         a.Add("args", new[] { "a", "b", "c" });
@@ -377,7 +376,7 @@ public class TestLineWrap : BaseTest {
     public void TestSingleValueWrap() {
         var templates = "m(args,body) ::= <<{ <body; anchor, wrap=\"\\n\"> }>>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
         var m = group.GetInstanceOf("m");
         m.Add("body", "i=3;");
@@ -394,7 +393,7 @@ public class TestLineWrap : BaseTest {
             "top(arrays) ::= <<Arrays: <arrays>done>>" + newline +
             "array(values) ::= <%int[] a = { <values; anchor, wrap=\"\\n\", separator=\",\"> };<\\n>%>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
-        TemplateGroup group = new TemplateGroupFile(Path.Combine(TmpDir, "t.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
         var top = group.GetInstanceOf("top");
         var a = group.GetInstanceOf("array");

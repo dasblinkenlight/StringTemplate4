@@ -45,7 +45,7 @@ public class TestOptions : BaseTest {
 
     [TestMethod]
     public void TestSeparator() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "hi <name; separator=\", \">!", ["name"]);
         var st = group.GetInstanceOf("test");
         st.Add("name", "Ter");
@@ -58,7 +58,7 @@ public class TestOptions : BaseTest {
 
     [TestMethod]
     public void TestSeparatorWithSpaces() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "hi <name; separator= \", \">!", ["name"]);
         var st = group.GetInstanceOf("test");
         Console.WriteLine(st.impl.Ast.ToStringTree());
@@ -72,7 +72,7 @@ public class TestOptions : BaseTest {
 
     [TestMethod]
     public void TestAttrSeparator() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "hi <name; separator=sep>!", ["name", "sep"]);
         var st = group.GetInstanceOf("test");
         st.Add("sep", ", ");
@@ -86,7 +86,7 @@ public class TestOptions : BaseTest {
 
     [TestMethod]
     public void TestIncludeSeparator() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("foo", "|");
         group.DefineTemplate("test", "hi <name; separator=foo()>!", ["name", "sep"]);
         var st = group.GetInstanceOf("test");
@@ -101,7 +101,7 @@ public class TestOptions : BaseTest {
 
     [TestMethod]
     public void TestSubtemplateSeparator() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "hi <name; separator={<sep> _}>!", ["name", "sep"]);
         var st = group.GetInstanceOf("test");
         st.Add("sep", ",");
@@ -115,7 +115,7 @@ public class TestOptions : BaseTest {
 
     [TestMethod]
     public void TestSeparatorWithNullFirstValueAndNullOption() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "hi <name; null=\"n/a\", separator=\", \">!", ["name"]);
         var st = group.GetInstanceOf("test");
         st.Add("name", null);
@@ -128,7 +128,7 @@ public class TestOptions : BaseTest {
 
     [TestMethod]
     public void TestSeparatorWithNull2ndValueAndNullOption() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "hi <name; null=\"n/a\", separator=\", \">!", ["name"]);
         var st = group.GetInstanceOf("test");
         TestContext.WriteLine(st.impl.ToString());
@@ -142,7 +142,7 @@ public class TestOptions : BaseTest {
 
     [TestMethod]
     public void TestNullValueAndNullOption() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<name; null=\"n/a\">", ["name"]);
         var st = group.GetInstanceOf("test");
         st.Add("name", null);
@@ -153,7 +153,7 @@ public class TestOptions : BaseTest {
 
     [TestMethod]
     public void TestListApplyWithNullValueAndNullOption() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<name:{n | <n>}; null=\"n/a\">", ["name"]);
         var st = group.GetInstanceOf("test");
         st.Add("name", "Ter");
@@ -169,7 +169,7 @@ public class TestOptions : BaseTest {
         // first apply sends [Template, null, Template] to second apply, which puts [] around
         // the value.  This verifies that null not blank comes out of first apply
         // since we don't get [null].
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<name:{n | <n>}:{n | [<n>]}; null=\"n/a\">", ["name"]);
         var st = group.GetInstanceOf("test");
         st.Add("name", "Ter");
@@ -182,7 +182,7 @@ public class TestOptions : BaseTest {
 
     [TestMethod]
     public void TestMissingValueAndNullOption() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<name; null=\"n/a\">", ["name"]);
         var st = group.GetInstanceOf("test");
         const string expected = "n/a";
@@ -192,7 +192,7 @@ public class TestOptions : BaseTest {
 
     [TestMethod]
     public void TestOptionDoesntApplyToNestedTemplate() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("foo", "<zippo>");
         group.DefineTemplate("test", "<foo(); null=\"n/a\">", ["zippo"]);
         var st = group.GetInstanceOf("test");

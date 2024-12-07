@@ -51,7 +51,7 @@ public class TestDollarDelimiters : BaseTest {
 
     [TestMethod]
     public void TestParallelMap() {
-        var group = new TemplateGroup('$', '$');
+        var group = _templateFactory.CreateTemplateGroup().WithDelimiters('$', '$').Build();
         group.DefineTemplate("test", "hi $names,phones:{n,p | $n$:$p$;}$", ["names", "phones"]);
         var st = group.GetInstanceOf("test");
         st.Add("names", "Ter");
@@ -73,7 +73,7 @@ public class TestDollarDelimiters : BaseTest {
         const string b = "b() ::= <<bar>>\n";
         WriteFile(dir, "a.st", a);
         WriteFile(dir, "b.st", b);
-        var group = new TemplateGroupDirectory(dir, '$', '$');
+        var group = _templateFactory.CreateTemplateGroupDirectory(dir).WithDelimiters('$', '$').Build();
         var st = group.GetInstanceOf("a");
         const string expected = " <bar> ";
         var result = st.Render();
@@ -89,7 +89,7 @@ public class TestDollarDelimiters : BaseTest {
                 "stat(name,value=\"99\") ::= \"x=$value$; // $name$\"" + newline
             ;
         WriteFile(TmpDir, "group.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "group.stg"), '$', '$');
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "group.stg")).WithDelimiters('$', '$').Build();
         var b = group.GetInstanceOf("method");
         b.Add("name", "foo");
         const string expected = "x=99; // foo";
@@ -111,7 +111,7 @@ public class TestDollarDelimiters : BaseTest {
                 "stat(name,value=\"99\") ::= \"x=$value$; // $name$\"" + newline
             ;
         WriteFile(TmpDir, "group.stg", templates);
-        var group = new TemplateGroupFile(TmpDir + "/group.stg");
+        var group = _templateFactory.CreateTemplateGroupFile(TmpDir + "/group.stg").Build();
         var b = group.GetInstanceOf("method");
         b.Add("name", "foo");
         const string expected = "x=99; // foo";
@@ -132,7 +132,7 @@ public class TestDollarDelimiters : BaseTest {
                 ">>" + newline +
                 "stat(name,value=\"99\") ::= \"x=$value$; // $name$\"" + newline
             ;
-        var group = new TemplateGroupString(templates);
+        var group = _templateFactory.CreateTemplateGroupString(templates).Build();
         var b = group.GetInstanceOf("method");
         b.Add("name", "foo");
         const string expected = "x=99; // foo";
@@ -161,7 +161,7 @@ public class TestDollarDelimiters : BaseTest {
         WriteFile(dir, "GenerateHtml.stg", groupFile);
         WriteFile(dir, "html.st", htmlFile);
 
-        var group = new TemplateGroupFile(dir + "/GenerateHtml.stg", '$', '$');
+        var group = _templateFactory.CreateTemplateGroupFile(dir + "/GenerateHtml.stg").WithDelimiters('$', '$').Build();
 
         // test html template directly
         var st = group.GetInstanceOf("html");
@@ -199,7 +199,7 @@ public class TestDollarDelimiters : BaseTest {
         WriteFile(dir, "GenerateHtml.stg", groupFile);
         WriteFile(dir, "HtmlTemplates.stg", htmlFile);
 
-        var group = new TemplateGroupFile(dir + "/GenerateHtml.stg", '$', '$');
+        var group = _templateFactory.CreateTemplateGroupFile(dir + "/GenerateHtml.stg").WithDelimiters('$', '$').Build();
 
         // test html template directly
         var st = group.GetInstanceOf("html");
@@ -238,7 +238,7 @@ public class TestDollarDelimiters : BaseTest {
         WriteFile(dir, "GenerateHtml.stg", groupFile);
         WriteFile(dir, "html.st", htmlFile);
 
-        var group = new TemplateGroupFile(dir + "/GenerateHtml.stg", '<', '>');
+        var group = _templateFactory.CreateTemplateGroupFile(dir + "/GenerateHtml.stg").WithDelimiters('<', '>').Build();
 
         // test html template directly
         var st = group.GetInstanceOf("html");
@@ -278,7 +278,7 @@ public class TestDollarDelimiters : BaseTest {
         WriteFile(dir, "GenerateHtml.stg", groupFile);
         WriteFile(dir, "HtmlTemplates.stg", htmlFile);
 
-        var group = new TemplateGroupFile(dir + "/GenerateHtml.stg");
+        var group = _templateFactory.CreateTemplateGroupFile(dir + "/GenerateHtml.stg").Build();
 
         // test html template directly
         var st = group.GetInstanceOf("html");

@@ -43,7 +43,7 @@ public class TestSubtemplates : BaseTest {
 
     [TestMethod]
     public void TestSimpleIteration() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n|<n>}>!", ["names"]);
         var st = group.GetInstanceOf("test");
         st.Add("names", "Ter");
@@ -56,7 +56,7 @@ public class TestSubtemplates : BaseTest {
 
     [TestMethod]
     public void TestMapIterationIsByKeys() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<emails:{n|<n>}>!", ["emails"]);
         var st = group.GetInstanceOf("test");
         var emails = new Dictionary<string, string> {
@@ -72,7 +72,7 @@ public class TestSubtemplates : BaseTest {
 
     [TestMethod]
     public void TestSimpleIterationWithArg() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n | <n>}>!", ["names"]);
         var st = group.GetInstanceOf("test");
         st.Add("names", "Ter");
@@ -85,7 +85,7 @@ public class TestSubtemplates : BaseTest {
 
     [TestMethod]
     public void TestNestedIterationWithArg() {
-        var group = new TemplateGroup();
+        var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<users:{u | <u.id:{id | <id>=}><u.name>}>!", ["users"]);
         var st = group.GetInstanceOf("test");
         st.Add("users", new User(1, "parrt"));
@@ -104,7 +104,7 @@ public class TestSubtemplates : BaseTest {
             "y: <y>\n" +
            $">>{newline}";
         WriteFile(TmpDir, "group.stg", templates);
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "group.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "group.stg")).Build();
         var b = group.GetInstanceOf("t");
         b.Add("x", "a");
         var expecting = $"x: a{newline}y: aa";
@@ -198,7 +198,7 @@ public class TestSubtemplates : BaseTest {
            $"value(x) ::= \"<if(!x)>n/a<else><x><endif>\"{newline}";
         WriteFile(TmpDir, "g.stg", templates);
 
-        var group = new TemplateGroupFile(Path.Combine(TmpDir, "g.stg"));
+        var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "g.stg")).Build();
         var p = group.GetInstanceOf("page");
         p.Add("names", "Ter");
         p.Add("names", "Tom");
@@ -221,7 +221,7 @@ public class TestSubtemplates : BaseTest {
         var st = innerGroup.GetInstanceOf("test");
         st.Add("m", new[] { 1, 2, 3 });
 
-        var outerGroup = new TemplateGroup();
+        var outerGroup = _templateFactory.CreateTemplateGroup().Build();
         outerGroup.DefineTemplate("errorMessage", "<x>", ["x"]);
         var outerST = outerGroup.GetInstanceOf("errorMessage");
         outerST.Add("x", st);
@@ -245,7 +245,7 @@ public class TestSubtemplates : BaseTest {
         var st = innerGroup.GetInstanceOf("test");
         st.Add("m", 10);
 
-        var outerGroup = new TemplateGroup();
+        var outerGroup = _templateFactory.CreateTemplateGroup().Build();
         outerGroup.DefineTemplate("errorMessage", "<x>", ["x"]);
         var outerST = outerGroup.GetInstanceOf("errorMessage");
         outerST.Add("x", st);

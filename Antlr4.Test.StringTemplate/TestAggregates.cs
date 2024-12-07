@@ -70,7 +70,7 @@ public class TestAggregates : BaseTest {
                 "intdecl(decl) ::= \"int <decl.name> = 0;\"" + newline +
                 "intarray(decl) ::= \"int[] <decl.name> = null;\"" + newline
             ;
-        var group = new TemplateGroupString(templates);
+        var group = _templateFactory.CreateTemplateGroupString(templates).Build();
         var f = group.GetInstanceOf("file");
         f.AddMany("variables.{ decl,format }", new Decl("i", "int"), "intdecl");
         f.AddMany("variables.{decl ,  format}", new Decl("a", "int-array"), "intarray");

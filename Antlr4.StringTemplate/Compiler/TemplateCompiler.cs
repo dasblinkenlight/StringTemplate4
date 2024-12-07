@@ -30,6 +30,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System;
+
 namespace Antlr4.StringTemplate.Compiler;
 
 using System.Collections.Generic;
@@ -80,8 +82,8 @@ public partial class TemplateCompiler
     /** Name subtemplates _sub1, _sub2, ... */
     public static int subtemplateCount;
 
-    public TemplateCompiler(TemplateGroup group) {
-        Group = group ?? throw new ArgumentNullException(nameof(group));
+    public TemplateCompiler(ITemplateGroup group) {
+        Group = group as TemplateGroup ?? throw new ArgumentException(nameof(group));
     }
 
     public TemplateGroup Group { get; }

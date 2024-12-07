@@ -33,7 +33,6 @@
 namespace Antlr4.Test.StringTemplate;
 
 using System.Collections.Generic;
-using Antlr4.StringTemplate;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 [TestClass]
@@ -44,7 +43,7 @@ public class TestEarlyEvaluation : BaseTest {
         var templates = "main(x) ::= << <if((x))>foo<else>bar<endif> >>";
         WriteFile(TmpDir, "t.stg", templates);
 
-        var group = new TemplateGroupFile(TmpDir + "/t.stg");
+        var group = _templateFactory.CreateTemplateGroupFile(TmpDir + "/t.stg").Build();
 
         var st = group.GetInstanceOf("main");
 
@@ -61,7 +60,7 @@ public class TestEarlyEvaluation : BaseTest {
         var templates = "main(x) ::= << <if(({a<x>b}))>foo<else>bar<endif> >>";
         WriteFile(TmpDir, "t.stg", templates);
 
-        var group = new TemplateGroupFile(TmpDir + "/t.stg");
+        var group = _templateFactory.CreateTemplateGroupFile(TmpDir + "/t.stg").Build();
 
         var st = group.GetInstanceOf("main");
 
@@ -79,7 +78,7 @@ public class TestEarlyEvaluation : BaseTest {
             "main(x) ::= << p<x>t: <m.({p<x>t})>, <if(m.({p<x>t}))>if<else>else<endif> >>\n";
         WriteFile(TmpDir, "t.stg", templates);
 
-        var group = new TemplateGroupFile(TmpDir + "/t.stg");
+        var group = _templateFactory.CreateTemplateGroupFile(TmpDir + "/t.stg").Build();
 
         var st = group.GetInstanceOf("main");
 
@@ -98,7 +97,7 @@ public class TestEarlyEvaluation : BaseTest {
             "main(m,x) ::= << p<x>t: <m.({p<x>t})>, <if(m.({p<x>t}))>if<else>else<endif> >>\n";
         WriteFile(TmpDir, "t.stg", templates);
 
-        var group = new TemplateGroupFile(TmpDir + "/t.stg");
+        var group = _templateFactory.CreateTemplateGroupFile(TmpDir + "/t.stg").Build();
 
         var st = group.GetInstanceOf("main");
         st.Add("m", new Dictionary<string, string> { { "parrt", "value" } });

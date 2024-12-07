@@ -29,7 +29,6 @@
 namespace Antlr4.Test.StringTemplate;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Antlr4.StringTemplate;
 using Path = System.IO.Path;
 
 [TestClass]
@@ -48,7 +47,7 @@ public class TestNoNewlineTemplates : BaseTest {
             "]" + newline +
             "" + newline +
             "%>" + newline;
-        TemplateGroup g = new TemplateGroupString(template);
+        var g = _templateFactory.CreateTemplateGroupString(template).Build();
         var st = g.GetInstanceOf("t");
         st.Add("x", 99);
         const string expected = "[  99]";
@@ -62,7 +61,7 @@ public class TestNoNewlineTemplates : BaseTest {
             "t(x) ::= <%" + newline +
             "" + newline +
             "%>" + newline;
-        TemplateGroup g = new TemplateGroupString(template);
+        var g = _templateFactory.CreateTemplateGroupString(template).Build();
         var st = g.GetInstanceOf("t");
         st.Add("x", 99);
         var result = st.Render();
@@ -72,7 +71,7 @@ public class TestNoNewlineTemplates : BaseTest {
     [TestMethod]
     public void TestEmptyNoNewlineTemplate() {
         var template = "t(x) ::= <%%>" + newline;
-        TemplateGroup g = new TemplateGroupString(template);
+        var g = _templateFactory.CreateTemplateGroupString(template).Build();
         var st = g.GetInstanceOf("t");
         st.Add("x", 99);
         var result = st.Render();
@@ -86,7 +85,7 @@ public class TestNoNewlineTemplates : BaseTest {
             "	foo" + newline +
             "	<x>" + newline +
             "%>" + newline;
-        TemplateGroup g = new TemplateGroupString(template);
+        var g = _templateFactory.CreateTemplateGroupString(template).Build();
         var st = g.GetInstanceOf("t");
         st.Add("x", 99);
         const string expected = "foo99";
@@ -103,7 +102,7 @@ public class TestNoNewlineTemplates : BaseTest {
             "	<endif>" + newline +
             "	<x>" + newline +
             "%>" + newline;
-        TemplateGroup g = new TemplateGroupString(template);
+        var g = _templateFactory.CreateTemplateGroupString(template).Build();
         var st = g.GetInstanceOf("t");
         st.Add("x", 99);
         const string expected = "foo99";
@@ -117,7 +116,7 @@ public class TestNoNewlineTemplates : BaseTest {
             "t(x) ::= <%" + newline +
             "	<x> <x> hi" + newline +
             "%>" + newline;
-        TemplateGroup g = new TemplateGroupString(template);
+        var g = _templateFactory.CreateTemplateGroupString(template).Build();
         var st = g.GetInstanceOf("t");
         st.Add("x", 99);
         const string expected = "99 99 hi";
@@ -135,7 +134,7 @@ public class TestNoNewlineTemplates : BaseTest {
             "<x>\n\n\n" +
             "<@end>\n" +
             "%>\n";
-        TemplateGroup g = new TemplateGroupString(template);
+        var g = _templateFactory.CreateTemplateGroupString(template).Build();
         var st = g.GetInstanceOf("t");
         st.Add("x", 99);
         const string expected = "Ignorenewlines and indents99";
@@ -153,8 +152,8 @@ public class TestNoNewlineTemplates : BaseTest {
                           "%>\n";
         WriteFile(dir, "g2.stg", g2);
 
-        TemplateGroup group1 = new TemplateGroupFile(Path.Combine(dir, "g1.stg"));
-        TemplateGroup group2 = new TemplateGroupFile(Path.Combine(dir, "g2.stg"));
+        var group1 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "g1.stg")).Build();
+        var group2 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "g2.stg")).Build();
         group2.ImportTemplates(group1); // define r in g2
         var st = group2.GetInstanceOf("a");
         const string expected = "[foo]";

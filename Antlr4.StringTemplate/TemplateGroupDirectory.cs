@@ -34,6 +34,8 @@ using System;
 using System.Linq;
 using System.Reflection;
 using Antlr.Runtime;
+using Antlr4.StringTemplate.Compiler;
+using Antlr4.StringTemplate.Misc;
 using Microsoft.Extensions.Logging;
 using ArgumentException = System.ArgumentException;
 using ArgumentNullException = System.ArgumentNullException;
@@ -50,9 +52,6 @@ using UriFormatException = System.UriFormatException;
 
 namespace Antlr4.StringTemplate;
 
-using Compiler;
-using Misc;
-
 // TODO: caching?
 
 /** A directory or directory tree full of templates and/or group files.
@@ -63,7 +62,7 @@ public class TemplateGroupDirectory : TemplateGroup {
     private readonly string groupDirName;
     private readonly Uri root;
 
-    public TemplateGroupDirectory(string dirName, char delimiterStartChar = '<', char delimiterStopChar =  '>')
+    protected TemplateGroupDirectory(string dirName, char delimiterStartChar = '<', char delimiterStopChar =  '>')
     : base(delimiterStartChar, delimiterStopChar) {
         groupDirName = dirName;
         try {
@@ -85,13 +84,13 @@ public class TemplateGroupDirectory : TemplateGroup {
         }
     }
 
-    protected TemplateGroupDirectory(string dirName, Encoding encoding, char delimiterStartChar = '<', char delimiterStopChar = '>')
+    internal TemplateGroupDirectory(string dirName, Encoding encoding, char delimiterStartChar = '<', char delimiterStopChar = '>')
     : this(dirName, delimiterStartChar, delimiterStopChar) {
         Encoding = encoding ?? throw new ArgumentNullException(nameof(encoding));
     }
 
-    public TemplateGroupDirectory(Uri root, Encoding encoding, char delimiterStartChar, char delimiterStopChar)
-        : base(delimiterStartChar, delimiterStopChar) {
+    internal TemplateGroupDirectory(Uri root, Encoding encoding, char delimiterStartChar, char delimiterStopChar)
+    : base(delimiterStartChar, delimiterStopChar) {
         groupDirName = Path.GetFileName(root.AbsolutePath);
         this.root = root;
         Encoding = encoding ?? throw new ArgumentNullException(nameof(encoding));

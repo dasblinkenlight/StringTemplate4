@@ -54,7 +54,7 @@ public class TestGroupFromResource : BaseTest {
 
     [TestMethod]
     public void TestLoadTemplateFileFromDir() {
-        var stg = new TemplateGroupDirectory("org/antlr/templates/dir1");
+        var stg = _templateFactory.CreateTemplateGroupDirectory("org/antlr/templates/dir1").Build();
         var st = stg.GetInstanceOf("sample");
         var result = st.Render();
         const string expecting = "a test";
@@ -63,7 +63,7 @@ public class TestGroupFromResource : BaseTest {
 
     [TestMethod]
     public void TestLoadTemplateFileInSubdir() {
-        var stg = new TemplateGroupDirectory("org/antlr/templates");
+        var stg = _templateFactory.CreateTemplateGroupDirectory("org/antlr/templates").Build();
         var st = stg.GetInstanceOf("dir1/sample");
         var result = st.Render();
         const string expecting = "a test";
@@ -73,7 +73,7 @@ public class TestGroupFromResource : BaseTest {
     [TestMethod]
     public void TestLoadTemplateGroupFileWithModifiedPrefix() {
         TemplateGroup.ResourceRoot = "Resources.org.antlr.templates.dir1";
-        var stg = new TemplateGroupFile("testgroupfile.stg");
+        var stg = _templateFactory.CreateTemplateGroupFile("testgroupfile.stg").Build();
         var st = stg.GetInstanceOf("t");
         var result = st.Render();
         const string expecting = "foo";
@@ -83,7 +83,7 @@ public class TestGroupFromResource : BaseTest {
     [TestMethod]
     public void TestLoadTemplateGroupDirectoryWithModifiedPrefix() {
         TemplateGroup.ResourceRoot = "Resources.org.antlr.templates";
-        var stg = new TemplateGroupDirectory("dir1");
+        var stg = _templateFactory.CreateTemplateGroupDirectory("dir1").Build();
         var st = stg.GetInstanceOf("sample");
         var result = st.Render();
         const string expecting = "a test";
@@ -92,7 +92,7 @@ public class TestGroupFromResource : BaseTest {
 
     [TestMethod]
     public void TestLoadTemplateGroupFileFromResource() {
-        var stg = new TemplateGroupFile("org/antlr/templates/dir1/testgroupfile.stg");
+        var stg = _templateFactory.CreateTemplateGroupFile("org/antlr/templates/dir1/testgroupfile.stg").Build();
         var st = stg.GetInstanceOf("t");
         var result = st.Render();
         const string expecting = "foo";
@@ -101,7 +101,7 @@ public class TestGroupFromResource : BaseTest {
 
     [TestMethod]
     public void TestLoadInvalidTemplateFromResource() {
-        var stg = new TemplateGroupDirectory("org/antlr/templates/dir1");
+        var stg = _templateFactory.CreateTemplateGroupDirectory("org/antlr/templates/dir1").Build();
         Assert.IsFalse(stg.IsDefined("invalid"));
     }
 
