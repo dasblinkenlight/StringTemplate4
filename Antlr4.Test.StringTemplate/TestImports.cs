@@ -30,6 +30,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Antlr4.StringTemplate.Debug;
+
 namespace Antlr4.Test.StringTemplate;
 
 using System.Runtime.CompilerServices;
@@ -63,7 +65,7 @@ public class TestImports : BaseTest {
         WriteFile(dir2, "b.st", b);
 
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir1, "g.stg")).Build();
-        var st = group.GetInstanceOf("b"); // visible only if import worked
+        var st = group.FindTemplate("b"); // visible only if import worked
         const string expected = "dir2 b";
         var result = st?.Render();
         Assert.AreEqual(expected, result);
@@ -93,11 +95,11 @@ public class TestImports : BaseTest {
         WriteFile(dir, Path.Combine("subdir", "c.st"), c);
 
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "g.stg")).Build();
-        var st = group.GetInstanceOf("b"); // visible only if import worked
+        var st = group.FindTemplate("b"); // visible only if import worked
         const string expected = "subdir b";
         var result = st?.Render();
         Assert.AreEqual(expected, result);
-        st = group.GetInstanceOf("c");
+        st = group.FindTemplate("c");
         result = st?.Render();
         Assert.AreEqual(expected, result);
     }
@@ -117,7 +119,7 @@ public class TestImports : BaseTest {
         WriteFile(dir, "group2.stg", groupFile2);
 
         var group1 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "group1.stg")).Build();
-        var st = group1.GetInstanceOf("c"); // should see c()
+        var st = group1.FindTemplate("c"); // should see c()
         const string expected = "g2 c";
         var result = st?.Render();
         Assert.AreEqual(expected, result);
@@ -141,7 +143,7 @@ public class TestImports : BaseTest {
         WriteFile(dir, "group2.stg", groupFile2);
 
         var group1 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "group1.stg")).Build();
-        var st = group1.GetInstanceOf("c"); // should see c()
+        var st = group1.FindTemplate("c"); // should see c()
         const string expected = "g2 c";
         var result = st?.Render();
         Assert.AreEqual(expected, result);
@@ -167,7 +169,7 @@ public class TestImports : BaseTest {
         WriteFile(dir, Path.Combine("subdir", "group2.stg"), groupFile2);
 
         var group1 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "group1.stg")).Build();
-        var st = group1.GetInstanceOf("c"); // should see c()
+        var st = group1.FindTemplate("c"); // should see c()
         const string expected = "g2 c";
         var result = st?.Render();
         Assert.AreEqual(expected, result);
@@ -189,7 +191,7 @@ public class TestImports : BaseTest {
         WriteFile(dir, "c.st", "c() ::= \"c\"\n");
 
         var group1 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "group1.stg")).Build();
-        var st = group1.GetInstanceOf("c"); // should see c()
+        var st = group1.FindTemplate("c"); // should see c()
         const string expected = "c";
         var result = st?.Render();
         Assert.AreEqual(expected, result);
@@ -214,7 +216,7 @@ public class TestImports : BaseTest {
         WriteFile(dir, Path.Combine("subdir", "c.st"), stFile);
 
         var group1 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "group1.stg")).Build();
-        var st = group1.GetInstanceOf("c"); // should see c()
+        var st = group1.FindTemplate("c"); // should see c()
         var expected = "c";
         var result = st?.Render();
         Assert.AreEqual(expected, result);
@@ -241,13 +243,13 @@ public class TestImports : BaseTest {
         var group1 = _templateFactory.CreateTemplateGroupDirectory(dir1).Build();
         var group2 = _templateFactory.CreateTemplateGroupDirectory(dir2).Build();
         group2.ImportTemplates(group1);
-        var st = group2.GetInstanceOf("b");
+        var st = group2.FindTemplate("b");
         const string expected1 = "dir1 b";
         var result = st?.Render();
         Assert.AreEqual(expected1, result);
 
         // do it again, but make a template ref imported template
-        st = group2.GetInstanceOf("a");
+        st = group2.FindTemplate("a");
         const string expected2 = " dir1 b ";
         result = st?.Render();
         Assert.AreEqual(expected2, result);
@@ -267,8 +269,8 @@ public class TestImports : BaseTest {
         var group1 = _templateFactory.CreateTemplateGroupDirectory(Path.Combine(dir, "x")).Build();
         var group2 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "y", "group.stg")).Build();
         group1.ImportTemplates(group2);
-        var st = group1.GetInstanceOf("a");
-        TestContext.WriteLine(st.impl.ToString());
+        var st = group1.FindTemplate("a");
+        TestContext.WriteLine(st.GetCompiledTemplate().ToString());
         const string expected = " group file b ";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -290,7 +292,7 @@ public class TestImports : BaseTest {
         var group1 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "x", "group.stg")).Build();
         var group2 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "y", "group.stg")).Build();
         group1.ImportTemplates(group2);
-        var st = group1.GetInstanceOf("b");
+        var st = group1.FindTemplate("b");
         var expected = "g2 c";
         var result = st?.Render();
         Assert.AreEqual(expected, result);
@@ -308,7 +310,7 @@ public class TestImports : BaseTest {
         var group1 = _templateFactory.CreateTemplateGroupDirectory(Path.Combine(dir, "x")).Build();
         var group2 = _templateFactory.CreateTemplateGroupDirectory(Path.Combine(dir, "y")).Build();
         group1.ImportTemplates(group2);
-        var st = group1.GetInstanceOf("subdir/a");
+        var st = group1.FindTemplate("subdir/a");
         const string expected = " x's subdir/b ";
         var result = st?.Render();
         Assert.AreEqual(expected, result);
@@ -330,10 +332,10 @@ public class TestImports : BaseTest {
         var group2 = _templateFactory.CreateTemplateGroupDirectory(Path.Combine(dir, "y")).Build();
         group1.ImportTemplates(group2);
 
-        var st = group1.GetInstanceOf("subdir/a");
+        var st = group1.FindTemplate("subdir/a");
 
         Assert.IsNotNull(st);
-        Assert.IsNotNull(group1.GetInstanceOf("subdir/b"));
+        Assert.IsNotNull(group1.FindTemplate("subdir/b"));
 
         const string expected = " group file: b ";
         var result = st.Render();
@@ -356,13 +358,13 @@ public class TestImports : BaseTest {
         group1.ImportTemplates(group2);
 
         // normal lookup; a created from dir2 calls dir2.b
-        var st = group2.GetInstanceOf("a");
+        var st = group2.FindTemplate("a");
         const string expected1 = " dir2 b ";
         var result = st?.Render();
         Assert.AreEqual(expected1, result);
 
         // polymorphic lookup; a created from dir1 calls dir2.a which calls dir1.b
-        st = group1.GetInstanceOf("a");
+        st = group1.FindTemplate("a");
         const string expected2 = " dir1 b ";
         result = st?.Render();
         Assert.AreEqual(expected2, result);
@@ -382,7 +384,7 @@ public class TestImports : BaseTest {
         var group1 = _templateFactory.CreateTemplateGroupDirectory(dir1).Build();
         var group2 = _templateFactory.CreateTemplateGroupDirectory(dir2).Build();
         group2.ImportTemplates(group1);
-        var st = group2.GetInstanceOf("a");
+        var st = group2.FindTemplate("a");
         var expected = " [dir1 a] ";
         var result = st?.Render();
         Assert.AreEqual(expected, result);
@@ -403,12 +405,12 @@ public class TestImports : BaseTest {
         var group2 = _templateFactory.CreateTemplateGroupDirectory(dir2).Build();
         group2.ImportTemplates(group1);
 
-        var st = group2.GetInstanceOf("a");
-        var st2 = group2.GetInstanceOf("b");
+        var st = group2.FindTemplate("a");
+        var st2 = group2.FindTemplate("b");
         var originalHashCode = RuntimeHelpers.GetHashCode(st);
         var originalHashCode2 = RuntimeHelpers.GetHashCode(st2);
         group1.Unload(); // blast cache
-        st = group2.GetInstanceOf("a");
+        st = group2.FindTemplate("a");
         var newHashCode = RuntimeHelpers.GetHashCode(st);
         Assert.AreEqual(originalHashCode == newHashCode, false); // diff objects
 
@@ -416,7 +418,7 @@ public class TestImports : BaseTest {
         var result = st?.Render();
         Assert.AreEqual(expected1, result);
 
-        st = group2.GetInstanceOf("b");
+        st = group2.FindTemplate("b");
         var newHashCode2 = RuntimeHelpers.GetHashCode(st);
         Assert.AreEqual(originalHashCode2 == newHashCode2, false); // diff objects
         result = st?.Render();
@@ -431,14 +433,14 @@ public class TestImports : BaseTest {
         WriteFile(TmpDir, "g1.stg", "f() ::= \"g1\"");
         WriteFile(TmpDir, "g2.stg", "f() ::= \"g2\"\nf2() ::= \"f2\"\n");
         var group = _templateFactory.CreateTemplateGroupFile(TmpDir + "/t.stg").Build();
-        var st = group.GetInstanceOf("main");
+        var st = group.FindTemplate("main");
         Assert.AreEqual("v1-g1", st?.Render());
 
         // Change the imports of group t.
         WriteFile(TmpDir, "t.stg",
             "import \"g2.stg\"\n\nmain() ::= <<\nv2-<f()>;<f2()>\n>>");
         group.Unload(); // will also unload already imported groups
-        st = group.GetInstanceOf("main");
+        st = group.FindTemplate("main");
         Assert.AreEqual("v2-g2;f2", st?.Render());
     }
 
@@ -458,7 +460,7 @@ public class TestImports : BaseTest {
         WriteFile(dir, "imported.stg", importedFile);
         ITemplateErrorListener errors = new ErrorBuffer();
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).WithErrorListener(errors).Build();
-        group.GetInstanceOf("/group/a");
+        group.FindTemplate("/group/a");
         var result = errors.ToString();
         const string substring =
             "import illegal in group files embedded in TemplateGroupDirectory; import \"imported.stg\" in TemplateGroupDirectory";
@@ -484,7 +486,7 @@ public class TestImports : BaseTest {
         WriteFile(dir, "subdir/c.st", "c() ::= <<subdir c>>\n");
 
         var group = _templateFactory.CreateTemplateGroupFile(dir + "/g.stg").Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         const string expected = "a: b: subdir c";
         var result = st?.Render();
         Assert.AreEqual(expected, result);

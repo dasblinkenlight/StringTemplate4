@@ -47,7 +47,7 @@ public class TestScopes : BaseTest {
         var errors = new ErrorBuffer();
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         st.Add("x", "x");
         st.Add("y", "y");
         var result = st.Render();
@@ -67,7 +67,7 @@ public class TestScopes : BaseTest {
         var errors = new ErrorBuffer();
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         st.Render();
 
         var expectedError = "context [/t] 1:1 passed 0 arg(s) to template /u with 1 declared arg(s)" + newline;
@@ -81,7 +81,7 @@ public class TestScopes : BaseTest {
         var errors = new ErrorBuffer();
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         st.Render();
 
         var expectedError = "context [/t] 1:1 attribute x isn't defined" + newline;
@@ -96,7 +96,7 @@ public class TestScopes : BaseTest {
         var errors = new ErrorBuffer();
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         st.Add("x", "x");
         st.Add("y", "y");
         var result = st.Render();
@@ -116,7 +116,7 @@ public class TestScopes : BaseTest {
         var errors = new ErrorBuffer();
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         st.Add("names", "Ter");
         var result = st.Render();
 

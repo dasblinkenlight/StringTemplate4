@@ -30,6 +30,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Antlr4.StringTemplate.Debug;
+
 namespace Antlr4.Test.StringTemplate;
 
 using Antlr4.StringTemplate;
@@ -241,7 +243,7 @@ public class TestNullAndEmptyValues : BaseTest {
             group.DefineTemplate("t", "<x>", ["x"]);
             group.DefineTemplate("u", "<x>", ["x"]);
             group.DefineTemplate("test", test.template, ["x"]);
-            var st = group.GetInstanceOf("test");
+            var st = group.FindTemplate("test");
             if (test.x != UNDEF) {
                 st.Add("x", test.x);
             }
@@ -258,7 +260,7 @@ public class TestNullAndEmptyValues : BaseTest {
     public void TestSeparatorWithNullFirstValue() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "hi <name; separator=\", \">!", ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("name", null); // null is added to list, but ignored in iteration
         st.Add("name", "Tom");
         st.Add("name", "Sumana");
@@ -272,7 +274,7 @@ public class TestNullAndEmptyValues : BaseTest {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<name:t()>", ["name"]);
         group.DefineTemplate("t", "<x>", ["x"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("name", null); // null is added to list, but ignored in iteration
         var expected = "";
         var result = st.Render();
@@ -284,7 +286,7 @@ public class TestNullAndEmptyValues : BaseTest {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<name:t()>", ["name"]);
         group.DefineTemplate("t", "<x>", ["x"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         var result = st.Render();
         Assert.AreEqual(string.Empty, result);
     }
@@ -293,7 +295,7 @@ public class TestNullAndEmptyValues : BaseTest {
     public void TestSeparatorWithNull2ndValue() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "hi <name; separator=\", \">!", ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("name", "Ter");
         st.Add("name", null);
         st.Add("name", "Sumana");
@@ -306,7 +308,7 @@ public class TestNullAndEmptyValues : BaseTest {
     public void TestSeparatorWithNullLastValue() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "hi <name; separator=\", \">!", ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("name", "Ter");
         st.Add("name", "Tom");
         st.Add("name", null);
@@ -319,7 +321,7 @@ public class TestNullAndEmptyValues : BaseTest {
     public void TestSeparatorWithTwoNullValuesInRow() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "hi <name; separator=\", \">!", ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("name", "Ter");
         st.Add("name", "Tom");
         st.Add("name", null);
@@ -334,7 +336,7 @@ public class TestNullAndEmptyValues : BaseTest {
     public void TestTwoNullValues() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "hi <name; null=\"x\">!", ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("name", null);
         st.Add("name", null);
         var expected = "hi xx!";
@@ -346,7 +348,7 @@ public class TestNullAndEmptyValues : BaseTest {
     public void TestNullListItemNotCountedForIteratorIndex() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<name:{n | <i>:<n>}>", ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("name", "Ter");
         st.Add("name", null);
         st.Add("name", null);
@@ -363,7 +365,7 @@ public class TestNullAndEmptyValues : BaseTest {
             "begin\n" +
             "<users>\n" +
             "end\n", ["users"]);
-        var t = group.GetInstanceOf("test");
+        var t = group.FindTemplate("test");
         t.Add("users", null);
         var expecting = "begin" + newline + "end";
         var result = t.Render();
@@ -377,7 +379,7 @@ public class TestNullAndEmptyValues : BaseTest {
             "begin\n" +
             "<users:{u | name: <u>}; separator=\", \">\n" +
             "end\n", ["users"]);
-        var t = group.GetInstanceOf("test");
+        var t = group.FindTemplate("test");
         var expecting = "begin" + newline + "end";
         var result = t.Render();
         Assert.AreEqual(expecting, result);
@@ -390,7 +392,7 @@ public class TestNullAndEmptyValues : BaseTest {
             "begin\n" +
             "<users:{u | name: <u>}; separator=\", \">\n" +
             "end\n", ["users"]);
-        var t = group.GetInstanceOf("test");
+        var t = group.FindTemplate("test");
         t.Add("users", new List<string>());
         var expecting = "begin" + newline + "end";
         var result = t.Render();
@@ -401,7 +403,7 @@ public class TestNullAndEmptyValues : BaseTest {
     public void TestMissingDictionaryValue() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<m.foo>", ["m"]);
-        var t = group.GetInstanceOf("test");
+        var t = group.FindTemplate("test");
         t.Add("m", new Dictionary<string, string>());
         var result = t.Render();
         Assert.AreEqual(string.Empty, result);
@@ -411,7 +413,7 @@ public class TestNullAndEmptyValues : BaseTest {
     public void TestMissingDictionaryValue2() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<if(m.foo)>[<m.foo>]<endif>", ["m"]);
-        var t = group.GetInstanceOf("test");
+        var t = group.FindTemplate("test");
         t.Add("m", new Dictionary<string, string>());
         var result = t.Render();
         Assert.AreEqual(string.Empty, result);
@@ -421,7 +423,7 @@ public class TestNullAndEmptyValues : BaseTest {
     public void TestMissingDictionaryValue3() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<if(m.foo)>[<m.foo>]<endif>", ["m"]);
-        var t = group.GetInstanceOf("test");
+        var t = group.FindTemplate("test");
         t.Add("m", new Dictionary<string, string>() { { "foo", null } });
         var result = t.Render();
         Assert.AreEqual(string.Empty, result);
@@ -449,7 +451,7 @@ public class TestNullAndEmptyValues : BaseTest {
         WriteFile(dir, "group.stg", groupFile);
         var group = _templateFactory.CreateTemplateGroupFile(dir + "/group.stg").Build();
 
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         var sw = new StringWriter();
         st.Write(new AutoIndentWriter(sw));
         var result = sw.ToString();

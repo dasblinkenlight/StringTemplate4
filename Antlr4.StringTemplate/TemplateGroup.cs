@@ -204,7 +204,7 @@ public class TemplateGroup : ITemplateGroup {
     /** The primary means of getting an instance of a template from this
      *  group. Names must be absolute, fully-qualified names like a/b
      */
-    public Template GetInstanceOf(string name) {
+    internal Template GetInstanceOf(string name) {
         if (name == null) {
             return null;
         }
@@ -215,6 +215,8 @@ public class TemplateGroup : ITemplateGroup {
         var c = LookupTemplate(name);
         return c != null ? CreateStringTemplate(c) : null;
     }
+
+    public ITemplate FindTemplate(string name) => GetInstanceOf(name);
 
     protected internal Template GetEmbeddedInstanceOf(TemplateFrame frame, string name) {
         var fullyQualifiedName = name;
@@ -260,7 +262,7 @@ public class TemplateGroup : ITemplateGroup {
     }
 
     /** Look up a fully-qualified name */
-    public CompiledTemplate LookupTemplate(string name) {
+    internal CompiledTemplate LookupTemplate(string name) {
         if (name[0] != '/') {
             name = "/" + name;
         }
@@ -341,7 +343,7 @@ public class TemplateGroup : ITemplateGroup {
     }
 
     // for testing
-    public /*???*/ void DefineTemplate(string name, string template) {
+    internal void DefineTemplate(string name, string template) {
         if (name[0] != '/') {
             name = "/" + name;
         }
@@ -353,7 +355,7 @@ public class TemplateGroup : ITemplateGroup {
     }
 
     // for testing
-    public /*???*/ void DefineTemplate(string name, string template, string[] arguments) {
+    internal void DefineTemplate(string name, string template, string[] arguments) {
         if (name[0] != '/') {
             name = "/" + name;
         }

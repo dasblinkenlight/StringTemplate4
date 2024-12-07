@@ -231,7 +231,7 @@ public sealed class Interpreter {
                     ip += Instruction.OperandSizeInBytes;
                     // look up in original hierarchy not enclosing template (variable group)
                     // see TestSubtemplates.testEvalSTFromAnotherGroup()
-                    st = self.Group.GetEmbeddedInstanceOf(frame, name);
+                    st = (self.Group as TemplateGroup).GetEmbeddedInstanceOf(frame, name);
                     // get n args and store into st's attr list
                     StoreArguments(frame, nArgs, st);
                     sp -= nArgs;
@@ -242,7 +242,7 @@ public sealed class Interpreter {
                     nArgs = GetShort(code, ip);
                     ip += Instruction.OperandSizeInBytes;
                     name = (string)operands[sp - nArgs];
-                    st = self.Group.GetEmbeddedInstanceOf(frame, name);
+                    st = (self.Group as TemplateGroup).GetEmbeddedInstanceOf(frame, name);
                     StoreArguments(frame, nArgs, st);
                     sp -= nArgs;
                     sp--; // pop template name
@@ -256,7 +256,7 @@ public sealed class Interpreter {
                     var attrs = (IDictionary<string, object>)operands[sp--];
                     // look up in original hierarchy not enclosing template (variable group)
                     // see TestSubtemplates.testEvalSTFromAnotherGroup()
-                    st = self.Group.GetEmbeddedInstanceOf(frame, name);
+                    st = (self.Group as TemplateGroup).GetEmbeddedInstanceOf(frame, name);
                     // get n args and store into st's attr list
                     StoreArguments(frame, attrs, st);
                     operands[++sp] = st;
@@ -540,7 +540,7 @@ public sealed class Interpreter {
         var imported = self.impl.NativeGroup.LookupImportedTemplate(name);
         if (imported == null) {
             _errorManager.RuntimeError(frame, ErrorType.NO_IMPORTED_TEMPLATE, name);
-            st = self.Group.CreateStringTemplateInternally(new CompiledTemplate());
+            st = (self.Group as TemplateGroup).CreateStringTemplateInternally(new CompiledTemplate());
         } else {
             st = imported.NativeGroup.GetEmbeddedInstanceOf(frame, name);
             st.Group = group;
@@ -557,7 +557,7 @@ public sealed class Interpreter {
         var imported = self.impl.NativeGroup.LookupImportedTemplate(name);
         if (imported == null) {
             _errorManager.RuntimeError(frame, ErrorType.NO_IMPORTED_TEMPLATE, name);
-            st = self.Group.CreateStringTemplateInternally(new CompiledTemplate());
+            st = (self.Group as TemplateGroup).CreateStringTemplateInternally(new CompiledTemplate());
         } else {
             st = imported.NativeGroup.CreateStringTemplateInternally(imported);
             st.Group = group;
@@ -789,7 +789,7 @@ public sealed class Interpreter {
             }
         }
 
-        var proxyFactory = frame.Template.Group.GetTypeProxyFactory(o.GetType());
+        var proxyFactory = (frame.Template.Group as TemplateGroup)?.GetTypeProxyFactory(o.GetType());
         if (proxyFactory != null) {
             o = proxyFactory.CreateProxy(frame, o);
         }
@@ -1213,7 +1213,7 @@ public sealed class Interpreter {
                 return null;
             case string str:
                 return str;
-            case IDictionary dictionary when frame.Template.Group.IterateAcrossValues:
+            case IDictionary dictionary when (frame.Template.Group as TemplateGroup)?.IterateAcrossValues == true:
                 return dictionary.Values.GetEnumerator();
             case IDictionary dictionary:
                 return dictionary.Keys.GetEnumerator();
@@ -1257,11 +1257,11 @@ public sealed class Interpreter {
             return null;
         }
         try {
-            var proxyFactory = self.Group.GetTypeProxyFactory(o.GetType());
+            var proxyFactory = (self.Group as TemplateGroup).GetTypeProxyFactory(o.GetType());
             if (proxyFactory != null) {
                 o = proxyFactory.CreateProxy(frame, o);
             }
-            var adap = self.Group.GetModelAdaptor(o.GetType());
+            var adap = (self.Group as TemplateGroup).GetModelAdaptor(o.GetType());
             return adap.GetProperty(this, frame, o, property, ToString(frame, property));
         } catch (TemplateNoSuchPropertyException e) {
             _errorManager.RuntimeError(frame, ErrorType.NO_SUCH_PROPERTY,

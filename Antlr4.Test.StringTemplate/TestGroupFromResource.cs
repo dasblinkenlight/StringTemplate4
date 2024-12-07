@@ -55,7 +55,7 @@ public class TestGroupFromResource : BaseTest {
     [TestMethod]
     public void TestLoadTemplateFileFromDir() {
         var stg = _templateFactory.CreateTemplateGroupDirectory("org/antlr/templates/dir1").Build();
-        var st = stg.GetInstanceOf("sample");
+        var st = stg.FindTemplate("sample");
         var result = st.Render();
         const string expecting = "a test";
         Assert.AreEqual(expecting, result);
@@ -64,7 +64,7 @@ public class TestGroupFromResource : BaseTest {
     [TestMethod]
     public void TestLoadTemplateFileInSubdir() {
         var stg = _templateFactory.CreateTemplateGroupDirectory("org/antlr/templates").Build();
-        var st = stg.GetInstanceOf("dir1/sample");
+        var st = stg.FindTemplate("dir1/sample");
         var result = st.Render();
         const string expecting = "a test";
         Assert.AreEqual(expecting, result);
@@ -74,7 +74,7 @@ public class TestGroupFromResource : BaseTest {
     public void TestLoadTemplateGroupFileWithModifiedPrefix() {
         TemplateGroup.ResourceRoot = "Resources.org.antlr.templates.dir1";
         var stg = _templateFactory.CreateTemplateGroupFile("testgroupfile.stg").Build();
-        var st = stg.GetInstanceOf("t");
+        var st = stg.FindTemplate("t");
         var result = st.Render();
         const string expecting = "foo";
         Assert.AreEqual(expecting, result);
@@ -84,7 +84,7 @@ public class TestGroupFromResource : BaseTest {
     public void TestLoadTemplateGroupDirectoryWithModifiedPrefix() {
         TemplateGroup.ResourceRoot = "Resources.org.antlr.templates";
         var stg = _templateFactory.CreateTemplateGroupDirectory("dir1").Build();
-        var st = stg.GetInstanceOf("sample");
+        var st = stg.FindTemplate("sample");
         var result = st.Render();
         const string expecting = "a test";
         Assert.AreEqual(expecting, result);
@@ -93,7 +93,7 @@ public class TestGroupFromResource : BaseTest {
     [TestMethod]
     public void TestLoadTemplateGroupFileFromResource() {
         var stg = _templateFactory.CreateTemplateGroupFile("org/antlr/templates/dir1/testgroupfile.stg").Build();
-        var st = stg.GetInstanceOf("t");
+        var st = stg.FindTemplate("t");
         var result = st.Render();
         const string expecting = "foo";
         Assert.AreEqual(expecting, result);

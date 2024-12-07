@@ -31,6 +31,7 @@
  */
 
 using System;
+using Antlr4.StringTemplate.Debug;
 
 namespace Antlr4.Test.StringTemplate;
 
@@ -81,7 +82,7 @@ public class TestCoreBasics : BaseTest {
             "t() ::= <<hi <name>!>>\n";
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         string result = null;
         try {
             st.Add("name", "Ter");
@@ -346,7 +347,7 @@ public class TestCoreBasics : BaseTest {
             "a(x,y) ::= \"<b(...)>\"\n" +
             "b(x,y) ::= \"<x><y>\"\n";
         var group = _templateFactory.CreateTemplateGroupString(templates).Build();
-        var a = group.GetInstanceOf("a");
+        var a = group.FindTemplate("a");
         a.Add("x", "x");
         a.Add("y", "y");
         const string expected = "xy";
@@ -360,7 +361,7 @@ public class TestCoreBasics : BaseTest {
             "a(x,y) ::= \"<b(...)>\"\n" + // should not set y when it sees "no value" from above
             "b(x,y={99}) ::= \"<x><y>\"\n";
         var group = _templateFactory.CreateTemplateGroupString(templates).Build();
-        var a = group.GetInstanceOf("a");
+        var a = group.FindTemplate("a");
         a.Add("x", "x");
         const string expected = "x99";
         var result = a.Render();
@@ -373,7 +374,7 @@ public class TestCoreBasics : BaseTest {
             "a(x) ::= \"<b(...)>\"\n" + // should not set y when it sees "no definition" from above
             "b(x,y={99}) ::= \"<x><y>\"\n";
         var group = _templateFactory.CreateTemplateGroupString(templates).Build();
-        var a = group.GetInstanceOf("a");
+        var a = group.FindTemplate("a");
         a.Add("x", "x");
         const string expected = "x99";
         var result = a.Render();
@@ -386,7 +387,7 @@ public class TestCoreBasics : BaseTest {
             "a(x,y) ::= \"<b(y={99},...)>\"\n" +
             "b(x,y) ::= \"<x><y>\"\n";
         var group = _templateFactory.CreateTemplateGroupString(templates).Build();
-        var a = group.GetInstanceOf("a");
+        var a = group.FindTemplate("a");
         a.Add("x", "x");
         a.Add("y", "y");
         const string expected= "x99";
@@ -400,7 +401,7 @@ public class TestCoreBasics : BaseTest {
             "a(x,y) ::= \"<b(y={99},x={1},...)>\"\n" +
             "b(x,y) ::= \"<x><y>\"\n";
         var group = _templateFactory.CreateTemplateGroupString(templates).Build();
-        var a = group.GetInstanceOf("a");
+        var a = group.FindTemplate("a");
         a.Add("x", "x");
         a.Add("y", "y");
         const string expected = "199";
@@ -413,7 +414,7 @@ public class TestCoreBasics : BaseTest {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("inc", "<x>+1", ["x"]);
         group.DefineTemplate("test", "hi <name>!", ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("name", "Ter");
         st.Add("name", "Tom");
         st.Add("name", "Sumana");
@@ -427,7 +428,7 @@ public class TestCoreBasics : BaseTest {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("inc", "[<x>]", ["x"]);
         group.DefineTemplate("test", "hi <name:inc()>!", ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("name", "Ter");
         st.Add("name", "Tom");
         st.Add("name", "Sumana");
@@ -441,7 +442,7 @@ public class TestCoreBasics : BaseTest {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("inc", "[<x>]", ["x"]);
         group.DefineTemplate("test", "<name:(t)()>!", ["t", "name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("t", "inc");
         st.Add("name", "Ter");
         st.Add("name", "Tom");
@@ -459,7 +460,7 @@ public class TestCoreBasics : BaseTest {
             "bold(x) ::= <<*<x>*>>\n";
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("name", "Ter");
         st.Add("name", "Tom");
         st.Add("name", "Sumana");
@@ -472,7 +473,7 @@ public class TestCoreBasics : BaseTest {
     public void TestParallelMap() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "hi <names,phones:{n,p | <n>:<p>;}>", ["names", "phones"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", "Tom");
         st.Add("names", "Sumana");
@@ -488,7 +489,7 @@ public class TestCoreBasics : BaseTest {
     public void TestParallelMapWith3Versus2Elements() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "hi <names,phones:{n,p | <n>:<p>;}>", ["names", "phones"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", "Tom");
         st.Add("names", "Sumana");
@@ -504,7 +505,7 @@ public class TestCoreBasics : BaseTest {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("bold", "[<x>]", ["x"]);
         group.DefineTemplate("test", "hi <names,phones:{n,p | <n>:<p>;}:bold()>", ["names", "phones"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", "Tom");
         st.Add("names", "Sumana");
@@ -520,7 +521,7 @@ public class TestCoreBasics : BaseTest {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("bold", "[<x>]", ["x"]);
         group.DefineTemplate("test", "hi <[names:bold()],phones:{n,p | <n>:<p>;}>", ["names", "phones"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", "Tom");
         st.Add("names", "Sumana");
@@ -536,7 +537,7 @@ public class TestCoreBasics : BaseTest {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("inc", "<i>:<x>", ["x", "i"]);
         group.DefineTemplate("test", "<name:{n|<inc(n,i)>}; separator=\", \">", ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("name", "Ter");
         st.Add("name", "Tom");
         st.Add("name", null); // don't count this one
@@ -550,7 +551,7 @@ public class TestCoreBasics : BaseTest {
     public void TestMapIndexes2() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<name:{n | <i>:<n>}; separator=\", \">", ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("name", "Ter");
         st.Add("name", "Tom");
         st.Add("name", null); // don't count this one. still can't apply subtemplate to null value
@@ -565,7 +566,7 @@ public class TestCoreBasics : BaseTest {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("a", "[<x>]", ["x"]);
         group.DefineTemplate("test", "hi <name:a()>!", ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("name", "Ter");
         const string expected = "hi [Ter]!";
         var result = st.Render();
@@ -577,7 +578,7 @@ public class TestCoreBasics : BaseTest {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("a", "[<x>]", ["x"]);
         group.DefineTemplate("test", "hi <name:a()>!", ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         const string expected = "hi !";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -587,7 +588,7 @@ public class TestCoreBasics : BaseTest {
     public void TestMapNullValueInList() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<name; separator=\", \">", ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("name", "Ter");
         st.Add("name", "Tom");
         st.Add("name", null); // don't print this one
@@ -603,7 +604,7 @@ public class TestCoreBasics : BaseTest {
         group.DefineTemplate("a", "[<x>]", ["x"]);
         group.DefineTemplate("b", "(<x>)", ["x"]);
         group.DefineTemplate("test", "hi <name:a():b()>!", ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("name", "Ter");
         st.Add("name", "Tom");
         st.Add("name", "Sumana");
@@ -618,7 +619,7 @@ public class TestCoreBasics : BaseTest {
         group.DefineTemplate("a", "[<x>]", ["x"]);
         group.DefineTemplate("b", "(<x>)", ["x"]);
         group.DefineTemplate("test", "hi <name:a():b()>!", ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("name", "Ter");
         st.Add("name", null);
         st.Add("name", "Sumana");
@@ -633,7 +634,7 @@ public class TestCoreBasics : BaseTest {
         group.DefineTemplate("a", "[<x>]", ["x"]);
         group.DefineTemplate("b", "(<x>)", ["x"]);
         group.DefineTemplate("test", "hi <name:a():b(); null={x}>!", ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("name", "Ter");
         st.Add("name", null);
         st.Add("name", "Sumana");
@@ -648,7 +649,7 @@ public class TestCoreBasics : BaseTest {
         group.DefineTemplate("a", "[<x>]", ["x"]);
         group.DefineTemplate("b", "(<x>)", ["x"]);
         group.DefineTemplate("test", "hi <name:a(),b()>!", ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("name", "Ter");
         st.Add("name", "Tom");
         st.Add("name", "Sumana");
@@ -714,8 +715,8 @@ public class TestCoreBasics : BaseTest {
             ">>\n";
         WriteFile(dir, "group.stg", groupFile);
         var group = _templateFactory.CreateTemplateGroupFile(dir + "/group.stg").Build();
-        var st = group.GetInstanceOf("a");
-        TestContext.WriteLine(st.impl.ToString());
+        var st = group.FindTemplate("a");
+        TestContext.WriteLine(st.GetCompiledTemplate().ToString());
         var expected = $"foo{newline}bar";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -934,7 +935,7 @@ public class TestCoreBasics : BaseTest {
     public void TestSeparator() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n | case <n>}; separator=\", \">", ["names"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", "Tom");
         const string expected = "case Ter, case Tom";
@@ -946,7 +947,7 @@ public class TestCoreBasics : BaseTest {
     public void TestSeparatorInList() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n | case <n>}; separator=\", \">", ["names"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", new List<string>() { "Ter", "Tom" });
         const string expected = "case Ter, case Tom";
         var result = st.Render();
@@ -957,7 +958,7 @@ public class TestCoreBasics : BaseTest {
     public void TestSeparatorInList2() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n | case <n>}; separator=\", \">", ["names"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", new List<string>(["Tom", "Sriram"]));
         const string expected = "case Ter, case Tom, case Sriram";
@@ -969,7 +970,7 @@ public class TestCoreBasics : BaseTest {
     public void TestSeparatorInArray() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n | case <n>}; separator=\", \">", ["names"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", new[] { "Ter", "Tom" });
         const string expected = "case Ter, case Tom";
         var result = st.Render();
@@ -980,7 +981,7 @@ public class TestCoreBasics : BaseTest {
     public void TestSeparatorInArray2() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n | case <n>}; separator=\", \">", ["names"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", new[] { "Tom", "Sriram" });
         const string expected = "case Ter, case Tom, case Sriram";
@@ -992,7 +993,7 @@ public class TestCoreBasics : BaseTest {
     public void TestSeparatorInPrimitiveArray() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n | case <n>}; separator=\", \">", ["names"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", new[] { 0, 1 });
         const string expected = "case 0, case 1";
         var result = st.Render();
@@ -1003,7 +1004,7 @@ public class TestCoreBasics : BaseTest {
     public void TestSeparatorInPrimitiveArray2() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n | case <n>}; separator=\", \">", ["names"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", 0);
         st.Add("names", new[] { 1, 2 });
         const string expected = "case 0, case 1, case 2";
@@ -1033,7 +1034,7 @@ public class TestCoreBasics : BaseTest {
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
-        var st = group.GetInstanceOf("main");
+        var st = group.FindTemplate("main");
         var result = st.Render();
         var expected =
            $"  abc{newline}" +
@@ -1056,7 +1057,7 @@ public class TestCoreBasics : BaseTest {
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
-        var st = group.GetInstanceOf("main");
+        var st = group.FindTemplate("main");
         var sw = new StringWriter();
         var w = new NoIndentWriter(sw);
         st.Write(w);

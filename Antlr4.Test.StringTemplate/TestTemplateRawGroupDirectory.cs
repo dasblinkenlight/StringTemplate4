@@ -44,7 +44,7 @@ public class TestTemplateRawGroupDirectory : BaseTest {
         var dir = TmpDir;
         WriteFile(dir, "a.st", "foo");
         var group = _templateFactory.CreateRawGroupDirectory(dir).WithDelimiters('$', '$').Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         const string expected = "foo";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -56,12 +56,12 @@ public class TestTemplateRawGroupDirectory : BaseTest {
         WriteFile(dir, "a.st", "foo");
         WriteFile(dir, "b.st", "$name$");
         var group = _templateFactory.CreateRawGroupDirectory(dir).WithDelimiters('$', '$').Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         const string expected = "foo";
         var result = st.Render();
         Assert.AreEqual(expected, result);
 
-        var b = group.GetInstanceOf("b");
+        var b = group.FindTemplate("b");
         b.Add("name", "Bob");
         Assert.AreEqual("Bob", b.Render());
     }
@@ -72,12 +72,12 @@ public class TestTemplateRawGroupDirectory : BaseTest {
         WriteFile(dir, "a.st", "foo");
         WriteFile(dir, "b.st", "<name>");
         var group = _templateFactory.CreateRawGroupDirectory(dir).Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         const string expected = "foo";
         var result = st.Render();
         Assert.AreEqual(expected, result);
 
-        var b = group.GetInstanceOf("b");
+        var b = group.FindTemplate("b");
         b.Add("name", "Bob");
         Assert.AreEqual("Bob", b.Render());
     }
@@ -87,7 +87,7 @@ public class TestTemplateRawGroupDirectory : BaseTest {
         var dir = TmpDir;
         WriteFile(dir, "template.st", "$values:{foo|[$foo$]}$");
         var group = _templateFactory.CreateRawGroupDirectory(dir).WithDelimiters('$', '$').Build();
-        var template = group.GetInstanceOf("template");
+        var template = group.FindTemplate("template");
         List<string> values = ["one", "two", "three"];
         template.Add("values", values);
         Assert.AreEqual("[one][two][three]", template.Render());
@@ -99,7 +99,7 @@ public class TestTemplateRawGroupDirectory : BaseTest {
         WriteFile(dir, "a.st", "$names:bold()$");
         WriteFile(dir, "bold.st", "<b>$it$</b>");
         var group = _templateFactory.CreateRawGroupDirectory(dir).WithDelimiters('$', '$').Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         List<string> names = ["parrt", "tombu"];
         st.Add("names", names);
         //string asmResult = st.impl.GetInstructions();
@@ -125,7 +125,7 @@ public class TestTemplateRawGroupDirectory : BaseTest {
         var group1 = new TemplateRawGroupDirectory(dir1);
         var group2 = new TemplateRawGroupDirectory(dir2);
         group2.ImportTemplates(group1);
-        var st = group2.GetInstanceOf("a");
+        var st = group2.FindTemplate("a");
         const string expected = "[dir1 a]";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -152,7 +152,7 @@ public class TestTemplateRawGroupDirectory : BaseTest {
         WriteFile(dir1, "veryLastLineRaw.st", veryLastLineTemplate);
 
         var group = _templateFactory.CreateRawGroupDirectory(dir1).WithDelimiters('$', '$').Build();
-        var st = group.GetInstanceOf("mainRaw");
+        var st = group.FindTemplate("mainRaw");
         Assert.IsNotNull(st);
         st.Add("name", "John");
         var result = st.Render();

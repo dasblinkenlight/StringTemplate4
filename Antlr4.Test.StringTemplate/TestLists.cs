@@ -195,7 +195,7 @@ public class TestLists : BaseTest {
             ;
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
-        var e = group.GetInstanceOf("test");
+        var e = group.FindTemplate("test");
         e.Add("names", "Ter");
         e.Add("names", "Tom");
         e.Add("phones", "1");

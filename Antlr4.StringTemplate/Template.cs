@@ -188,9 +188,9 @@ public sealed class Template : ITemplate {
      */
     public TemplateDebugState DebugState { get; private set; }
 
-    public TemplateGroup Group {
+    public ITemplateGroup Group {
         get => groupThatCreatedThisInstance;
-        set => groupThatCreatedThisInstance = value ?? throw new ArgumentNullException(nameof(value));
+        set => groupThatCreatedThisInstance = value as TemplateGroup ?? throw new ArgumentNullException(nameof(value));
     }
 
     public void SetGroup(ITemplateGroup group) {
@@ -365,25 +365,25 @@ public sealed class Template : ITemplate {
     public bool IsAnonymousSubtemplate => impl.IsAnonSubtemplate;
 
     public int Write(ITemplateWriter @out) {
-        var interp = new Interpreter(Group, impl.NativeGroup.ErrorManager, false);
+        var interp = new Interpreter(groupThatCreatedThisInstance, impl.NativeGroup.ErrorManager, false);
         var frame = new TemplateFrame(this, null);
         return interp.Execute(@out, frame);
     }
 
     private void Write(ITemplateWriter @out, CultureInfo culture) {
-        var interp = new Interpreter(Group, culture, impl.NativeGroup.ErrorManager, false);
+        var interp = new Interpreter(groupThatCreatedThisInstance, culture, impl.NativeGroup.ErrorManager, false);
         var frame = new TemplateFrame(this, null);
         interp.Execute(@out, frame);
     }
 
     public int Write(ITemplateWriter @out, ITemplateErrorListener listener) {
-        var interp = new Interpreter(Group, new ErrorManager(listener), false);
+        var interp = new Interpreter(groupThatCreatedThisInstance, new ErrorManager(listener), false);
         var frame = new TemplateFrame(this, null);
         return interp.Execute(@out, frame);
     }
 
     private int Write(ITemplateWriter @out, CultureInfo culture, ITemplateErrorListener listener) {
-        var interp = new Interpreter(Group, culture, new ErrorManager(listener), false);
+        var interp = new Interpreter(groupThatCreatedThisInstance, culture, new ErrorManager(listener), false);
         var frame = new TemplateFrame(this, null);
         return interp.Execute(@out, frame);
     }
@@ -413,20 +413,11 @@ public sealed class Template : ITemplate {
 
     // TESTING SUPPORT
 
-    public /*???*/ List<InterpEvent> GetEvents()
-    {
-        return GetEvents(CultureInfo.CurrentCulture);
-    }
+    internal List<InterpEvent> GetEvents() => GetEvents(CultureInfo.CurrentCulture);
 
-    public /*???*/ List<InterpEvent> GetEvents(int lineWidth)
-    {
-        return GetEvents(CultureInfo.CurrentCulture, lineWidth);
-    }
+    internal List<InterpEvent> GetEvents(int lineWidth) => GetEvents(CultureInfo.CurrentCulture, lineWidth);
 
-    public /*???*/ List<InterpEvent> GetEvents(ITemplateWriter writer)
-    {
-        return GetEvents(CultureInfo.CurrentCulture, writer);
-    }
+    internal List<InterpEvent> GetEvents(ITemplateWriter writer) => GetEvents(CultureInfo.CurrentCulture, writer);
 
     private List<InterpEvent> GetEvents(CultureInfo locale)
     {
@@ -441,7 +432,7 @@ public sealed class Template : ITemplate {
     }
 
     private List<InterpEvent> GetEvents(CultureInfo culture, ITemplateWriter writer) {
-        var interp = new Interpreter(Group, culture, true);
+        var interp = new Interpreter(groupThatCreatedThisInstance, culture, true);
         var frame = new TemplateFrame(this, null);
         interp.Execute(writer, frame); // Render and track events
         return interp.GetEvents();

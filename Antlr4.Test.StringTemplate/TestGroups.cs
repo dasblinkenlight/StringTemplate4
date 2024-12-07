@@ -31,6 +31,7 @@
  */
 
 using System.Linq;
+using Antlr4.StringTemplate.Debug;
 
 namespace Antlr4.Test.StringTemplate;
 
@@ -48,7 +49,7 @@ public class TestGroups : BaseTest {
         var dir = TmpDir;
         WriteFile(dir, "a.st", "a(x) ::= <<foo>>");
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         const string expected = "foo";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -59,7 +60,7 @@ public class TestGroups : BaseTest {
         var dir = TmpDir;
         WriteFile(dir, "a.st", "a(x) ::= << > >>");
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         st.Add("x", "parrt");
         const string expected = " > ";
         var result = st.Render();
@@ -71,7 +72,7 @@ public class TestGroups : BaseTest {
         var dir = TmpDir;
         WriteFile(dir, "a.st", "a(x) ::= << \\>> >>");
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         st.Add("x", "parrt");
         const string expected = " >> ";
         var result = st.Render();
@@ -83,7 +84,7 @@ public class TestGroups : BaseTest {
         var dir = TmpDir;
         WriteFile(dir, "a.st", "a(x) ::= << >\\> >>");
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         st.Add("x", "parrt");
         const string expected = " >> ";
         var result = st.Render();
@@ -95,7 +96,7 @@ public class TestGroups : BaseTest {
         var dir = TmpDir;
         WriteFile(dir, "a.st", "a(x) ::= <<\\>>>"); // <<\>>>
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         st.Add("x", "parrt");
         const string expected = "\\>";
         var result = st.Render();
@@ -107,7 +108,7 @@ public class TestGroups : BaseTest {
         var dir = TmpDir;
         WriteFile(dir, "a.st", "a(x) ::= <<>\\>>>");
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         st.Add("x", "parrt");
         var expected = ">>";
         var result = st.Render();
@@ -120,7 +121,7 @@ public class TestGroups : BaseTest {
             "a(x) ::= <<foo>>\n" +
             "b() ::= <<bar>>\n";
         var group = _templateFactory.CreateTemplateGroupString(g).Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         const string expected = "foo";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -132,8 +133,8 @@ public class TestGroups : BaseTest {
         WriteFile(dir, "a.st", "a(x) ::= <<foo>>");
         WriteFile(dir, "b.st", "b() ::= \"bar\"");
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
-        var st1 = group.GetInstanceOf("a");
-        var st2 = group.GetInstanceOf("b");
+        var st1 = group.FindTemplate("a");
+        var st2 = group.FindTemplate("b");
         const string expected = "foobar";
         var result = st1.Render() + st2.Render();
         Assert.AreEqual(expected, result);
@@ -146,9 +147,9 @@ public class TestGroups : BaseTest {
         WriteFile(dir, "a.st", "a(x) ::= <<foo>>");
         WriteFile(Path.Combine(dir, "subdir"), "b.st", "b() ::= \"bar\"");
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
-        Assert.AreEqual("foo", group.GetInstanceOf("a").Render());
-        Assert.AreEqual("bar", group.GetInstanceOf("/subdir/b").Render());
-        Assert.AreEqual("bar", group.GetInstanceOf("subdir/b").Render());
+        Assert.AreEqual("foo", group.FindTemplate("a").Render());
+        Assert.AreEqual("bar", group.FindTemplate("/subdir/b").Render());
+        Assert.AreEqual("bar", group.FindTemplate("subdir/b").Render());
     }
 
     [TestMethod]
@@ -157,7 +158,7 @@ public class TestGroups : BaseTest {
         var dir = TmpDir;
         WriteFile(Path.Combine(dir, "subdir"), "a.st", "a(x) ::= \"<x:{y|<y>}>\"");
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
-        var st = group.GetInstanceOf("/subdir/a");
+        var st = group.FindTemplate("/subdir/a");
         st.Add("x", new[] { "a", "b" });
         Assert.AreEqual("ab", st.Render());
     }
@@ -172,9 +173,9 @@ public class TestGroups : BaseTest {
             "c() ::= \"duh\"\n";
         WriteFile(dir, "group.stg", groupFile);
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
-        Assert.AreEqual("foo", group.GetInstanceOf("a").Render());
-        Assert.AreEqual("bar", group.GetInstanceOf("/group/b").Render());
-        Assert.AreEqual("duh", group.GetInstanceOf("/group/c").Render());
+        Assert.AreEqual("foo", group.FindTemplate("a").Render());
+        Assert.AreEqual("bar", group.FindTemplate("/group/b").Render());
+        Assert.AreEqual("duh", group.FindTemplate("/group/c").Render());
     }
 
     [TestMethod]
@@ -184,8 +185,8 @@ public class TestGroups : BaseTest {
         WriteFile(dir, "a.st", "a(x) ::= <<foo>>");
         WriteFile(Path.Combine(dir, "sub1", "sub2"), "b.st", "b() ::= \"bar\"");
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
-        var st1 = group.GetInstanceOf("a");
-        var st2 = group.GetInstanceOf("/sub1/sub2/b");
+        var st1 = group.FindTemplate("a");
+        var st2 = group.FindTemplate("/sub1/sub2/b");
         const string expected = "foobar";
         var result = st1.Render() + st2.Render();
         Assert.AreEqual(expected, result);
@@ -201,9 +202,9 @@ public class TestGroups : BaseTest {
             "c() ::= \"duh\"\n";
         WriteFile(dir, "subdir/group.stg", groupFile);
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
-        var st1 = group.GetInstanceOf("a");
-        var st2 = group.GetInstanceOf("subdir/group/b");
-        var st3 = group.GetInstanceOf("subdir/group/c");
+        var st1 = group.FindTemplate("a");
+        var st2 = group.FindTemplate("subdir/group/b");
+        var st3 = group.FindTemplate("subdir/group/c");
         const string expected = "foobarduh";
         var result = st1.Render() + st2.Render() + st3.Render();
         Assert.AreEqual(expected, result);
@@ -232,7 +233,7 @@ public class TestGroups : BaseTest {
             "b ::= a\n";
         WriteFile(dir, "group.stg", groupFile);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "group.stg")).Build();
-        var st = group.GetInstanceOf("b");
+        var st = group.FindTemplate("b");
         var expected = "bar";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -246,7 +247,7 @@ public class TestGroups : BaseTest {
             "b ::= a\n";
         WriteFile(dir, "group.stg", groupFile);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "group.stg")).Build();
-        var st = group.GetInstanceOf("b");
+        var st = group.FindTemplate("b");
         st.Add("x", 1);
         st.Add("y", 2);
         const string expected = "12";
@@ -262,7 +263,7 @@ public class TestGroups : BaseTest {
         WriteFile(dir, "a.st", a);
         WriteFile(dir, "b.st", b);
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         const string expected = " foo ";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -278,7 +279,7 @@ public class TestGroups : BaseTest {
             ;
         WriteFile(TmpDir, "group.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "group.stg")).Build();
-        var b = group.GetInstanceOf("method");
+        var b = group.FindTemplate("method");
         b.Add("name", "foo");
         const string expected = "x=99; // foo";
         var result = b.Render();
@@ -295,7 +296,7 @@ public class TestGroups : BaseTest {
             ;
         WriteFile(TmpDir, "group.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "group.stg")).Build();
-        var b = group.GetInstanceOf("method");
+        var b = group.FindTemplate("method");
         b.Add("name", "foo");
         const string expected = "foo; true false";
         var result = b.Render();
@@ -307,7 +308,7 @@ public class TestGroups : BaseTest {
         var templates = $"stat(name,value=\"99\") ::= \"x=<value>; // <name>\"{newline}";
         WriteFile(TmpDir, "group.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "group.stg")).Build();
-        var b = group.GetInstanceOf("stat");
+        var b = group.FindTemplate("stat");
         b.Add("name", "foo");
         const string expected = "x=99; // foo";
         var result = b.Render();
@@ -323,7 +324,7 @@ public class TestGroups : BaseTest {
                 ">>" + newline;
         WriteFile(TmpDir, "group.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "group.stg")).Build();
-        var b = group.GetInstanceOf("t");
+        var b = group.FindTemplate("t");
         b.Add("x", "a");
         var expected =
             "x: a" + newline +
@@ -337,7 +338,7 @@ public class TestGroups : BaseTest {
         const string templates =
             "s(x,y={<(x)>}) ::= \"<x><y>\"\n"; // should see x in def arg
         var group = _templateFactory.CreateTemplateGroupString(templates).Build();
-        var b = group.GetInstanceOf("s");
+        var b = group.FindTemplate("s");
         b.Add("x", "a");
         const string expected = "aa";
         var result = b.Render();
@@ -349,7 +350,7 @@ public class TestGroups : BaseTest {
         var templates = "stat(name,value={99}) ::= \"x=<value>; // <name>\"" + newline;
         WriteFile(TmpDir, "group.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "group.stg")).Build();
-        var b = group.GetInstanceOf("stat");
+        var b = group.FindTemplate("stat");
         b.Add("name", "foo");
         const string expected = "x=99; // foo";
         var result = b.Render();
@@ -375,7 +376,7 @@ public class TestGroups : BaseTest {
             ;
         WriteFile(TmpDir, "group.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "group.stg")).Build();
-        var m = group.GetInstanceOf("method");
+        var m = group.FindTemplate("method");
         m.Add("fields", new Field());
         const string expected = "x=parrt; // parrt";
         var result = m.Render();
@@ -391,7 +392,7 @@ public class TestGroups : BaseTest {
                 "stat(value={<f.name>}) ::= \"x=<value>; // <f.name>\"" + newline;
         WriteFile(TmpDir, "group.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "group.stg")).Build();
-        var m = group.GetInstanceOf("method");
+        var m = group.FindTemplate("method");
         m.Add("fields", new Field());
         const string expected = "x=parrt; // parrt";
         var result = m.Render();
@@ -408,7 +409,7 @@ public class TestGroups : BaseTest {
                 "stat(f,value={<f.name>}) ::= \"x=<value>; // <f.name>\"" + newline;
         WriteFile(TmpDir, "group.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "group.stg")).Build();
-        var m = group.GetInstanceOf("method");
+        var m = group.FindTemplate("method");
         m.Add("fields", new Field());
         const string expected = "x=parrt; // parrt";
         var result = m.Render();
@@ -424,7 +425,7 @@ public class TestGroups : BaseTest {
                 "stat(name,value={<name>}) ::= \"x=<value>; // <name>\"" + newline;
         WriteFile(TmpDir, "group.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "group.stg")).Build();
-        var b = group.GetInstanceOf("method");
+        var b = group.FindTemplate("method");
         b.Add("name", "foo");
         b.Add("size", "2");
         const string expected = "x=foo; // foo";
@@ -443,7 +444,7 @@ public class TestGroups : BaseTest {
             ;
         WriteFile(TmpDir, "group.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "group.stg")).Build();
-        var b = group.GetInstanceOf("method");
+        var b = group.FindTemplate("method");
         b.Add("name", "foo");
         b.Add("size", "2");
         const string expected = "x=[foo] ; // foo"; // won't see ' ' after '=' since it's an indent not simple string
@@ -462,7 +463,7 @@ public class TestGroups : BaseTest {
             ;
         WriteFile(TmpDir, "group.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "group.stg")).Build();
-        var b = group.GetInstanceOf("method");
+        var b = group.FindTemplate("method");
         b.Add("name", "foo");
         const string expected = "x=34; // foo";
         var result = b.Render();
@@ -484,7 +485,7 @@ public class TestGroups : BaseTest {
         var errors = new ErrorBuffer();
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
 
-        var st = group.GetInstanceOf("main");
+        var st = group.FindTemplate("main");
         st.Render();
 
         // Check the errors. This contained an "NullPointerException" before
@@ -507,7 +508,7 @@ public class TestGroups : BaseTest {
             "B(y={<(x)>}) ::= \"<y> <x> <x> <y>\"" + newline;
         WriteFile(TmpDir, "group.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "group.stg")).Build();
-        var a = group.GetInstanceOf("A");
+        var a = group.FindTemplate("A");
         a.Add("x", new Counter());
         const string expected = "0 1 2 0"; // trace must be false to get these numbers
         var result = a.Render();
@@ -522,7 +523,7 @@ public class TestGroups : BaseTest {
             "g() ::= \"<f(true,{a})>\"";
         WriteFile(TmpDir, "group.stg", groupFile);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "group.stg")).Build();
-        var st = group.GetInstanceOf("g");
+        var st = group.FindTemplate("g");
         const string expected = "truea";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -536,7 +537,7 @@ public class TestGroups : BaseTest {
             "g() ::= \"<f(x={a},y={b})>\"";
         WriteFile(dir, "group.stg", groupFile);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "group.stg")).Build();
-        var st = group.GetInstanceOf("g");
+        var st = group.FindTemplate("g");
         const string expected = "ab";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -550,7 +551,7 @@ public class TestGroups : BaseTest {
             "g() ::= \"<f(y={b},x={a})>\"";
         WriteFile(dir, "group.stg", groupFile);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "group.stg")).Build();
-        var st = group.GetInstanceOf("g");
+        var st = group.FindTemplate("g");
         const string expected = "ab";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -567,7 +568,7 @@ public class TestGroups : BaseTest {
         WriteFile(dir, "group.stg", groupFile);
         var errors = new ErrorBuffer();
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "group.stg")).WithErrorListener(errors).Build();
-        var st = group.GetInstanceOf("g");
+        var st = group.FindTemplate("g");
         st.Render();
         var expected = "context [/g] 1:1 attribute z isn't defined" + newline;
         var result = errors.ToString();
@@ -619,7 +620,7 @@ public class TestGroups : BaseTest {
         WriteFile(dir, "group.stg", groupFile);
 
         var group1 = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
-        var st = group1.GetInstanceOf("group/a"); // can't see
+        var st = group1.FindTemplate("group/a"); // can't see
         Assert.AreEqual(null, st);
     }
 
@@ -632,16 +633,16 @@ public class TestGroups : BaseTest {
         WriteFile(dir, "b.st", b);
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
         group.Load(); // force load
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         var originalHashCode = RuntimeHelpers.GetHashCode(st);
         group.Unload(); // blast cache
-        st = group.GetInstanceOf("a");
+        st = group.FindTemplate("a");
         var newHashCode = RuntimeHelpers.GetHashCode(st);
         Assert.AreEqual(originalHashCode == newHashCode, false); // diff objects
         var expected = "foo";
         var result = st.Render();
         Assert.AreEqual(expected, result);
-        st = group.GetInstanceOf("b");
+        st = group.FindTemplate("b");
         expected = "bar";
         result = st.Render();
         Assert.AreEqual(expected, result);
@@ -664,16 +665,16 @@ public class TestGroups : BaseTest {
         WriteFile(dir, "a.stg", a);
         var group = _templateFactory.CreateTemplateGroupFile(dir + "/a.stg").Build();
         group.Load(); // force load
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         var originalHashCode = RuntimeHelpers.GetHashCode(st);
         group.Unload(); // blast cache
-        st = group.GetInstanceOf("a");
+        st = group.FindTemplate("a");
         var newHashCode = RuntimeHelpers.GetHashCode(st);
         Assert.AreEqual(originalHashCode == newHashCode, false); // diff objects
         const string expected1 = "foo";
         var result = st.Render();
         Assert.AreEqual(expected1, result);
-        st = group.GetInstanceOf("b");
+        st = group.FindTemplate("b");
         const string expected2 = "bar";
         result = st.Render();
         Assert.AreEqual(expected2, result);
@@ -695,11 +696,11 @@ public class TestGroups : BaseTest {
         var group1 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "group1.stg")).Build();
 
         // Is the imported template b found?
-        var stb = group1.GetInstanceOf("b");
+        var stb = group1.FindTemplate("b");
         Assert.AreEqual("bar", stb.Render());
 
         // Is the include of b() resolved?
-        var sta = group1.GetInstanceOf("a");
+        var sta = group1.FindTemplate("a");
         Assert.AreEqual("foobar", sta.Render());
 
         // Are the correct "ThatCreatedThisInstance" groups assigned
@@ -707,8 +708,8 @@ public class TestGroups : BaseTest {
         Assert.AreEqual("group1", stb.Group.Name);
 
         // Are the correct (native) groups assigned for the templates
-        Assert.AreEqual("group1", sta.impl.NativeGroup.Name);
-        Assert.AreEqual("group2", stb.impl.NativeGroup.Name);
+        Assert.AreEqual("group1", sta.GetCompiledTemplate().NativeGroup.Name);
+        Assert.AreEqual("group2", stb.GetCompiledTemplate().NativeGroup.Name);
     }
 
     [TestMethod]
@@ -722,7 +723,7 @@ public class TestGroups : BaseTest {
         // try to get an undefined template.
         // This will add an entry to the "templates" field in STGroup, however
         // this should not be returned.
-        group.LookupTemplate("t2");
+        group.FindTemplate("t2");
 
         var names = group.TemplateNames;
 
@@ -739,13 +740,13 @@ public class TestGroups : BaseTest {
         WriteFile(TmpDir, "g1.stg", "f() ::= \"g1\"");
         WriteFile(TmpDir, "g2.stg", "f() ::= \"g2\"\nf2() ::= \"f2\"\n");
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
-        var st = group.GetInstanceOf("main");
+        var st = group.FindTemplate("main");
         Assert.AreEqual("v1-g1", st.Render());
 
         // Change the text of group t, including the imports.
         WriteFile(TmpDir, "t.stg", "import \"g2.stg\"\n\nmain() ::= <<\nv2-<f()>;<f2()>\n>>");
         group.Unload();
-        st = group.GetInstanceOf("main");
+        st = group.FindTemplate("main");
         Assert.AreEqual("v2-g2;f2", st.Render());
     }
 
@@ -758,7 +759,7 @@ public class TestGroups : BaseTest {
             ">>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg").Build();
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         Assert.IsNotNull(st);
         const string expected = "Foo bar";     // expect \n in output
         Assert.AreEqual(expected, st.Render());
@@ -773,7 +774,7 @@ public class TestGroups : BaseTest {
             ">>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg").Build();
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         Assert.IsNotNull(st);
         const string expected = "Foo bar";     // expect \n in output
         Assert.AreEqual(expected, st.Render());
@@ -784,7 +785,7 @@ public class TestGroups : BaseTest {
         WriteFile(TmpDir, "t.stg", "a(x) ::= <<<\\\\>\r\n>>"); // that is <<<\\>>> not an escaped >>
         var errors = new ErrorBuffer();
         var group = _templateFactory.CreateTemplateGroupFile(TmpDir + "/" + "t.stg").WithErrorListener(errors).Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         Assert.AreEqual("t.stg 1:15: Missing newline after newline escape <\\\\>" + newline, errors.ToString());
         st.Add("x", "parrt");
         var result = st.Render();
@@ -796,7 +797,7 @@ public class TestGroups : BaseTest {
         WriteFile(TmpDir, "t.stg", "a(x) ::= <<<\\\\>\r\n>>"); // \r\n removed as trailing whitespace
         var errors = new ErrorBuffer();
         var group = _templateFactory.CreateTemplateGroupFile(TmpDir + "/" + "t.stg").WithErrorListener(errors).Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         Assert.AreEqual("t.stg 1:15: Missing newline after newline escape <\\\\>" + newline, errors.ToString());
         st.Add("x", "parrt");
         var result = st.Render();

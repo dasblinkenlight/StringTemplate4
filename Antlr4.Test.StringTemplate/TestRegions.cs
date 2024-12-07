@@ -31,6 +31,7 @@
  */
 
 using Antlr4.StringTemplate;
+using Antlr4.StringTemplate.Debug;
 using Antlr4.StringTemplate.Misc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Path = System.IO.Path;
@@ -49,7 +50,7 @@ public class TestRegions : BaseTest {
             ">>\n";
         WriteFile(dir, "group.stg", groupFile);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "group.stg")).Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         var expected = "[bar]";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -64,7 +65,7 @@ public class TestRegions : BaseTest {
             ">>\n";
         WriteFile(dir, "group.stg", groupFile);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "group.stg")).Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         const string expected = "[]";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -79,7 +80,7 @@ public class TestRegions : BaseTest {
         var group1 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "g1.stg")).Build();
         var group2 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "g2.stg")).Build();
         group2.ImportTemplates(group1); // define r in g2
-        var st = group2.GetInstanceOf("a");
+        var st = group2.FindTemplate("a");
         const string expected = "[foo]";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -94,7 +95,7 @@ public class TestRegions : BaseTest {
         var group1 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "g1.stg")).Build();
         var group2 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "subdir", "g2.stg")).Build();
         group2.ImportTemplates(group1); // define r in g2
-        var st = group2.GetInstanceOf("a");
+        var st = group2.FindTemplate("a");
         const string expected = "[foo]";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -109,7 +110,7 @@ public class TestRegions : BaseTest {
         var group1 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "subdir", "g1.stg")).Build();
         var group2 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "subdir", "g2.stg")).Build();
         group2.ImportTemplates(group1); // define r in g2
-        var st = group2.GetInstanceOf("a");
+        var st = group2.FindTemplate("a");
         const string expected = "[foo]";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -126,7 +127,7 @@ public class TestRegions : BaseTest {
         var group1 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "g1.stg")).Build();
         var group2 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "g2.stg")).Build();
         group2.ImportTemplates(group1); // define r in g2
-        var st = group2.GetInstanceOf("a");
+        var st = group2.FindTemplate("a");
         const string expected = "[(foo)]";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -143,7 +144,7 @@ public class TestRegions : BaseTest {
         var group1 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "g1.stg")).Build();
         var group2 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "g2.stg")).Build();
         group1.ImportTemplates(group2); // opposite of previous; g1 imports g2
-        var st = group1.GetInstanceOf("a");
+        var st = group1.FindTemplate("a");
         const string expected = "[]"; // @a.r implicitly defined in g1; can't see g2's
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -157,7 +158,7 @@ public class TestRegions : BaseTest {
         WriteFile(dir, "g.stg", g);
 
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "g.stg")).Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         const string expected = "[foo]";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -174,7 +175,7 @@ public class TestRegions : BaseTest {
         WriteFile(dir, "g.stg", g);
 
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "g.stg")).Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         const string expected = "[foo]";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -192,7 +193,7 @@ public class TestRegions : BaseTest {
         WriteFile(dir, "g.stg", g);
 
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
-        var st = group.GetInstanceOf("g/a");
+        var st = group.FindTemplate("g/a");
         const string expected = "[foo]";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -231,7 +232,7 @@ public class TestRegions : BaseTest {
         group.Load();
         Assert.AreEqual(0, errors.Errors.Count);
 
-        var template = group.GetInstanceOf("a");
+        var template = group.FindTemplate("a");
         var expected =
             $"[{newline}" +
             $"foo{newline}" +
@@ -266,7 +267,7 @@ public class TestRegions : BaseTest {
         WriteFile(dir, "g.stg", g);
 
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "g.stg")).Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         var expected =
             $"[{newline}" +
             $"  foo{newline}]";
@@ -289,7 +290,7 @@ public class TestRegions : BaseTest {
         WriteFile(dir, "sub.stg", sub);
         var subGroup = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "sub.stg")).Build();
         subGroup.ImportTemplates(group);
-        var st = subGroup.GetInstanceOf("a");
+        var st = subGroup.FindTemplate("a");
         var result = st.Render();
         const string expecting = "XAfooBY";
         Assert.AreEqual(expecting, result);
@@ -307,7 +308,7 @@ public class TestRegions : BaseTest {
         var subGroup = _templateFactory.CreateTemplateGroupFile(dir + "/sub.stg").Build();
         subGroup.ImportTemplates(group);
 
-        var st = subGroup.GetInstanceOf("a");
+        var st = subGroup.FindTemplate("a");
         var result = st.Render();
         const string expecting = "XAfooBY";
         Assert.AreEqual(expecting, result);
@@ -324,7 +325,7 @@ public class TestRegions : BaseTest {
         var subGroup = _templateFactory.CreateTemplateGroupString(sub).Build();
         subGroup.ImportTemplates(group);
 
-        var st = subGroup.GetInstanceOf("a");
+        var st = subGroup.FindTemplate("a");
 
         var result = st.Render();
         const string expecting = "Xfoo2Y";
@@ -348,7 +349,7 @@ public class TestRegions : BaseTest {
         var subSubGroup = _templateFactory.CreateTemplateGroupFile(dir + "/subsub.stg").Build();
         subSubGroup.ImportTemplates(subGroup);
 
-        var st = subSubGroup.GetInstanceOf("a");
+        var st = subSubGroup.FindTemplate("a");
 
         var result = st.Render();
         const string expecting = "Xfoo23Y";
@@ -367,7 +368,7 @@ public class TestRegions : BaseTest {
         var subGroup = _templateFactory.CreateTemplateGroupFile(dir + "/sub.stg").Build();
         subGroup.ImportTemplates(group);
 
-        var st = subGroup.GetInstanceOf("a");
+        var st = subGroup.FindTemplate("a");
         var result = st.Render();
         const string expecting = "XAfooY";
         Assert.AreEqual(expecting, result);
@@ -384,7 +385,7 @@ public class TestRegions : BaseTest {
         ITemplateErrorListener errors = new ErrorBuffer();
         WriteFile(dir, "g.stg", g);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "g.stg")).WithErrorListener(errors).Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         st.Render();
         var result = errors.ToString();
         var expecting = $"g.stg 4:3: template /a doesn't have a region called q{newline}";
@@ -406,7 +407,7 @@ public class TestRegions : BaseTest {
         var subGroup = _templateFactory.CreateTemplateGroupFile(dir + "/sub.stg").Build();
         subGroup.ImportTemplates(group);
 
-        var st = subGroup.GetInstanceOf("a");
+        var st = subGroup.FindTemplate("a");
         var result = st.Render();
         const string expecting = "XABY";
         Assert.AreEqual(expecting, result);
@@ -423,8 +424,8 @@ public class TestRegions : BaseTest {
             ">>\n";
         WriteFile(dir, "group.stg", groupFile);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "group.stg")).Build();
-        var st = group.GetInstanceOf("a");
-        TestContext.WriteLine(st.impl.ToString());
+        var st = group.FindTemplate("a");
+        TestContext.WriteLine(st.GetCompiledTemplate().ToString());
         var expected = $"[{newline}  bar{newline}]";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -443,7 +444,7 @@ public class TestRegions : BaseTest {
             ">>\n";
         WriteFile(dir, "group.stg", groupFile);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "group.stg")).Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         var expected = $"[{newline}  bar{newline}]";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -464,7 +465,7 @@ public class TestRegions : BaseTest {
             ">>\n";
         WriteFile(dir, "group.stg", groupFile);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "group.stg")).Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         var expected = $"[{newline}  bar{newline}]";
         var result = st.Render();
         Assert.AreEqual(expected, result);

@@ -30,9 +30,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Antlr4.StringTemplate.Debug;
+
 namespace Antlr4.Test.StringTemplate;
 
-using Antlr4.StringTemplate;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Path = System.IO.Path;
 
@@ -48,8 +49,8 @@ public class TestIndentation : BaseTest {
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
-        var t = group.GetInstanceOf("list");
-        TestContext.WriteLine(t.impl.ToString());
+        var t = group.FindTemplate("list");
+        TestContext.WriteLine(t.GetCompiledTemplate().ToString());
         t.Add("a", "Terence");
         t.Add("b", "Jim");
         const string expected = "  TerenceJim";
@@ -65,7 +66,7 @@ public class TestIndentation : BaseTest {
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
-        var t = group.GetInstanceOf("list");
+        var t = group.FindTemplate("list");
         t.Add("names", "Terence");
         t.Add("names", "Jim");
         t.Add("names", "Sriram");
@@ -84,7 +85,7 @@ public class TestIndentation : BaseTest {
             ">>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
-        var t = group.GetInstanceOf("list");
+        var t = group.FindTemplate("list");
         t.Add("names", "Terence\nis\na\nmaniac");
         t.Add("names", "Jim");
         t.Add("names", "Sriram\nis\ncool");
@@ -108,7 +109,7 @@ public class TestIndentation : BaseTest {
             ">>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
-        var t = group.GetInstanceOf("list");
+        var t = group.FindTemplate("list");
         t.Add("names", "Terence\n\nis a maniac");
         var expected =
             "  Terence" + newline +
@@ -127,7 +128,7 @@ public class TestIndentation : BaseTest {
             ">>" + newline;
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
-        var t = group.GetInstanceOf("list");
+        var t = group.FindTemplate("list");
         t.Add("names", "Terence");
         t.Add("names", "Jim");
         t.Add("names", "Sriram");
@@ -157,17 +158,17 @@ public class TestIndentation : BaseTest {
             ;
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
-        var t = group.GetInstanceOf("method");
+        var t = group.FindTemplate("method");
         t.Add("name", "foo");
-        var s1 = group.GetInstanceOf("assign");
+        var s1 = group.FindTemplate("assign");
         s1.Add("lhs", "x");
         s1.Add("expr", "0");
-        var s2 = group.GetInstanceOf("ifstat");
+        var s2 = group.FindTemplate("ifstat");
         s2.Add("expr", "x>0");
-        var s2a = group.GetInstanceOf("assign");
+        var s2a = group.FindTemplate("assign");
         s2a.Add("lhs", "y");
         s2a.Add("expr", "x+y");
-        var s2b = group.GetInstanceOf("assign");
+        var s2b = group.FindTemplate("assign");
         s2b.Add("lhs", "z");
         s2b.Add("expr", "4");
         s2.Add("stats", s2a);
@@ -234,7 +235,7 @@ public class TestIndentation : BaseTest {
             "    <endif>" + newline +	  // ignore indent on if-tags on lines by themselves
             "end" + newline,
             ["x"]);
-        var t = group.GetInstanceOf("t");
+        var t = group.FindTemplate("t");
         t.Add("x", "x");
         var expected = "begin" + newline + "foo" + newline + "end";
         var result = t.Render();
@@ -250,7 +251,7 @@ public class TestIndentation : BaseTest {
             "    <endif>" + newline +	  // ignore indent on if-tags on lines by themselves
             "end" + newline,
             ["x"]);
-        var t = group.GetInstanceOf("t");
+        var t = group.FindTemplate("t");
         t.Add("x", "x");
         var expected = "begin" + newline + "    foo" + newline + "end";
         var result = t.Render();

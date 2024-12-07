@@ -27,6 +27,8 @@
 */
 
 
+using Antlr4.StringTemplate.Debug;
+
 namespace Antlr4.Test.StringTemplate;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -65,7 +67,7 @@ public class TestSyntaxErrors : BaseTest {
         group.Load();
         Assert.AreEqual(0, errors.Errors.Count);
 
-        var template = group.GetInstanceOf("main");
+        var template = group.FindTemplate("main");
         var expected = $"a{newline}a";
         var result = template.Render();
         Assert.AreEqual(expected, result);

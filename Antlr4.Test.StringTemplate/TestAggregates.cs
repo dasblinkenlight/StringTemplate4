@@ -71,7 +71,7 @@ public class TestAggregates : BaseTest {
                 "intarray(decl) ::= \"int[] <decl.name> = null;\"" + newline
             ;
         var group = _templateFactory.CreateTemplateGroupString(templates).Build();
-        var f = group.GetInstanceOf("file");
+        var f = group.FindTemplate("file");
         f.AddMany("variables.{ decl,format }", new Decl("i", "int"), "intdecl");
         f.AddMany("variables.{decl ,  format}", new Decl("a", "int-array"), "intarray");
         //System.out.println("f='"+f+"'");

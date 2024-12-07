@@ -45,7 +45,7 @@ public class TestEarlyEvaluation : BaseTest {
 
         var group = _templateFactory.CreateTemplateGroupFile(TmpDir + "/t.stg").Build();
 
-        var st = group.GetInstanceOf("main");
+        var st = group.FindTemplate("main");
 
         var s = st.Render();
         Assert.AreEqual(" bar ", s);
@@ -62,7 +62,7 @@ public class TestEarlyEvaluation : BaseTest {
 
         var group = _templateFactory.CreateTemplateGroupFile(TmpDir + "/t.stg").Build();
 
-        var st = group.GetInstanceOf("main");
+        var st = group.FindTemplate("main");
 
         var s = st.Render();
         Assert.AreEqual(" foo ", s);
@@ -80,7 +80,7 @@ public class TestEarlyEvaluation : BaseTest {
 
         var group = _templateFactory.CreateTemplateGroupFile(TmpDir + "/t.stg").Build();
 
-        var st = group.GetInstanceOf("main");
+        var st = group.FindTemplate("main");
 
         st.Add("x", null);
         var s = st.Render();
@@ -99,7 +99,7 @@ public class TestEarlyEvaluation : BaseTest {
 
         var group = _templateFactory.CreateTemplateGroupFile(TmpDir + "/t.stg").Build();
 
-        var st = group.GetInstanceOf("main");
+        var st = group.FindTemplate("main");
         st.Add("m", new Dictionary<string, string> { { "parrt", "value" } });
 
         st.Add("x", null);

@@ -30,6 +30,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Antlr4.StringTemplate.Debug;
+
 namespace Antlr4.Test.StringTemplate;
 
 using Antlr4.StringTemplate;
@@ -47,7 +49,7 @@ public class TestDebugEvents : BaseTest {
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         var events = st.GetEvents();
         const string expected =
             "[EvalExprEvent{self=/t(), expr='foo', source=[0..3), output=[0..3)}," +
@@ -62,7 +64,7 @@ public class TestDebugEvents : BaseTest {
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         var events = st.GetEvents();
         const string expected =
             "[IndentEvent{self=/t(x), expr=' <x>', source=[0..4), output=[0..1)}," +
@@ -81,7 +83,7 @@ public class TestDebugEvents : BaseTest {
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         var events = st.GetEvents();
         const string expected =
             "[EvalExprEvent{self=/t(x), expr='[', source=[0..1), output=[0..1)}," +
@@ -101,8 +103,8 @@ public class TestDebugEvents : BaseTest {
         const string templates = "t() ::= <<[<\\n>]>>\n";
         //                            012 345
         var g = _templateFactory.CreateTemplateGroupString(templates).Build();
-        var st = g.GetInstanceOf("t");
-        TestContext.WriteLine(st.impl.ToString());
+        var st = g.FindTemplate("t");
+        TestContext.WriteLine(st.GetCompiledTemplate().ToString());
         var writer = new StringWriter();
         var events = st.GetEvents(new AutoIndentWriter(writer, "\n"));
         const string expected =

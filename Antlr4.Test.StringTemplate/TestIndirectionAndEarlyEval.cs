@@ -30,6 +30,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Antlr4.StringTemplate.Debug;
+
 namespace Antlr4.Test.StringTemplate;
 
 using Antlr4.StringTemplate;
@@ -56,7 +58,7 @@ public class TestIndirectionAndEarlyEval : BaseTest {
         group.DefineTemplate("foo", "bar");
         const string template = "<(name)()>";
         group.DefineTemplate("test", template, ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("name", "foo");
         const string expected = "bar";
         var result = st.Render();
@@ -69,7 +71,7 @@ public class TestIndirectionAndEarlyEval : BaseTest {
         group.DefineTemplate("foo", "<x><y>", ["x", "y"]);
         const string template = "<(name)({1},{2})>";
         group.DefineTemplate("test", template, ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("name", "foo");
         const string expected = "12";
         var result = st.Render();
@@ -87,7 +89,7 @@ public class TestIndirectionAndEarlyEval : BaseTest {
             ">>");
         var errors = new ErrorBuffer();
         var group = _templateFactory.CreateTemplateGroupFile(TmpDir + "/t.stg").WithErrorListener(errors).Build();
-        var st = group.GetInstanceOf("main");
+        var st = group.FindTemplate("main");
         Assert.AreEqual("t.stg 2:34: mismatched input '...' expecting RPAREN" + newline, errors.ToString());
         Assert.IsNull(st);
     }
@@ -99,7 +101,7 @@ public class TestIndirectionAndEarlyEval : BaseTest {
         group.DefineTemplate("tname", "foo");
         var template = "<(tname())()>";
         group.DefineTemplate("test", template, ["name"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         const string expected = "bar";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -121,7 +123,7 @@ public class TestIndirectionAndEarlyEval : BaseTest {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("a", "[<x>]", ["x"]);
         group.DefineTemplate("test", "hi <names:(templateName)()>!", ["names", "templateName"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", "Tom");
         st.Add("names", "Sumana");

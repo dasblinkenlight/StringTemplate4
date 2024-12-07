@@ -30,6 +30,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Antlr4.StringTemplate.Debug;
+
 namespace Antlr4.Test.StringTemplate;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -45,9 +47,9 @@ public class TestTemplateNames : BaseTest {
         WriteFile(dir, "a.st", "a(x) ::= << </subdir/b()> >>\n");
         WriteFile(Path.Combine(dir, "subdir"), "b.st", "b() ::= <<bar>>\n");
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
-        Assert.AreEqual(" bar ", group.GetInstanceOf("a").Render());
-        Assert.AreEqual(" bar ", group.GetInstanceOf("/a").Render());
-        Assert.AreEqual("bar", group.GetInstanceOf("/subdir/b").Render());
+        Assert.AreEqual(" bar ", group.FindTemplate("a").Render());
+        Assert.AreEqual(" bar ", group.FindTemplate("/a").Render());
+        Assert.AreEqual("bar", group.FindTemplate("/subdir/b").Render());
     }
 
 
@@ -58,7 +60,7 @@ public class TestTemplateNames : BaseTest {
         WriteFile(dir, "a.st", "a(x) ::= << <subdir/b()> >>\n");
         WriteFile(Path.Combine(dir, "subdir"), "b.st", "b() ::= <<bar>>\n");
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
-        Assert.AreEqual(" bar ", group.GetInstanceOf("a").Render());
+        Assert.AreEqual(" bar ", group.FindTemplate("a").Render());
     }
 
     [TestMethod]
@@ -68,7 +70,7 @@ public class TestTemplateNames : BaseTest {
         WriteFile(dir, "a.st", "a(x) ::= << </subdir/b()> >>\n");
         WriteFile(Path.Combine(dir, "subdir"), "b.st", "b() ::= <<bar>>\n");
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
-        Assert.AreEqual(" bar ", group.GetInstanceOf("a").Render());
+        Assert.AreEqual(" bar ", group.FindTemplate("a").Render());
     }
 
     [TestMethod]
@@ -77,7 +79,7 @@ public class TestTemplateNames : BaseTest {
         WriteFile(dir, "a.st", "a() ::= << <b()> >>\n");
         WriteFile(dir, "b.st", "b() ::= <<bar>>\n");
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         const string expected = " bar ";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -90,8 +92,8 @@ public class TestTemplateNames : BaseTest {
         WriteFile(Path.Combine(dir, "subdir"), "a.st", "a() ::= << <b()> >>\n");
         WriteFile(Path.Combine(dir, "subdir"), "b.st", "b() ::= <<bar>>\n");
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
-        TestContext.WriteLine(group.GetInstanceOf("/subdir/a").impl.ToString());
-        Assert.AreEqual(" bar ", group.GetInstanceOf("/subdir/a").Render());
+        TestContext.WriteLine(group.FindTemplate("/subdir/a").GetCompiledTemplate().ToString());
+        Assert.AreEqual(" bar ", group.FindTemplate("/subdir/a").Render());
     }
 
     [TestMethod]
@@ -99,8 +101,8 @@ public class TestTemplateNames : BaseTest {
         var dir = TmpDir;
         WriteFile(dir, "a.st", "a(x) ::= <<foo>>");
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
-        Assert.AreEqual("foo", group.GetInstanceOf("a").Render());
-        Assert.AreEqual("foo", group.GetInstanceOf("/a").Render());
+        Assert.AreEqual("foo", group.FindTemplate("a").Render());
+        Assert.AreEqual("foo", group.FindTemplate("/a").Render());
     }
 
     [TestMethod]
@@ -111,11 +113,11 @@ public class TestTemplateNames : BaseTest {
         WriteFile(Path.Combine(dir, "subdir"), "b.st", "b() ::= <<bar>>\n");
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
 
-        var template = group.GetInstanceOf("/subdir/a");
+        var template = group.FindTemplate("/subdir/a");
         Assert.IsNotNull(template);
         Assert.AreEqual(" bar ", template.Render());
 
-        template = group.GetInstanceOf("subdir/a");
+        template = group.FindTemplate("subdir/a");
         Assert.IsNotNull(template);
         Assert.AreEqual(" bar ", template.Render());
     }
@@ -131,11 +133,11 @@ public class TestTemplateNames : BaseTest {
         WriteFile(dir, "group.stg", groupFile);
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
 
-        var st1 = group.GetInstanceOf("/a");
+        var st1 = group.FindTemplate("/a");
         Assert.IsNotNull(st1);
         Assert.AreEqual(" bar ", st1.Render());
 
-        var st2 = group.GetInstanceOf("/group/c"); // invokes /a
+        var st2 = group.FindTemplate("/group/c"); // invokes /a
         Assert.IsNotNull(st2);
         Assert.AreEqual(" bar ", st2.Render());
     }
@@ -148,7 +150,7 @@ public class TestTemplateNames : BaseTest {
         WriteFile(Path.Combine(dir, "subdir"), "b.st", "b() ::= <<bar>>\n");
         WriteFile(Path.Combine(dir, "subdir"), "c.st", "c() ::= << <b()> >>\n");
         var group = _templateFactory.CreateTemplateGroupDirectory(dir).Build();
-        Assert.AreEqual("  bar  ", group.GetInstanceOf("a").Render());
+        Assert.AreEqual("  bar  ", group.FindTemplate("a").Render());
     }
 
     // TODO: test <a/b()> is RELATIVE NOT ABSOLUTE

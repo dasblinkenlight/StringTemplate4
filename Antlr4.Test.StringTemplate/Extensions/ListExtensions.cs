@@ -33,6 +33,7 @@
 namespace Antlr4.Test.StringTemplate.Extensions;
 
 using Antlr4.StringTemplate;
+using Antlr4.StringTemplate.Debug;
 using CultureInfo = System.Globalization.CultureInfo;
 using IList = System.Collections.IList;
 
@@ -42,7 +43,7 @@ internal static class ListExtensions {
         var group = new TemplateGroup();
         group.DefineTemplate("listTemplate", "[<list:{x|<x>}; separator=\", \">]", ["list"]);
         group.RegisterRenderer(typeof(IList), new CollectionRenderer());
-        var st = group.GetInstanceOf("listTemplate");
+        var st = group.FindTemplate("listTemplate");
         st.Add("list", list);
         return st.Render();
     }

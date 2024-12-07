@@ -51,7 +51,7 @@ public class TestRenderers : BaseTest {
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(DateTime), new DateRenderer());
         group.RegisterRenderer(typeof(DateTimeOffset), new DateRenderer());
-        var st = group.GetInstanceOf("dateThing");
+        var st = group.FindTemplate("dateThing");
         st.Add("created", new DateTime(2005, 7, 5));
         const string expecting = "datetime: 07/05/2005 00:00";
         var result = st.Render();
@@ -66,7 +66,7 @@ public class TestRenderers : BaseTest {
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(DateTime), new DateRenderer());
         group.RegisterRenderer(typeof(DateTimeOffset), new DateRenderer());
-        var st = group.GetInstanceOf("dateThing");
+        var st = group.FindTemplate("dateThing");
         st.Add("created", new DateTime(2005, 7, 5));
         const string expecting = " date: 2005.07.05 ";
         var result = st.Render();
@@ -81,7 +81,7 @@ public class TestRenderers : BaseTest {
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(DateTime), new DateRenderer());
         group.RegisterRenderer(typeof(DateTimeOffset), new DateRenderer());
-        var st = group.GetInstanceOf("dateThing");
+        var st = group.FindTemplate("dateThing");
         st.Add("created", new DateTime(2005, 7, 5));
         const string expecting = " datetime: 07/05/2005 00:00 ";
         var result = st.Render();
@@ -96,7 +96,7 @@ public class TestRenderers : BaseTest {
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(DateTime), new DateRenderer());
         group.RegisterRenderer(typeof(DateTimeOffset), new DateRenderer());
-        var st = group.GetInstanceOf("dateThing");
+        var st = group.FindTemplate("dateThing");
         st.Add("created", new DateTime(2005, 7, 5));
         var expecting = " datetime: Tuesday, 05 July 2005 00:00:00 ";
         var result = st.Render();
@@ -113,7 +113,7 @@ public class TestRenderers : BaseTest {
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(DateTime), new DateRenderer());
         group.RegisterRenderer(typeof(DateTimeOffset), new DateRenderer());
-        var st = group.GetInstanceOf("dateThing");
+        var st = group.FindTemplate("dateThing");
         st.Add("created", new DateTime(2005, 7, 5));
         const string expecting = " date: Jul 5, 2005 ";
         var result = st.Render();
@@ -130,7 +130,7 @@ public class TestRenderers : BaseTest {
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(DateTime), new DateRenderer());
         group.RegisterRenderer(typeof(DateTimeOffset), new DateRenderer());
-        var st = group.GetInstanceOf("dateThing");
+        var st = group.FindTemplate("dateThing");
         st.Add("created", new DateTime(2005, 7, 5));
         const string expecting = " time: 12:00:00 AM ";
         var result = st.Render();
@@ -145,7 +145,7 @@ public class TestRenderers : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(string), new StringRenderer());
-        var st = group.GetInstanceOf("foo");
+        var st = group.FindTemplate("foo");
         st.Add("x", "hi");
         const string expecting = "     hi ";
         var result = st.Render();
@@ -204,7 +204,7 @@ public class TestRenderers : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(string), new StringRenderer());
-        var st = group.GetInstanceOf("foo");
+        var st = group.FindTemplate("foo");
         st.Add("x", "hi");
         const string expecting = " Hi ";
         var result = st.Render();
@@ -222,7 +222,7 @@ public class TestRenderers : BaseTest {
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         //Interpreter.trace = true;
         group.RegisterRenderer(typeof(string), new StringRenderer());
-        var st = group.GetInstanceOf("foo");
+        var st = group.FindTemplate("foo");
         st.Add("x", "hi");
         const string expecting = " Ack ";
         var result = st.Render();
@@ -239,7 +239,7 @@ public class TestRenderers : BaseTest {
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         //Interpreter.trace = true;
         group.RegisterRenderer(typeof(string), new StringRenderer());
-        var st = group.GetInstanceOf("foo");
+        var st = group.FindTemplate("foo");
         st.Add("x", "hi");
         const string expecting = " Ack ";
         var result = st.Render();
@@ -254,7 +254,7 @@ public class TestRenderers : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(string), new StringRenderer());
-        var st = group.GetInstanceOf("foo");
+        var st = group.FindTemplate("foo");
         st.Add("x", "");
         const string expecting = " ";//FIXME: why not two spaces?
         var result = st.Render();
@@ -269,7 +269,7 @@ public class TestRenderers : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(string), new StringRenderer());
-        var st = group.GetInstanceOf("foo");
+        var st = group.FindTemplate("foo");
         st.Add("x", "a b");
         const string expecting = " a+b ";
         var result = st.Render();
@@ -284,7 +284,7 @@ public class TestRenderers : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(string), new StringRenderer());
-        var st = group.GetInstanceOf("foo");
+        var st = group.FindTemplate("foo");
         st.Add("x", "a<b> &\t\b");
         const string expecting = " a&lt;b&gt; &amp;\t\b ";
         var result = st.Render();
@@ -299,7 +299,7 @@ public class TestRenderers : BaseTest {
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(string), new StringRenderer());
-        var st = group.GetInstanceOf("foo");
+        var st = group.FindTemplate("foo");
         st.Add("x", null);
         const string expecting = " ";
         var result = st.Render();
@@ -315,7 +315,7 @@ public class TestRenderers : BaseTest {
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(int), new NumberRenderer());
         group.RegisterRenderer(typeof(double), new NumberRenderer());
-        var st = group.GetInstanceOf("foo");
+        var st = group.FindTemplate("foo");
         st.Add("x", -2100);
         st.Add("y", 3.14159);
         const string expecting = " -2100 3.142 ";
@@ -331,7 +331,7 @@ public class TestRenderers : BaseTest {
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(int), new NumberRenderer());
         group.RegisterRenderer(typeof(double), new NumberRenderer());
-        var st = group.GetInstanceOf("numberThing");
+        var st = group.FindTemplate("numberThing");
         st.Add("x", -2100);
         st.Add("y", 3.14159);
         st.Add("z", "hi");
@@ -349,7 +349,7 @@ public class TestRenderers : BaseTest {
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
         group.RegisterRenderer(typeof(int), new NumberRenderer());
         group.RegisterRenderer(typeof(double), new NumberRenderer());
-        var st = group.GetInstanceOf("foo");
+        var st = group.FindTemplate("foo");
         st.Add("x", -2100);
         st.Add("y", 3.14159);
         // Polish uses ' ' (ASCII 160) for ',' and ',' for '.'

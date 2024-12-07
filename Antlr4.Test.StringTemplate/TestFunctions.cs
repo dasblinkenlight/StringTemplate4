@@ -236,7 +236,7 @@ public class TestFunctions : BaseTest {
             ;
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
-        var e = group.GetInstanceOf("a");
+        var e = group.FindTemplate("a");
         List<string> names = [
             "Ter",
             "Tom"
@@ -254,7 +254,7 @@ public class TestFunctions : BaseTest {
             ;
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(TmpDir + "/" + "t.stg").Build();
-        var e = group.GetInstanceOf("a");
+        var e = group.FindTemplate("a");
         e.Add("names", new[] { 0, 1 });
         var expected = "1, 1";
         Assert.AreEqual(expected, e.Render());
@@ -484,7 +484,7 @@ public class TestFunctions : BaseTest {
             ;
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
-        var e = group.GetInstanceOf("a");
+        var e = group.FindTemplate("a");
         List<string> mine = [
             "Ter",
             "Tom"

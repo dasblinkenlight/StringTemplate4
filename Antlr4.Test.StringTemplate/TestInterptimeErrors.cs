@@ -63,7 +63,7 @@ public class TestInterptimeErrors : BaseTest {
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         st.Render();
         var expected = "context [/t] 1:1 no such template: /foo" + newline;
         var result = errors.ToString();
@@ -83,7 +83,7 @@ public class TestInterptimeErrors : BaseTest {
         WriteFile(TmpDir, "t2.stg", templates2);
         var group2 = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t2.stg")).Build();
         group.ImportTemplates(group2);
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         st.Render();
         var expected = "context [/t] 1:1 no such template: super.t" + newline;
         var result = errors.ToString();
@@ -98,7 +98,7 @@ public class TestInterptimeErrors : BaseTest {
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         st.Add("u", new User(32, "parrt"));
         st.Render();
         var expected = "";
@@ -114,7 +114,7 @@ public class TestInterptimeErrors : BaseTest {
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         st.Add("u", new UserHiddenName("parrt"));
         st.Render();
         var expected = "";
@@ -130,7 +130,7 @@ public class TestInterptimeErrors : BaseTest {
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         st.Add("u", new UserHiddenNameField("parrt"));
         st.Render();
         var expected = "";
@@ -148,7 +148,7 @@ public class TestInterptimeErrors : BaseTest {
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         st.Render();
         var expected = "context [/t] 1:1 passed 1 arg(s) to template /u with 2 declared arg(s)" + newline;
         var result = errors.ToString();
@@ -165,7 +165,7 @@ public class TestInterptimeErrors : BaseTest {
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         var expected = "9";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -185,7 +185,7 @@ public class TestInterptimeErrors : BaseTest {
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         st.Render();
         var expected = "context [/t /u] 1:1 attribute x isn't defined" + newline;
         var result = errors.ToString();

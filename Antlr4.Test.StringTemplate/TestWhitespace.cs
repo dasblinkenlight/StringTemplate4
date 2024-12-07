@@ -30,6 +30,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Antlr4.StringTemplate.Debug;
+
 namespace Antlr4.Test.StringTemplate;
 
 using System.Collections.Generic;
@@ -44,7 +46,7 @@ public class TestWhitespace : BaseTest {
     public void TestTrimmedSubtemplates() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n | <n>}>!", ["names"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", "Tom");
         st.Add("names", "Sumana");
@@ -60,7 +62,7 @@ public class TestWhitespace : BaseTest {
             $"foo{newline}" +
             $">>{newline}";
         var group = _templateFactory.CreateTemplateGroupString(templates).Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         const string expected = "foo";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -71,7 +73,7 @@ public class TestWhitespace : BaseTest {
         var templates =
             "a(x) ::= << foo >>\n";
         var group = _templateFactory.CreateTemplateGroupString(templates).Build();
-        var st = group.GetInstanceOf("a");
+        var st = group.FindTemplate("a");
         const string expected = " foo ";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -82,7 +84,7 @@ public class TestWhitespace : BaseTest {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "[<foo({ foo })>]");
         group.DefineTemplate("foo", "<x>", ["x"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         const string expected = "[ foo ]";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -92,7 +94,7 @@ public class TestWhitespace : BaseTest {
     public void TestTrimmedSubtemplatesArgs() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{x|  foo }>", ["names"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", "Tom");
         st.Add("names", "Sumana");
@@ -105,7 +107,7 @@ public class TestWhitespace : BaseTest {
     public void TestTrimJustOneWSInSubtemplates() {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n |  <n> }>!", ["names"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", "Tom");
         st.Add("names", "Sumana");
@@ -119,7 +121,7 @@ public class TestWhitespace : BaseTest {
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.DefineTemplate("test", "<names:{n |\n" +
                                      "<n>}>!", ["names"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", "Tom");
         st.Add("names", "Sumana");
@@ -134,7 +136,7 @@ public class TestWhitespace : BaseTest {
         group.DefineTemplate("test", "<names:{n |\n" +
                                      "<n>\n" +
                                      "}>!", ["names"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", "Tom");
         st.Add("names", "Sumana");
@@ -150,7 +152,7 @@ public class TestWhitespace : BaseTest {
         group.DefineTemplate("test", "  <names:{n |\n" +
                                      "    <n>\n" +
                                      "  }>!", ["names"]);
-        var st = group.GetInstanceOf("test");
+        var st = group.FindTemplate("test");
         st.Add("names", "Ter");
         st.Add("names", "Tom");
         st.Add("names", "Sumana");
@@ -159,7 +161,7 @@ public class TestWhitespace : BaseTest {
            $"    Tom{newline}" +
            $"    Sumana{newline}!";
         var result = st.Render();
-        TestContext.WriteLine(st.impl.ToString());
+        TestContext.WriteLine(st.GetCompiledTemplate().ToString());
         Assert.AreEqual(expected, result);
     }
 

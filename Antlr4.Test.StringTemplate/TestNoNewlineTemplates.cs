@@ -48,7 +48,7 @@ public class TestNoNewlineTemplates : BaseTest {
             "" + newline +
             "%>" + newline;
         var g = _templateFactory.CreateTemplateGroupString(template).Build();
-        var st = g.GetInstanceOf("t");
+        var st = g.FindTemplate("t");
         st.Add("x", 99);
         const string expected = "[  99]";
         var result = st.Render();
@@ -62,7 +62,7 @@ public class TestNoNewlineTemplates : BaseTest {
             "" + newline +
             "%>" + newline;
         var g = _templateFactory.CreateTemplateGroupString(template).Build();
-        var st = g.GetInstanceOf("t");
+        var st = g.FindTemplate("t");
         st.Add("x", 99);
         var result = st.Render();
         Assert.AreEqual(string.Empty, result);
@@ -72,7 +72,7 @@ public class TestNoNewlineTemplates : BaseTest {
     public void TestEmptyNoNewlineTemplate() {
         var template = "t(x) ::= <%%>" + newline;
         var g = _templateFactory.CreateTemplateGroupString(template).Build();
-        var st = g.GetInstanceOf("t");
+        var st = g.FindTemplate("t");
         st.Add("x", 99);
         var result = st.Render();
         Assert.AreEqual(string.Empty, result);
@@ -86,7 +86,7 @@ public class TestNoNewlineTemplates : BaseTest {
             "	<x>" + newline +
             "%>" + newline;
         var g = _templateFactory.CreateTemplateGroupString(template).Build();
-        var st = g.GetInstanceOf("t");
+        var st = g.FindTemplate("t");
         st.Add("x", 99);
         const string expected = "foo99";
         var result = st.Render();
@@ -103,7 +103,7 @@ public class TestNoNewlineTemplates : BaseTest {
             "	<x>" + newline +
             "%>" + newline;
         var g = _templateFactory.CreateTemplateGroupString(template).Build();
-        var st = g.GetInstanceOf("t");
+        var st = g.FindTemplate("t");
         st.Add("x", 99);
         const string expected = "foo99";
         var result = st.Render();
@@ -117,7 +117,7 @@ public class TestNoNewlineTemplates : BaseTest {
             "	<x> <x> hi" + newline +
             "%>" + newline;
         var g = _templateFactory.CreateTemplateGroupString(template).Build();
-        var st = g.GetInstanceOf("t");
+        var st = g.FindTemplate("t");
         st.Add("x", 99);
         const string expected = "99 99 hi";
         var result = st.Render();
@@ -135,7 +135,7 @@ public class TestNoNewlineTemplates : BaseTest {
             "<@end>\n" +
             "%>\n";
         var g = _templateFactory.CreateTemplateGroupString(template).Build();
-        var st = g.GetInstanceOf("t");
+        var st = g.FindTemplate("t");
         st.Add("x", 99);
         const string expected = "Ignorenewlines and indents99";
         var result = st.Render();
@@ -155,7 +155,7 @@ public class TestNoNewlineTemplates : BaseTest {
         var group1 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "g1.stg")).Build();
         var group2 = _templateFactory.CreateTemplateGroupFile(Path.Combine(dir, "g2.stg")).Build();
         group2.ImportTemplates(group1); // define r in g2
-        var st = group2.GetInstanceOf("a");
+        var st = group2.FindTemplate("a");
         const string expected = "[foo]";
         var result = st.Render();
         Assert.AreEqual(expected, result);

@@ -101,7 +101,7 @@ public class TestGroupSyntax : BaseTest {
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
-        var st = group.GetInstanceOf("ta");
+        var st = group.FindTemplate("ta");
         st.Add("x", "hi");
         const string expected = "[hi]";
         var result = st.Render();
@@ -116,7 +116,7 @@ public class TestGroupSyntax : BaseTest {
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
-        var st = group.GetInstanceOf("ta");
+        var st = group.FindTemplate("ta");
         st.Add("x", "hi");
         const string expected = "[hi]";
         var result = st.Render();
@@ -189,7 +189,7 @@ public class TestGroupSyntax : BaseTest {
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg").Build();
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         const string expected = "true+";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -204,7 +204,7 @@ public class TestGroupSyntax : BaseTest {
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg").Build();
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         const string expected = "false-";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -219,7 +219,7 @@ public class TestGroupSyntax : BaseTest {
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg").Build();
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         const string expected = "+";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -234,7 +234,7 @@ public class TestGroupSyntax : BaseTest {
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg").Build();
-        var st = group.GetInstanceOf("t");
+        var st = group.FindTemplate("t");
         const string expected = "-";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -298,7 +298,7 @@ public class TestGroupSyntax : BaseTest {
 
         var errors = new ErrorBuffer();
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).WithErrorListener(errors).Build();
-        var st = group.GetInstanceOf("main");
+        var st = group.FindTemplate("main");
         st.Render();
 
         const string expected =
