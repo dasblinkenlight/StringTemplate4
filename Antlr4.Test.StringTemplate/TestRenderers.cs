@@ -158,7 +158,7 @@ public class TestRenderers : BaseTest {
             "The names: <names; format=\"upper\">";
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.RegisterRenderer(typeof(string), new StringRenderer());
-        var st = _templateFactory.CreateTemplate(template, group);
+        var st = _templateFactory.CreateTemplateImplicit(template, group);
         st.Add("names", "ter");
         st.Add("names", "tom");
         st.Add("names", "sriram");
@@ -173,7 +173,7 @@ public class TestRenderers : BaseTest {
             "The names: <names; separator=\" and \", format=\"upper\">";
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.RegisterRenderer(typeof(string), new StringRenderer());
-        var st = _templateFactory.CreateTemplate(template, group);
+        var st = _templateFactory.CreateTemplateImplicit(template, group);
         st.Add("names", "ter");
         st.Add("names", "tom");
         st.Add("names", "sriram");
@@ -188,7 +188,7 @@ public class TestRenderers : BaseTest {
             "The names: <names; separator=\" and \", null=\"n/a\", format=\"upper\">";
         var group = _templateFactory.CreateTemplateGroup().Build();
         group.RegisterRenderer(typeof(string), new StringRenderer());
-        var st = _templateFactory.CreateTemplate(template, group);
+        var st = _templateFactory.CreateTemplateImplicit(template, group);
         var names = new List<string> { "ter", null, "sriram" };
         st.Add("names", names);
         const string expecting = "The names: TER and N/A and SRIRAM";

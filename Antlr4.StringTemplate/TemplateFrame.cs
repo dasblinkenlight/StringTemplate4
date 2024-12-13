@@ -29,12 +29,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+using Antlr4.StringTemplate.Debug;
 
 namespace Antlr4.StringTemplate;
-
-using System.Collections.Generic;
-using Debug;
-using StringBuilder = System.Text.StringBuilder;
 
 public sealed class TemplateFrame {
     private DebugEvents _debugState;
@@ -68,33 +65,15 @@ public sealed class TemplateFrame {
      *  here that would be "[z y x]".
      */
     public string GetEnclosingInstanceStackString() {
-        var templates = GetEnclosingInstanceStack(true);
-        var buf = new StringBuilder();
-        var i = 0;
-        foreach (var st in templates)
-        {
-            if (i > 0)
-                buf.Append(" ");
-            buf.Append(st.Name);
-            i++;
-        }
-
-        return buf.ToString();
-    }
-
-    private List<Template> GetEnclosingInstanceStack(bool topdown) {
-        var stack = new List<Template>();
+        var names = new string[StackDepth];
         var p = this;
-        while (p != null)
-        {
-            if (topdown)
-                stack.Insert(0, p.Template);
-            else
-                stack.Add(p.Template);
-
+        var i = StackDepth-1;
+        while (p != null) {
+            names[i--] = p.Template.Name;
             p = p.Parent;
         }
-        return stack;
+        System.Diagnostics.Debug.Assert(i == -1);
+        return string.Join(" ", names);
     }
 
 }

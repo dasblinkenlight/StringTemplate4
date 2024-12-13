@@ -540,7 +540,7 @@ public sealed class Interpreter {
         var imported = self.impl.NativeGroup.LookupImportedTemplate(name);
         if (imported == null) {
             _errorManager.RuntimeError(frame, ErrorType.NO_IMPORTED_TEMPLATE, name);
-            st = (self.Group as TemplateGroup).CreateStringTemplateInternally(new CompiledTemplate());
+            st = (self.Group as TemplateGroup)!.CreateStringTemplateInternally(new CompiledTemplate());
         } else {
             st = imported.NativeGroup.GetEmbeddedInstanceOf(frame, name);
             st.Group = group;
@@ -557,7 +557,7 @@ public sealed class Interpreter {
         var imported = self.impl.NativeGroup.LookupImportedTemplate(name);
         if (imported == null) {
             _errorManager.RuntimeError(frame, ErrorType.NO_IMPORTED_TEMPLATE, name);
-            st = (self.Group as TemplateGroup).CreateStringTemplateInternally(new CompiledTemplate());
+            st = (self.Group as TemplateGroup)!.CreateStringTemplateInternally(new CompiledTemplate());
         } else {
             st = imported.NativeGroup.CreateStringTemplateInternally(imported);
             st.Group = group;
@@ -569,10 +569,7 @@ public sealed class Interpreter {
 
     private void PassThrough(TemplateFrame frame, string templateName, IDictionary<string, object> attrs) {
         var c = group.LookupTemplate(templateName);
-        if (c == null) {
-            return; // will get error later
-        }
-        if (c.FormalArguments == null) {
+        if (c?.FormalArguments == null) {
             return;
         }
         foreach (var arg in c.FormalArguments.Where(arg => !attrs.ContainsKey(arg.Name))) {
@@ -600,29 +597,20 @@ public sealed class Interpreter {
 
     private void StoreArguments(TemplateFrame frame, IDictionary<string, object> attrs, Template st) {
         var noSuchAttributeReported = false;
-        if (attrs != null)
-        {
-            foreach (var argument in attrs)
-            {
-                if (!st.impl.HasFormalArgs)
-                {
-                    if (st.impl.FormalArguments == null || st.impl.TryGetFormalArgument(argument.Key) == null)
-                    {
+        if (attrs != null) {
+            foreach (var argument in attrs) {
+                if (!st.impl.HasFormalArgs) {
+                    if (st.impl.FormalArguments == null || st.impl.TryGetFormalArgument(argument.Key) == null) {
                         // we clone the CompiledTemplate to prevent modifying the original
                         // _formalArguments map during interpretation.
                         st.impl = st.impl.Clone();
                         st.Add(argument.Key, argument.Value);
-                    }
-                    else
-                    {
+                    } else {
                         st.RawSetAttribute(argument.Key, argument.Value);
                     }
-                }
-                else
-                {
+                } else {
                     // don't let it throw an exception in RawSetAttribute
-                    if (st.impl.FormalArguments == null || st.impl.TryGetFormalArgument(argument.Key) == null)
-                    {
+                    if (st.impl.FormalArguments == null || st.impl.TryGetFormalArgument(argument.Key) == null) {
                         noSuchAttributeReported = true;
                         _errorManager.RuntimeError(
                             frame,
@@ -636,25 +624,20 @@ public sealed class Interpreter {
             }
         }
 
-        if (st.impl.HasFormalArgs)
-        {
+        if (st.impl.HasFormalArgs) {
             var argumentCountMismatch = false;
             var formalArguments = st.impl.FormalArguments ?? [];
 
             // first make sure that all non-default arguments are specified
             // ignore this check if a NO_SUCH_ATTRIBUTE error already occurred
-            if (!noSuchAttributeReported)
-            {
-                foreach (var formalArgument in formalArguments)
-                {
-                    if (formalArgument.DefaultValueToken != null || formalArgument.DefaultValue != null)
-                    {
+            if (!noSuchAttributeReported) {
+                foreach (var formalArgument in formalArguments) {
+                    if (formalArgument.DefaultValueToken != null || formalArgument.DefaultValue != null) {
                         // this argument has a default value, so it doesn't need to appear in attrs
                         continue;
                     }
 
-                    if (attrs == null || !attrs.ContainsKey(formalArgument.Name))
-                    {
+                    if (attrs == null || !attrs.ContainsKey(formalArgument.Name)) {
                         argumentCountMismatch = true;
                         break;
                     }
@@ -664,13 +647,11 @@ public sealed class Interpreter {
             // next make sure there aren't too many arguments. note that the names
             // of arguments are checked below as they are applied to the template
             // instance, so there's no need to do that here.
-            if (attrs != null && attrs.Count > formalArguments.Count)
-            {
+            if (attrs != null && attrs.Count > formalArguments.Count) {
                 argumentCountMismatch = true;
             }
 
-            if (argumentCountMismatch)
-            {
+            if (argumentCountMismatch) {
                 var nArgs = attrs?.Count ?? 0;
                 var nFormalArgs = formalArguments.Count;
                 _errorManager.RuntimeError(
@@ -684,8 +665,7 @@ public sealed class Interpreter {
     }
 
     private void StoreArguments(TemplateFrame frame, int nArgs, Template st) {
-        if (nArgs > 0 && !st.impl.HasFormalArgs && st.impl.FormalArguments == null)
-        {
+        if (nArgs > 0 && !st.impl.HasFormalArgs && st.impl.FormalArguments == null) {
             st.Add(Template.ImplicitArgumentName, null); // pretend we have "it" arg
         }
 
@@ -709,8 +689,7 @@ public sealed class Interpreter {
         if (st.impl.FormalArguments == null)
             return;
 
-        for (var i = 0; i < numToStore; i++)
-        {
+        for (var i = 0; i < numToStore; i++) {
             var o = operands[firstArg + i];
             var argName = st.impl.FormalArguments[i].Name;
             st.RawSetAttribute(argName, o);
@@ -721,8 +700,7 @@ public sealed class Interpreter {
     {
         var self = frame.Template;
         var indent = self.impl.strings[strIndex];
-        if (_debug)
-        {
+        if (_debug) {
             var start = @out.Index; // track char we're about to write
             EvalExprEvent e = new IndentEvent(frame, new Interval(start, indent.Length), GetExpressionInterval(frame));
             TrackDebugEvent(frame, e);
@@ -799,12 +777,9 @@ public sealed class Interpreter {
             if (options != null && options[(int)RenderOption.Wrap] != null) {
                 // if we have a wrap string, then inform writer it
                 // might need to wrap
-                try
-                {
+                try {
                     @out.WriteWrap(options[(int)RenderOption.Wrap]);
-                }
-                catch (IOException ioe)
-                {
+                } catch (IOException ioe) {
                     _errorManager.IOError(template, ErrorType.WRITE_IO_ERROR, ioe);
                 }
             }
@@ -815,9 +790,7 @@ public sealed class Interpreter {
                 n = o is IEnumerator ?
                     WriteIterator(@out, frame, o, options) :
                     WritePlainObject(@out, frame, o, options);
-            }
-            catch (IOException ioe)
-            {
+            } catch (IOException ioe) {
                 _errorManager.IOError(frame.Template, ErrorType.WRITE_IO_ERROR, ioe, o);
             }
         }
@@ -878,13 +851,10 @@ public sealed class Interpreter {
         return n;
     }
 
-    private Interval GetExpressionInterval(TemplateFrame frame)
-    {
-        return frame.Template.impl.sourceMap[frame.InstructionPointer];
-    }
+    private Interval GetExpressionInterval(TemplateFrame frame) =>
+        frame.Template.impl.sourceMap[frame.InstructionPointer];
 
-    private void Map(TemplateFrame frame, object attr, Template st)
-    {
+    private void Map(TemplateFrame frame, object attr, Template st) {
         RotateMap(frame, attr, [st]);
     }
 
@@ -1257,12 +1227,12 @@ public sealed class Interpreter {
             return null;
         }
         try {
-            var proxyFactory = (self.Group as TemplateGroup).GetTypeProxyFactory(o.GetType());
+            var proxyFactory = (self.Group as TemplateGroup)!.GetTypeProxyFactory(o.GetType());
             if (proxyFactory != null) {
                 o = proxyFactory.CreateProxy(frame, o);
             }
-            var adap = (self.Group as TemplateGroup).GetModelAdaptor(o.GetType());
-            return adap.GetProperty(this, frame, o, property, ToString(frame, property));
+            var adaptorDelegate = (self.Group as TemplateGroup)!.GetModelAdaptor(o.GetType());
+            return adaptorDelegate(o, property, ToString(frame, property));
         } catch (TemplateNoSuchPropertyException e) {
             _errorManager.RuntimeError(frame, ErrorType.NO_SUCH_PROPERTY,
                 e, o.GetType().Name + "." + property);
@@ -1335,14 +1305,13 @@ public sealed class Interpreter {
 
     private void Trace(TemplateFrame frame, int ip) {
         var self = frame.Template;
-        var tr = new StringBuilder();
-        var dis = new BytecodeDisassembler(self.impl);
         var buf = new StringBuilder();
-        dis.DisassembleInstruction(buf, ip);
+        BytecodeDisassembler.DisassembleInstruction(self.impl, buf, ip);
         var name = self.impl.Name + ":";
         if (ReferenceEquals(self.impl.Name, Template.UnknownName)) {
             name = string.Empty;
         }
+        var tr = new StringBuilder();
         tr.Append($"{name + buf,-40}");
         tr.Append("\tstack=[");
         for (var i = 0; i <= sp; i++) {

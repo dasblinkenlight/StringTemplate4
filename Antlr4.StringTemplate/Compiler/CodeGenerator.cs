@@ -136,7 +136,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 			PopFollow();
 
 			DebugLocation(49, 38);
-			Match(input,EOF,Follow._EOF_in_templateAndEOF56); 
+			Match(input,EOF,Follow._EOF_in_templateAndEOF56);
 
 			}
 
@@ -212,7 +212,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 			 // finish off the CompiledTemplate result
 			        if ( template_stack.Peek().state.stringtable!=null ) impl.strings = template_stack.Peek().state.stringtable.ToArray();
 			        impl.codeSize = template_stack.Peek().state.ip;
-					
+
 
 			}
 
@@ -405,16 +405,16 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				{
 				DebugLocation(79, 4);
 				DebugLocation(79, 6);
-				INDENT1=(CommonTree)Match(input,INDENT,Follow._INDENT_in_element110); 
+				INDENT1=(CommonTree)Match(input,INDENT,Follow._INDENT_in_element110);
 
-				Match(input, TokenTypes.Down, null); 
+				Match(input, TokenTypes.Down, null);
 				DebugLocation(79, 13);
 				PushFollow(Follow._compoundElement_in_element112);
 				compoundElement(INDENT1);
 				PopFollow();
 
 
-				Match(input, TokenTypes.Up, null); 
+				Match(input, TokenTypes.Up, null);
 
 
 				}
@@ -437,12 +437,12 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				{
 				DebugLocation(81, 4);
 				DebugLocation(81, 6);
-				INDENT2=(CommonTree)Match(input,INDENT,Follow._INDENT_in_element126); 
+				INDENT2=(CommonTree)Match(input,INDENT,Follow._INDENT_in_element126);
 
 				DebugLocation(81, 13);
 				Indent(INDENT2);
 
-				Match(input, TokenTypes.Down, null); 
+				Match(input, TokenTypes.Down, null);
 				DebugLocation(81, 32);
 				PushFollow(Follow._singleElement_in_element130);
 				singleElement();
@@ -451,7 +451,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				DebugLocation(81, 46);
 				Dedent();
 
-				Match(input, TokenTypes.Up, null); 
+				Match(input, TokenTypes.Up, null);
 
 
 				}
@@ -461,7 +461,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				// Compiler\\CodeGenerator.g3:82:4: INDENT
 				{
 				DebugLocation(82, 4);
-				INDENT3=(CommonTree)Match(input,INDENT,Follow._INDENT_in_element138); 
+				INDENT3=(CommonTree)Match(input,INDENT,Follow._INDENT_in_element138);
 				DebugLocation(82, 11);
 				Indent(INDENT3); Dedent();
 
@@ -565,12 +565,12 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				// Compiler\\CodeGenerator.g3:88:4: TEXT
 				{
 				DebugLocation(88, 4);
-				TEXT4=(CommonTree)Match(input,TEXT,Follow._TEXT_in_singleElement161); 
+				TEXT4=(CommonTree)Match(input,TEXT,Follow._TEXT_in_singleElement161);
 				DebugLocation(89, 3);
 
 						if ((TEXT4!=null?TEXT4.Text:default(string)).Length > 0)
 							emit1(TEXT4,Bytecode.INSTR_WRITE_STR, (TEXT4!=null?TEXT4.Text:default(string)));
-						
+
 
 				}
 				break;
@@ -579,7 +579,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				// Compiler\\CodeGenerator.g3:93:4: NEWLINE
 				{
 				DebugLocation(93, 4);
-				NEWLINE5=(CommonTree)Match(input,NEWLINE,Follow._NEWLINE_in_singleElement170); 
+				NEWLINE5=(CommonTree)Match(input,NEWLINE,Follow._NEWLINE_in_singleElement170);
 				DebugLocation(93, 12);
 				emit(NEWLINE5, Bytecode.INSTR_NEWLINE);
 
@@ -699,7 +699,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 		TraceIn("exprElement", 7);
 		CommonTree EXPR6 = default(CommonTree);
 
-		 Bytecode op = Bytecode.INSTR_WRITE; 
+		 Bytecode op = Bytecode.INSTR_WRITE;
 		try { DebugEnterRule(GrammarFileName, "exprElement");
 		DebugLocation(101, 1);
 		try
@@ -710,9 +710,9 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 			{
 			DebugLocation(103, 4);
 			DebugLocation(103, 7);
-			EXPR6=(CommonTree)Match(input,EXPR,Follow._EXPR_in_exprElement209); 
+			EXPR6=(CommonTree)Match(input,EXPR,Follow._EXPR_in_exprElement209);
 
-			Match(input, TokenTypes.Down, null); 
+			Match(input, TokenTypes.Down, null);
 			DebugLocation(103, 12);
 			PushFollow(Follow._expr_in_exprElement211);
 			expr();
@@ -751,7 +751,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 			} finally { DebugExitSubRule(5); }
 
 
-			Match(input, TokenTypes.Up, null); 
+			Match(input, TokenTypes.Up, null);
 
 			DebugLocation(104, 3);
 			emit(EXPR6, op);
@@ -811,11 +811,11 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 			{
 			DebugLocation(110, 4);
 			DebugLocation(110, 7);
-			Match(input,REGION,Follow._REGION_in_region252); 
+			Match(input,REGION,Follow._REGION_in_region252);
 
-			Match(input, TokenTypes.Down, null); 
+			Match(input, TokenTypes.Down, null);
 			DebugLocation(110, 14);
-			ID7=(CommonTree)Match(input,ID,Follow._ID_in_region254); 
+			ID7=(CommonTree)Match(input,ID,Follow._ID_in_region254);
 			DebugLocation(111, 4);
 			retval.name = TemplateGroup.GetMangledRegionName(outermostTemplateName, (ID7!=null?ID7.Text:default(string)));
 			DebugLocation(112, 4);
@@ -827,14 +827,14 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 
 						CompiledTemplate sub = template8;
 				        sub.IsRegion = true;
-				        sub.RegionDefType = Template.RegionType.Embedded;
+				        sub.RegionDefType = CompiledTemplate.RegionType.Embedded;
 						sub.TemplateDefStartToken = ID7.Token;
 						outermostImpl.AddImplicitlyDefinedTemplate(sub);
 						emit2(retval.Start, Bytecode.INSTR_NEW, retval.name, 0);
 						emit(retval.Start, Bytecode.INSTR_WRITE);
-						
 
-			Match(input, TokenTypes.Up, null); 
+
+			Match(input, TokenTypes.Up, null);
 
 
 			}
@@ -898,11 +898,11 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 			{
 			DebugLocation(130, 4);
 			DebugLocation(130, 7);
-			SUBTEMPLATE11=(CommonTree)Match(input,SUBTEMPLATE,Follow._SUBTEMPLATE_in_subtemplate297); 
+			SUBTEMPLATE11=(CommonTree)Match(input,SUBTEMPLATE,Follow._SUBTEMPLATE_in_subtemplate297);
 
 			if (input.LA(1) == TokenTypes.Down)
 			{
-				Match(input, TokenTypes.Down, null); 
+				Match(input, TokenTypes.Down, null);
 				DebugLocation(131, 4);
 				// Compiler\\CodeGenerator.g3:131:4: ( ^( ARGS ( ID )+ ) )*
 				try { DebugEnterSubRule(7);
@@ -927,9 +927,9 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 						{
 						DebugLocation(131, 5);
 						DebugLocation(131, 7);
-						Match(input,ARGS,Follow._ARGS_in_subtemplate304); 
+						Match(input,ARGS,Follow._ARGS_in_subtemplate304);
 
-						Match(input, TokenTypes.Down, null); 
+						Match(input, TokenTypes.Down, null);
 						DebugLocation(131, 12);
 						// Compiler\\CodeGenerator.g3:131:12: ( ID )+
 						int cnt6=0;
@@ -954,7 +954,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 								// Compiler\\CodeGenerator.g3:131:13: ID
 								{
 								DebugLocation(131, 13);
-								ID9=(CommonTree)Match(input,ID,Follow._ID_in_subtemplate307); 
+								ID9=(CommonTree)Match(input,ID,Follow._ID_in_subtemplate307);
 								DebugLocation(131, 16);
 								args.Add(new FormalArgument((ID9!=null?ID9.Text:default(string))));
 
@@ -977,7 +977,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 						} finally { DebugExitSubRule(6); }
 
 
-						Match(input, TokenTypes.Up, null); 
+						Match(input, TokenTypes.Up, null);
 
 
 						}
@@ -1009,9 +1009,9 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 							sub.Ast.SetUnknownTokenBoundaries();
 							sub.Tokens = input.TokenStream;
 							outermostImpl.AddImplicitlyDefinedTemplate(sub);
-							
 
-				Match(input, TokenTypes.Up, null); 
+
+				Match(input, TokenTypes.Up, null);
 			}
 
 
@@ -1072,9 +1072,9 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 			{
 			DebugLocation(161, 4);
 			DebugLocation(161, 8);
-			i=(CommonTree)Match(input,IF,Follow._IF_in_ifstat361); 
+			i=(CommonTree)Match(input,IF,Follow._IF_in_ifstat361);
 
-			Match(input, TokenTypes.Down, null); 
+			Match(input, TokenTypes.Down, null);
 			DebugLocation(161, 14);
 			PushFollow(Follow._conditional_in_ifstat363);
 			conditional();
@@ -1084,7 +1084,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 
 				        prevBranchOperand = address()+1;
 				        emit1(i,Bytecode.INSTR_BRF, -1); // write placeholder as branch target
-						
+
 			DebugLocation(166, 4);
 			PushFollow(Follow._chunk_in_ifstat373);
 			chunk();
@@ -1114,7 +1114,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 					{
 					DebugLocation(167, 6);
 					DebugLocation(167, 11);
-					eif=(CommonTree)Match(input,ELSEIF,Follow._ELSEIF_in_ifstat383); 
+					eif=(CommonTree)Match(input,ELSEIF,Follow._ELSEIF_in_ifstat383);
 
 					DebugLocation(168, 5);
 
@@ -1123,9 +1123,9 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 									// update previous branch instruction
 									write(prevBranchOperand, (short)address());
 									prevBranchOperand = -1;
-									
 
-					Match(input, TokenTypes.Down, null); 
+
+					Match(input, TokenTypes.Down, null);
 					DebugLocation(175, 7);
 					PushFollow(Follow._conditional_in_ifstat397);
 					ec=conditional();
@@ -1136,14 +1136,14 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 							       	prevBranchOperand = address()+1;
 							       	// write placeholder as branch target
 							       	emit1((ec!=null?((CommonTree)ec.Start):default(CommonTree)), Bytecode.INSTR_BRF, -1);
-									
+
 					DebugLocation(181, 5);
 					PushFollow(Follow._chunk_in_ifstat409);
 					chunk();
 					PopFollow();
 
 
-					Match(input, TokenTypes.Up, null); 
+					Match(input, TokenTypes.Up, null);
 
 
 					}
@@ -1179,7 +1179,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				{
 				DebugLocation(184, 6);
 				DebugLocation(184, 11);
-				el=(CommonTree)Match(input,ELSE,Follow._ELSE_in_ifstat432); 
+				el=(CommonTree)Match(input,ELSE,Follow._ELSE_in_ifstat432);
 
 				DebugLocation(185, 6);
 
@@ -1188,18 +1188,18 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 									// update previous branch instruction
 									write(prevBranchOperand, (short)address());
 									prevBranchOperand = -1;
-									
+
 
 				if (input.LA(1) == TokenTypes.Down)
 				{
-					Match(input, TokenTypes.Down, null); 
+					Match(input, TokenTypes.Down, null);
 					DebugLocation(192, 6);
 					PushFollow(Follow._chunk_in_ifstat446);
 					chunk();
 					PopFollow();
 
 
-					Match(input, TokenTypes.Up, null); 
+					Match(input, TokenTypes.Up, null);
 				}
 
 
@@ -1210,7 +1210,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 			} finally { DebugExitSubRule(9); }
 
 
-			Match(input, TokenTypes.Up, null); 
+			Match(input, TokenTypes.Up, null);
 
 			DebugLocation(196, 3);
 
@@ -1218,7 +1218,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 						write(prevBranchOperand, (short)address());
 					}
 			        foreach (int opnd in endRefs) write(opnd, (short)address());
-					
+
 
 			}
 
@@ -1323,9 +1323,9 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				{
 				DebugLocation(205, 4);
 				DebugLocation(205, 6);
-				OR12=(CommonTree)Match(input,OR,Follow._OR_in_conditional480); 
+				OR12=(CommonTree)Match(input,OR,Follow._OR_in_conditional480);
 
-				Match(input, TokenTypes.Down, null); 
+				Match(input, TokenTypes.Down, null);
 				DebugLocation(205, 9);
 				PushFollow(Follow._conditional_in_conditional482);
 				conditional();
@@ -1337,7 +1337,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				PopFollow();
 
 
-				Match(input, TokenTypes.Up, null); 
+				Match(input, TokenTypes.Up, null);
 
 				DebugLocation(205, 35);
 				emit(OR12, Bytecode.INSTR_OR);
@@ -1350,9 +1350,9 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				{
 				DebugLocation(206, 4);
 				DebugLocation(206, 6);
-				AND13=(CommonTree)Match(input,AND,Follow._AND_in_conditional494); 
+				AND13=(CommonTree)Match(input,AND,Follow._AND_in_conditional494);
 
-				Match(input, TokenTypes.Down, null); 
+				Match(input, TokenTypes.Down, null);
 				DebugLocation(206, 10);
 				PushFollow(Follow._conditional_in_conditional496);
 				conditional();
@@ -1364,7 +1364,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				PopFollow();
 
 
-				Match(input, TokenTypes.Up, null); 
+				Match(input, TokenTypes.Up, null);
 
 				DebugLocation(206, 36);
 				emit(AND13, Bytecode.INSTR_AND);
@@ -1377,16 +1377,16 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				{
 				DebugLocation(207, 4);
 				DebugLocation(207, 6);
-				BANG14=(CommonTree)Match(input,BANG,Follow._BANG_in_conditional508); 
+				BANG14=(CommonTree)Match(input,BANG,Follow._BANG_in_conditional508);
 
-				Match(input, TokenTypes.Down, null); 
+				Match(input, TokenTypes.Down, null);
 				DebugLocation(207, 11);
 				PushFollow(Follow._conditional_in_conditional510);
 				conditional();
 				PopFollow();
 
 
-				Match(input, TokenTypes.Up, null); 
+				Match(input, TokenTypes.Up, null);
 
 				DebugLocation(207, 28);
 				emit(BANG14, Bytecode.INSTR_NOT);
@@ -1451,11 +1451,11 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 			emit(retval.Start, Bytecode.INSTR_OPTIONS);
 			DebugLocation(211, 55);
 			DebugLocation(211, 57);
-			Match(input,OPTIONS,Follow._OPTIONS_in_exprOptions536); 
+			Match(input,OPTIONS,Follow._OPTIONS_in_exprOptions536);
 
 			if (input.LA(1) == TokenTypes.Down)
 			{
-				Match(input, TokenTypes.Down, null); 
+				Match(input, TokenTypes.Down, null);
 				DebugLocation(211, 65);
 				// Compiler\\CodeGenerator.g3:211:65: ( option )*
 				try { DebugEnterSubRule(11);
@@ -1498,7 +1498,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				} finally { DebugExitSubRule(11); }
 
 
-				Match(input, TokenTypes.Up, null); 
+				Match(input, TokenTypes.Up, null);
 			}
 
 
@@ -1545,18 +1545,18 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 			{
 			DebugLocation(213, 10);
 			DebugLocation(213, 12);
-			Match(input,EQUALS,Follow._EQUALS_in_option550); 
+			Match(input,EQUALS,Follow._EQUALS_in_option550);
 
-			Match(input, TokenTypes.Down, null); 
+			Match(input, TokenTypes.Down, null);
 			DebugLocation(213, 16);
-			ID15=(CommonTree)Match(input,ID,Follow._ID_in_option552); 
+			ID15=(CommonTree)Match(input,ID,Follow._ID_in_option552);
 			DebugLocation(213, 19);
 			PushFollow(Follow._expr_in_option554);
 			expr();
 			PopFollow();
 
 
-			Match(input, TokenTypes.Up, null); 
+			Match(input, TokenTypes.Up, null);
 
 			DebugLocation(213, 25);
 			setOption(ID15);
@@ -1655,14 +1655,14 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				{
 				DebugLocation(217, 4);
 				DebugLocation(217, 6);
-				ZIP16=(CommonTree)Match(input,ZIP,Follow._ZIP_in_expr573); 
+				ZIP16=(CommonTree)Match(input,ZIP,Follow._ZIP_in_expr573);
 
-				Match(input, TokenTypes.Down, null); 
+				Match(input, TokenTypes.Down, null);
 				DebugLocation(217, 10);
 				DebugLocation(217, 12);
-				Match(input,ELEMENTS,Follow._ELEMENTS_in_expr576); 
+				Match(input,ELEMENTS,Follow._ELEMENTS_in_expr576);
 
-				Match(input, TokenTypes.Down, null); 
+				Match(input, TokenTypes.Down, null);
 				DebugLocation(217, 21);
 				// Compiler\\CodeGenerator.g3:217:21: ( expr )+
 				int cnt12=0;
@@ -1713,7 +1713,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				} finally { DebugExitSubRule(12); }
 
 
-				Match(input, TokenTypes.Up, null); 
+				Match(input, TokenTypes.Up, null);
 
 				DebugLocation(217, 38);
 				PushFollow(Follow._mapTemplateRef_in_expr586);
@@ -1721,7 +1721,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				PopFollow();
 
 
-				Match(input, TokenTypes.Up, null); 
+				Match(input, TokenTypes.Up, null);
 
 				DebugLocation(218, 3);
 				emit1(ZIP16, Bytecode.INSTR_ZIP_MAP, ne);
@@ -1734,9 +1734,9 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				{
 				DebugLocation(219, 4);
 				DebugLocation(219, 6);
-				MAP17=(CommonTree)Match(input,MAP,Follow._MAP_in_expr598); 
+				MAP17=(CommonTree)Match(input,MAP,Follow._MAP_in_expr598);
 
-				Match(input, TokenTypes.Down, null); 
+				Match(input, TokenTypes.Down, null);
 				DebugLocation(219, 10);
 				PushFollow(Follow._expr_in_expr600);
 				expr();
@@ -1792,13 +1792,13 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				} finally { DebugExitSubRule(13); }
 
 
-				Match(input, TokenTypes.Up, null); 
+				Match(input, TokenTypes.Up, null);
 
 				DebugLocation(220, 3);
 
 						if ( nt>1 ) emit1(MAP17, nt>1?Bytecode.INSTR_ROT_MAP:Bytecode.INSTR_MAP, nt);
 						else emit(MAP17, Bytecode.INSTR_MAP);
-						
+
 
 				}
 				break;
@@ -1893,18 +1893,18 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				{
 				DebugLocation(228, 7);
 				DebugLocation(228, 9);
-				PROP18=(CommonTree)Match(input,PROP,Follow._PROP_in_prop633); 
+				PROP18=(CommonTree)Match(input,PROP,Follow._PROP_in_prop633);
 
-				Match(input, TokenTypes.Down, null); 
+				Match(input, TokenTypes.Down, null);
 				DebugLocation(228, 14);
 				PushFollow(Follow._expr_in_prop635);
 				expr();
 				PopFollow();
 
 				DebugLocation(228, 19);
-				ID19=(CommonTree)Match(input,ID,Follow._ID_in_prop637); 
+				ID19=(CommonTree)Match(input,ID,Follow._ID_in_prop637);
 
-				Match(input, TokenTypes.Up, null); 
+				Match(input, TokenTypes.Up, null);
 
 				DebugLocation(228, 28);
 				emit1(PROP18, Bytecode.INSTR_LOAD_PROP, (ID19!=null?ID19.Text:default(string)));
@@ -1917,9 +1917,9 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				{
 				DebugLocation(229, 4);
 				DebugLocation(229, 6);
-				PROP_IND20=(CommonTree)Match(input,PROP_IND,Follow._PROP_IND_in_prop651); 
+				PROP_IND20=(CommonTree)Match(input,PROP_IND,Follow._PROP_IND_in_prop651);
 
-				Match(input, TokenTypes.Down, null); 
+				Match(input, TokenTypes.Down, null);
 				DebugLocation(229, 15);
 				PushFollow(Follow._expr_in_prop653);
 				expr();
@@ -1931,7 +1931,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				PopFollow();
 
 
-				Match(input, TokenTypes.Up, null); 
+				Match(input, TokenTypes.Up, null);
 
 				DebugLocation(229, 29);
 				emit(PROP_IND20, Bytecode.INSTR_LOAD_PROP_IND);
@@ -2020,11 +2020,11 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				{
 				DebugLocation(233, 4);
 				DebugLocation(233, 7);
-				INCLUDE21=(CommonTree)Match(input,INCLUDE,Follow._INCLUDE_in_mapTemplateRef676); 
+				INCLUDE21=(CommonTree)Match(input,INCLUDE,Follow._INCLUDE_in_mapTemplateRef676);
 
-				Match(input, TokenTypes.Down, null); 
+				Match(input, TokenTypes.Down, null);
 				DebugLocation(233, 15);
-				ID23=(CommonTree)Match(input,ID,Follow._ID_in_mapTemplateRef678); 
+				ID23=(CommonTree)Match(input,ID,Follow._ID_in_mapTemplateRef678);
 				DebugLocation(234, 4);
 				for (int i=1; i<=num_exprs; i++) emit(INCLUDE21,Bytecode.INSTR_NULL);
 				DebugLocation(235, 4);
@@ -2033,14 +2033,14 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				PopFollow();
 
 
-				Match(input, TokenTypes.Up, null); 
+				Match(input, TokenTypes.Up, null);
 
 				DebugLocation(237, 3);
 
 						if ( (args22!=null?((CodeGenerator.args_return)args22).passThru:default(bool)) ) emit1(retval.Start, Bytecode.INSTR_PASSTHRU, (ID23!=null?ID23.Text:default(string)));
 						if ( (args22!=null?((CodeGenerator.args_return)args22).namedArgs:default(bool)) ) emit1(INCLUDE21, Bytecode.INSTR_NEW_BOX_ARGS, (ID23!=null?ID23.Text:default(string)));
 						else emit2(INCLUDE21, Bytecode.INSTR_NEW, (ID23!=null?ID23.Text:default(string)), (args22!=null?((CodeGenerator.args_return)args22).n:default(int))+num_exprs);
-						
+
 
 				}
 				break;
@@ -2062,7 +2062,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				        emit2((subtemplate24!=null?((CommonTree)subtemplate24.Start):default(CommonTree)), Bytecode.INSTR_NEW,
 					              (subtemplate24!=null?((CodeGenerator.subtemplate_return)subtemplate24).name:default(string)),
 					              num_exprs);
-						
+
 
 				}
 				break;
@@ -2072,9 +2072,9 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				{
 				DebugLocation(253, 4);
 				DebugLocation(253, 7);
-				INCLUDE_IND25=(CommonTree)Match(input,INCLUDE_IND,Follow._INCLUDE_IND_in_mapTemplateRef713); 
+				INCLUDE_IND25=(CommonTree)Match(input,INCLUDE_IND,Follow._INCLUDE_IND_in_mapTemplateRef713);
 
-				Match(input, TokenTypes.Down, null); 
+				Match(input, TokenTypes.Down, null);
 				DebugLocation(253, 19);
 				PushFollow(Follow._expr_in_mapTemplateRef715);
 				expr();
@@ -2084,7 +2084,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 
 							emit(INCLUDE_IND25,Bytecode.INSTR_TOSTR);
 							for (int i=1; i<=num_exprs; i++) emit(INCLUDE_IND25,Bytecode.INSTR_NULL);
-							
+
 				DebugLocation(258, 4);
 				PushFollow(Follow._args_in_mapTemplateRef725);
 				args26=args();
@@ -2093,7 +2093,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				DebugLocation(259, 4);
 				emit1(INCLUDE_IND25, Bytecode.INSTR_NEW_IND, (args26!=null?((CodeGenerator.args_return)args26).n:default(int))+num_exprs);
 
-				Match(input, TokenTypes.Up, null); 
+				Match(input, TokenTypes.Up, null);
 
 
 				}
@@ -2207,11 +2207,11 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				{
 				DebugLocation(264, 4);
 				DebugLocation(264, 6);
-				Match(input,EXEC_FUNC,Follow._EXEC_FUNC_in_includeExpr747); 
+				Match(input,EXEC_FUNC,Follow._EXEC_FUNC_in_includeExpr747);
 
-				Match(input, TokenTypes.Down, null); 
+				Match(input, TokenTypes.Down, null);
 				DebugLocation(264, 16);
-				ID27=(CommonTree)Match(input,ID,Follow._ID_in_includeExpr749); 
+				ID27=(CommonTree)Match(input,ID,Follow._ID_in_includeExpr749);
 				DebugLocation(264, 19);
 				// Compiler\\CodeGenerator.g3:264:19: ( expr )?
 				int alt17=2;
@@ -2243,7 +2243,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				} finally { DebugExitSubRule(17); }
 
 
-				Match(input, TokenTypes.Up, null); 
+				Match(input, TokenTypes.Up, null);
 
 				DebugLocation(264, 27);
 				func(ID27);
@@ -2256,25 +2256,25 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				{
 				DebugLocation(265, 4);
 				DebugLocation(265, 6);
-				INCLUDE30=(CommonTree)Match(input,INCLUDE,Follow._INCLUDE_in_includeExpr762); 
+				INCLUDE30=(CommonTree)Match(input,INCLUDE,Follow._INCLUDE_in_includeExpr762);
 
-				Match(input, TokenTypes.Down, null); 
+				Match(input, TokenTypes.Down, null);
 				DebugLocation(265, 14);
-				ID29=(CommonTree)Match(input,ID,Follow._ID_in_includeExpr764); 
+				ID29=(CommonTree)Match(input,ID,Follow._ID_in_includeExpr764);
 				DebugLocation(265, 17);
 				PushFollow(Follow._args_in_includeExpr766);
 				args28=args();
 				PopFollow();
 
 
-				Match(input, TokenTypes.Up, null); 
+				Match(input, TokenTypes.Up, null);
 
 				DebugLocation(266, 3);
 
 						if ( (args28!=null?((CodeGenerator.args_return)args28).passThru:default(bool)) ) emit1(retval.Start, Bytecode.INSTR_PASSTHRU, (ID29!=null?ID29.Text:default(string)));
 						if ( (args28!=null?((CodeGenerator.args_return)args28).namedArgs:default(bool)) ) emit1(INCLUDE30, Bytecode.INSTR_NEW_BOX_ARGS, (ID29!=null?ID29.Text:default(string)));
 						else emit2(INCLUDE30, Bytecode.INSTR_NEW, (ID29!=null?ID29.Text:default(string)), (args28!=null?((CodeGenerator.args_return)args28).n:default(int)));
-						
+
 
 				}
 				break;
@@ -2284,25 +2284,25 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				{
 				DebugLocation(271, 4);
 				DebugLocation(271, 6);
-				INCLUDE_SUPER33=(CommonTree)Match(input,INCLUDE_SUPER,Follow._INCLUDE_SUPER_in_includeExpr777); 
+				INCLUDE_SUPER33=(CommonTree)Match(input,INCLUDE_SUPER,Follow._INCLUDE_SUPER_in_includeExpr777);
 
-				Match(input, TokenTypes.Down, null); 
+				Match(input, TokenTypes.Down, null);
 				DebugLocation(271, 20);
-				ID32=(CommonTree)Match(input,ID,Follow._ID_in_includeExpr779); 
+				ID32=(CommonTree)Match(input,ID,Follow._ID_in_includeExpr779);
 				DebugLocation(271, 23);
 				PushFollow(Follow._args_in_includeExpr781);
 				args31=args();
 				PopFollow();
 
 
-				Match(input, TokenTypes.Up, null); 
+				Match(input, TokenTypes.Up, null);
 
 				DebugLocation(272, 3);
 
 						if ( (args31!=null?((CodeGenerator.args_return)args31).passThru:default(bool)) ) emit1(retval.Start, Bytecode.INSTR_PASSTHRU, (ID32!=null?ID32.Text:default(string)));
 						if ( (args31!=null?((CodeGenerator.args_return)args31).namedArgs:default(bool)) ) emit1(INCLUDE_SUPER33, Bytecode.INSTR_SUPER_NEW_BOX_ARGS, (ID32!=null?ID32.Text:default(string)));
 						else emit2(INCLUDE_SUPER33, Bytecode.INSTR_SUPER_NEW, (ID32!=null?ID32.Text:default(string)), (args31!=null?((CodeGenerator.args_return)args31).n:default(int)));
-						
+
 
 				}
 				break;
@@ -2312,20 +2312,20 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				{
 				DebugLocation(277, 4);
 				DebugLocation(277, 6);
-				INCLUDE_REGION35=(CommonTree)Match(input,INCLUDE_REGION,Follow._INCLUDE_REGION_in_includeExpr792); 
+				INCLUDE_REGION35=(CommonTree)Match(input,INCLUDE_REGION,Follow._INCLUDE_REGION_in_includeExpr792);
 
-				Match(input, TokenTypes.Down, null); 
+				Match(input, TokenTypes.Down, null);
 				DebugLocation(277, 21);
-				ID34=(CommonTree)Match(input,ID,Follow._ID_in_includeExpr794); 
+				ID34=(CommonTree)Match(input,ID,Follow._ID_in_includeExpr794);
 
-				Match(input, TokenTypes.Up, null); 
+				Match(input, TokenTypes.Up, null);
 
 				DebugLocation(277, 26);
 
 													CompiledTemplate impl =
 														TemplateCompiler.DefineBlankRegion(outermostImpl, ID34.Token);
 													emit2(INCLUDE_REGION35,Bytecode.INSTR_NEW,impl.Name,0);
-													
+
 
 				}
 				break;
@@ -2335,19 +2335,19 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				{
 				DebugLocation(282, 4);
 				DebugLocation(282, 6);
-				INCLUDE_SUPER_REGION37=(CommonTree)Match(input,INCLUDE_SUPER_REGION,Follow._INCLUDE_SUPER_REGION_in_includeExpr804); 
+				INCLUDE_SUPER_REGION37=(CommonTree)Match(input,INCLUDE_SUPER_REGION,Follow._INCLUDE_SUPER_REGION_in_includeExpr804);
 
-				Match(input, TokenTypes.Down, null); 
+				Match(input, TokenTypes.Down, null);
 				DebugLocation(282, 27);
-				ID36=(CommonTree)Match(input,ID,Follow._ID_in_includeExpr806); 
+				ID36=(CommonTree)Match(input,ID,Follow._ID_in_includeExpr806);
 
-				Match(input, TokenTypes.Up, null); 
+				Match(input, TokenTypes.Up, null);
 
 				DebugLocation(282, 31);
 
 													string mangled = TemplateGroup.GetMangledRegionName(outermostImpl.Name, ID36.Text);
 													emit2(INCLUDE_SUPER_REGION37,Bytecode.INSTR_SUPER_NEW,mangled,0);
-													
+
 
 				}
 				break;
@@ -2471,7 +2471,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				// Compiler\\CodeGenerator.g3:290:4: ID
 				{
 				DebugLocation(290, 4);
-				ID38=(CommonTree)Match(input,ID,Follow._ID_in_primary825); 
+				ID38=(CommonTree)Match(input,ID,Follow._ID_in_primary825);
 				DebugLocation(290, 10);
 				refAttr(ID38);
 
@@ -2482,7 +2482,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				// Compiler\\CodeGenerator.g3:291:4: STRING
 				{
 				DebugLocation(291, 4);
-				STRING39=(CommonTree)Match(input,STRING,Follow._STRING_in_primary835); 
+				STRING39=(CommonTree)Match(input,STRING,Follow._STRING_in_primary835);
 				DebugLocation(291, 13);
 				emit1(STRING39,Bytecode.INSTR_LOAD_STR, Utility.Strip((STRING39!=null?STRING39.Text:default(string)),1));
 
@@ -2493,7 +2493,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				// Compiler\\CodeGenerator.g3:292:4: TRUE
 				{
 				DebugLocation(292, 4);
-				TRUE40=(CommonTree)Match(input,TRUE,Follow._TRUE_in_primary845); 
+				TRUE40=(CommonTree)Match(input,TRUE,Follow._TRUE_in_primary845);
 				DebugLocation(292, 11);
 				emit(TRUE40, Bytecode.INSTR_TRUE);
 
@@ -2504,7 +2504,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				// Compiler\\CodeGenerator.g3:293:4: FALSE
 				{
 				DebugLocation(293, 4);
-				FALSE41=(CommonTree)Match(input,FALSE,Follow._FALSE_in_primary854); 
+				FALSE41=(CommonTree)Match(input,FALSE,Follow._FALSE_in_primary854);
 				DebugLocation(293, 12);
 				emit(FALSE41, Bytecode.INSTR_FALSE);
 
@@ -2542,9 +2542,9 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				{
 				DebugLocation(297, 4);
 				DebugLocation(297, 7);
-				INCLUDE_IND43=(CommonTree)Match(input,INCLUDE_IND,Follow._INCLUDE_IND_in_primary897); 
+				INCLUDE_IND43=(CommonTree)Match(input,INCLUDE_IND,Follow._INCLUDE_IND_in_primary897);
 
-				Match(input, TokenTypes.Down, null); 
+				Match(input, TokenTypes.Down, null);
 				DebugLocation(298, 4);
 				PushFollow(Follow._expr_in_primary903);
 				expr();
@@ -2560,7 +2560,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				DebugLocation(299, 10);
 				emit1(INCLUDE_IND43, Bytecode.INSTR_NEW_IND, (args44!=null?((CodeGenerator.args_return)args44).n:default(int)));
 
-				Match(input, TokenTypes.Up, null); 
+				Match(input, TokenTypes.Up, null);
 
 
 				}
@@ -2571,16 +2571,16 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				{
 				DebugLocation(301, 4);
 				DebugLocation(301, 6);
-				TO_STR45=(CommonTree)Match(input,TO_STR,Follow._TO_STR_in_primary926); 
+				TO_STR45=(CommonTree)Match(input,TO_STR,Follow._TO_STR_in_primary926);
 
-				Match(input, TokenTypes.Down, null); 
+				Match(input, TokenTypes.Down, null);
 				DebugLocation(301, 13);
 				PushFollow(Follow._expr_in_primary928);
 				expr();
 				PopFollow();
 
 
-				Match(input, TokenTypes.Up, null); 
+				Match(input, TokenTypes.Up, null);
 
 				DebugLocation(301, 19);
 				emit(TO_STR45, Bytecode.INSTR_TOSTR);
@@ -2821,18 +2821,18 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 						{
 						DebugLocation(309, 5);
 						DebugLocation(309, 9);
-						eq=(CommonTree)Match(input,EQUALS,Follow._EQUALS_in_args976); 
+						eq=(CommonTree)Match(input,EQUALS,Follow._EQUALS_in_args976);
 
-						Match(input, TokenTypes.Down, null); 
+						Match(input, TokenTypes.Down, null);
 						DebugLocation(309, 14);
-						ID46=(CommonTree)Match(input,ID,Follow._ID_in_args978); 
+						ID46=(CommonTree)Match(input,ID,Follow._ID_in_args978);
 						DebugLocation(309, 17);
 						PushFollow(Follow._expr_in_args980);
 						expr();
 						PopFollow();
 
 
-						Match(input, TokenTypes.Up, null); 
+						Match(input, TokenTypes.Up, null);
 
 						DebugLocation(310, 4);
 						retval.n++; emit1(eq, Bytecode.INSTR_STORE_ARG, defineString((ID46!=null?ID46.Text:default(string))));
@@ -2874,7 +2874,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 					// Compiler\\CodeGenerator.g3:312:4: '...'
 					{
 					DebugLocation(312, 4);
-					Match(input,ELLIPSIS,Follow._ELLIPSIS_in_args996); 
+					Match(input,ELLIPSIS,Follow._ELLIPSIS_in_args996);
 					DebugLocation(312, 10);
 					retval.passThru =true;
 
@@ -2892,7 +2892,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				// Compiler\\CodeGenerator.g3:313:4: '...'
 				{
 				DebugLocation(313, 4);
-				Match(input,ELLIPSIS,Follow._ELLIPSIS_in_args1005); 
+				Match(input,ELLIPSIS,Follow._ELLIPSIS_in_args1005);
 				DebugLocation(313, 10);
 				retval.passThru =true; emit(retval.Start, Bytecode.INSTR_ARGS); retval.namedArgs =true;
 
@@ -2900,7 +2900,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				break;
 			case 4:
 				DebugEnterAlt(4);
-				// Compiler\\CodeGenerator.g3:315:3: 
+				// Compiler\\CodeGenerator.g3:315:3:
 				{
 				}
 				break;
@@ -2952,11 +2952,11 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 			emit(retval.Start, Bytecode.INSTR_LIST);
 			DebugLocation(318, 3);
 			DebugLocation(318, 5);
-			Match(input,LIST,Follow._LIST_in_list1025); 
+			Match(input,LIST,Follow._LIST_in_list1025);
 
 			if (input.LA(1) == TokenTypes.Down)
 			{
-				Match(input, TokenTypes.Down, null); 
+				Match(input, TokenTypes.Down, null);
 				DebugLocation(318, 10);
 				// Compiler\\CodeGenerator.g3:318:10: ( listElement )*
 				try { DebugEnterSubRule(24);
@@ -3001,7 +3001,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				} finally { DebugExitSubRule(24); }
 
 
-				Match(input, TokenTypes.Up, null); 
+				Match(input, TokenTypes.Up, null);
 			}
 
 
@@ -3084,7 +3084,7 @@ public partial class CodeGenerator : Antlr.Runtime.Tree.TreeParser
 				// Compiler\\CodeGenerator.g3:321:22: NULL
 				{
 				DebugLocation(321, 22);
-				NULL48=(CommonTree)Match(input,NULL,Follow._NULL_in_listElement1049); 
+				NULL48=(CommonTree)Match(input,NULL,Follow._NULL_in_listElement1049);
 				DebugLocation(321, 27);
 				emit(NULL48,Bytecode.INSTR_NULL);
 

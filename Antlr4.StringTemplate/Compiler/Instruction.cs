@@ -73,12 +73,12 @@ public sealed class Instruction
         instructions[(int)Bytecode.INSTR_WRITE_LOCAL] = new Instruction("write_local", OperandType.Int);
     }
 
-    public Instruction(string name)
+    private Instruction(string name)
     : this(name, OperandType.None, OperandType.None) {
         nopnds = 0;
     }
 
-    public Instruction(string name, OperandType a)
+    private Instruction(string name, OperandType a)
     : this(name, a, OperandType.None) {
         nopnds = 1;
     }

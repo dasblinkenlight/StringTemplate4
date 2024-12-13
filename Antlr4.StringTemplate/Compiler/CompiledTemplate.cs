@@ -31,28 +31,40 @@
  */
 
 using System;
-
-namespace Antlr4.StringTemplate.Compiler;
-
+using System.IO;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Antlr.Runtime;
 using Antlr.Runtime.Tree;
-using Misc;
+using Antlr4.StringTemplate.Misc;
 
-using ArgumentException = ArgumentException;
-using ArgumentNullException = ArgumentNullException;
-using Math = Math;
-using NotSupportedException = NotSupportedException;
-using StringWriter = System.IO.StringWriter;
+namespace Antlr4.StringTemplate.Compiler;
 
-/** The result of compiling an Template.  Contains all the bytecode instructions,
+/** The result of compiling a Template.  Contains all the bytecode instructions,
  *  string table, bytecode address to source code map, and other bookkeeping
- *  info.  It's the implementation of an Template you might say.  All instances
+ *  info.  It's the implementation of a Template you might say.  All instances
  *  of the same template share a single implementation (impl field).
  */
 public class CompiledTemplate {
+
+    /** &lt;@r()&gt;, &lt;@r&gt;...&lt;@end&gt;, and @t.r() ::= "..." defined manually by coder */
+    public enum RegionType {
+        /// <summary>
+        /// The region is defined by &lt;@r()&gt;
+        /// </summary>
+        Implicit,
+
+        /// <summary>
+        /// The region is defined by &lt;@r&gt;...&lt;@end&gt;
+        /// </summary>
+        Embedded,
+
+        /// <summary>
+        /// The region is defined by @t.r ::= "..."
+        /// </summary>
+        Explicit
+    }
 
     private static readonly ReadOnlyCollection<CompiledTemplate> EmptyImplicitlyDefinedTemplates =
         new (Array.Empty<CompiledTemplate>());
@@ -83,15 +95,9 @@ public class CompiledTemplate {
     private int _numberOfArgsWithDefaultValues;
 
     public string[] strings;     // string operands of instructions
-    public byte[] instrs;        // byte-addressable code memory.
+    public byte[] instrs = new byte[TemplateCompiler.InitialCodeSize];        // byte-addressable code memory.
     public int codeSize;
-    public Interval[] sourceMap; // maps IP to range in template pattern
-
-    public CompiledTemplate() {
-        instrs = new byte[TemplateCompiler.InitialCodeSize];
-        sourceMap = new Interval[TemplateCompiler.InitialCodeSize];
-        Template = string.Empty;
-    }
+    public Interval[] sourceMap = new Interval[TemplateCompiler.InitialCodeSize]; // maps IP to range in template pattern
 
     public string Name { get; set; }
 
@@ -100,7 +106,7 @@ public class CompiledTemplate {
 
         set {
             if (value == null) {
-                throw new ArgumentNullException("value");
+                throw new ArgumentNullException(nameof(value));
             }
             if (!value.EndsWith("/")) {
                 throw new ArgumentException("The prefix must end with a trailing '/'.");
@@ -113,7 +119,7 @@ public class CompiledTemplate {
      *  initial "compilation"). Useful for debugging.  Even for
      *  subtemplates, this is entire overall template.
      */
-    public string Template { get; set; }
+    public string Template { get; set; } = string.Empty;
 
     /** The token that begins template definition; could be &lt;@r&gt; of region. */
     public IToken TemplateDefStartToken { get; set; }
@@ -158,29 +164,9 @@ public class CompiledTemplate {
      *  own.  We need to prevent more than one manual def though.  Between
      *  this var and isEmbeddedRegion we can determine these cases.
      */
-    public Template.RegionType RegionDefType { get; set; }
+    public RegionType RegionDefType { get; set; }
 
     public bool IsAnonSubtemplate { get; set; }
-
-    public Interval TemplateRange {
-        get {
-            if (!IsAnonSubtemplate) {
-                return new Interval(0, Template.Length);
-            }
-            var start = int.MaxValue;
-            var stop = int.MinValue;
-            foreach (var interval in sourceMap) {
-                if (interval == null) {
-                    continue;
-                }
-                start = Math.Min(start, interval.Start);
-                stop = Math.Max(stop, interval.End);
-            }
-            return start <= stop + 1 ?
-                new Interval(start, stop) :
-                new Interval(0, Template.Length);
-        }
-    }
 
     public int NumberOfArgsWithDefaultValues => _numberOfArgsWithDefaultValues;
 
@@ -197,8 +183,8 @@ public class CompiledTemplate {
     /// not contain formal arguments.
     /// </summary>
     /// <returns>
-    /// A copy of the current <see cref="CompiledTemplate"/> instance. The copy is a shallow copy, with the
-    /// exception of the <see cref="_formalArguments"/> field which is also cloned.
+    /// A copy of the current <see cref="CompiledTemplate"/> instance. The copy is a shallow copy,
+    /// except for the <see cref="_formalArguments"/> field which is also cloned.
     /// </returns>
     public CompiledTemplate Clone() {
         var clone = (CompiledTemplate)MemberwiseClone();
@@ -213,9 +199,7 @@ public class CompiledTemplate {
         if (sub.Name[0] != '/') {
             sub.Name = sub.Prefix + sub.Name;
         }
-        if (implicitlyDefinedTemplates == null) {
-            implicitlyDefinedTemplates = [];
-        }
+        implicitlyDefinedTemplates ??= [];
         implicitlyDefinedTemplates.Add(sub);
     }
 
@@ -240,7 +224,7 @@ public class CompiledTemplate {
                         break;
 
                     case GroupParser.LBRACK:
-                        fa.DefaultValue = new object[0];
+                        fa.DefaultValue = Array.Empty<object>();
                         break;
 
                     case GroupParser.TRUE:
@@ -268,9 +252,7 @@ public class CompiledTemplate {
 
     /** Used by Template.Add() to Add args one by one w/o turning on full formal args definition signal */
     public void AddArgument(FormalArgument a) {
-        if (FormalArguments == null) {
-            FormalArguments = [];
-        }
+        FormalArguments ??= [];
         a.Index = FormalArguments.Count;
         FormalArguments.Add(a);
         if (a.DefaultValueToken != null) {
@@ -289,18 +271,16 @@ public class CompiledTemplate {
     }
 
     public string GetInstructions() {
-        var dis = new BytecodeDisassembler(this);
-        return dis.GetInstructions();
+        return BytecodeDisassembler.GetInstructions(this);
     }
 
     private string Disassemble() {
-        var dis = new BytecodeDisassembler(this);
         using var sw = new StringWriter();
-        sw.WriteLine(dis.Disassemble());
+        sw.WriteLine(BytecodeDisassembler.Disassemble(this));
         sw.WriteLine("Strings:");
-        sw.WriteLine(dis.GetStrings());
+        sw.WriteLine(BytecodeDisassembler.GetStrings(this));
         sw.WriteLine("Bytecode to template map:");
-        sw.WriteLine(dis.GetSourceMap());
+        sw.WriteLine(BytecodeDisassembler.GetSourceMap(this));
         return sw.ToString();
     }
 

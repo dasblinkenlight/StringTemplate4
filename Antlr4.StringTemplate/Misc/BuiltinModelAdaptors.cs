@@ -1,10 +1,10 @@
-﻿/*
+/*
  * [The "BSD license"]
  * Copyright (c) 2011 Terence Parr
  * All rights reserved.
  *
  * Conversion to C#:
- * Copyright (c) 2011 Sam Harwell, Tunnel Vision Laboratories, LLC
+ * Copyright (c) 2024 Sergey Kalinichenko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,71 +30,86 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate.Misc;
-
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using ArgumentNullException = System.ArgumentNullException;
-using FieldInfo = System.Reflection.FieldInfo;
-using MethodInfo = System.Reflection.MethodInfo;
-using PropertyInfo = System.Reflection.PropertyInfo;
-using Type = System.Type;
+using System.Reflection;
 
-public class ObjectModelAdaptor : IModelAdaptor
-{
-    private static readonly Dictionary<Type, Dictionary<string, System.Func<object, object>>> _memberAccessors =
-        new Dictionary<Type, Dictionary<string, System.Func<object, object>>>();
+namespace Antlr4.StringTemplate.Misc;
 
-    public virtual object GetProperty(Interpreter interpreter, TemplateFrame frame, object o, object property, string propertyName)
-    {
-        if (o == null)
-            throw new ArgumentNullException("o");
+public static class BuiltinModelAdaptors {
 
-        var c = o.GetType();
-        if (o is DynamicXml xml)
-        {
-            xml.TryGetMember(new Goof(propertyName, true), out var x3);
-            return x3;
-        }    
+    private static readonly Dictionary<Type, Dictionary<string, Func<object, object>>> _memberAccessors = new();
 
-        if (property == null)
-            throw new TemplateNoSuchPropertyException(o, string.Format("{0}.{1}", c.FullName, propertyName ?? "null"));
-
+    public static object MapModelAdaptorDelegate(object o, object property, string propertyName) {
+        var map = (IDictionary)o;
         object value;
-        var accessor = FindMember(c, propertyName);
-        if (accessor != null)
-        {
-            value = accessor(o);
+        if (property == null) {
+            value = map[TemplateGroup.DefaultKey];
+        } else if (map.Contains(property)) {
+            value = map[property];
+        } else if (map.Contains(propertyName)) {
+            value = map[propertyName]; // if we can't find the key, try ToString version
+        } else if (property.Equals("keys")) {
+            value = map.Keys;
+        } else if (property.Equals("values")) {
+            value = map.Values;
+        } else {
+            value = map[TemplateGroup.DefaultKey]; // not found, use default
         }
-        else
-        {
-            throw new TemplateNoSuchPropertyException(o, string.Format("{0}.{1}", c.FullName, propertyName));
+        if (ReferenceEquals(value, TemplateGroup.DictionaryKey)) {
+            value = property;
         }
-
         return value;
     }
 
-    private static System.Func<object, object> FindMember(Type type, string name)
-    {
-        if (type == null)
-            throw new ArgumentNullException("type");
-        if (name == null)
-            throw new ArgumentNullException("name");
+    public static object AggregateModelAdaptorDelegate(object o, object property, string propertyName) =>
+        MapModelAdaptorDelegate(((Aggregate)o).Properties, property, propertyName);
 
-        lock (_memberAccessors)
-        {
-            Dictionary<string, System.Func<object, object>> members;
-            System.Func<object, object> accessor = null;
+    public static object TemplateModelAdaptorDelegate(object o, object _, string propertyName) =>
+        ((Template)o).GetAttribute(propertyName);
 
-            if (_memberAccessors.TryGetValue(type, out members))
-            {
-                if (members.TryGetValue(name, out accessor))
+    public static object ObjectModelAdaptorDelegate(object o, object property, string propertyName) {
+        if (o == null) {
+            throw new ArgumentNullException(nameof(o));
+        }
+        var c = o.GetType();
+        if (o is DynamicXml xml) {
+            xml.TryGetMember(new Goof(propertyName, true), out var x3);
+            return x3;
+        }
+        if (property == null) {
+            throw new TemplateNoSuchPropertyException(o, $"{c.FullName}.{propertyName ?? "null"}");
+        }
+        object value;
+        var accessor = FindMember(c, propertyName);
+        if (accessor != null) {
+            value = accessor(o);
+        } else {
+            throw new TemplateNoSuchPropertyException(o, $"{c.FullName}.{propertyName}");
+        }
+        return value;
+    }
+
+    private static Func<object, object> FindMember(Type type, string name) {
+        if (type == null) {
+            throw new ArgumentNullException(nameof(type));
+        }
+
+        if (name == null) {
+            throw new ArgumentNullException(nameof(name));
+        }
+        lock (_memberAccessors) {
+            Func<object, object> accessor = null;
+
+            if (_memberAccessors.TryGetValue(type, out var members)) {
+                if (members.TryGetValue(name, out accessor)) {
                     return accessor;
-            }
-            else
-            {
-                members = new Dictionary<string, System.Func<object, object>>();
+                }
+            } else {
+                members = new Dictionary<string, Func<object, object>>();
                 _memberAccessors[type] = members;
             }
 
@@ -103,8 +118,7 @@ public class ObjectModelAdaptor : IModelAdaptor
             var checkOriginalName = !string.Equals(methodSuffix, name);
 
             MethodInfo method = null;
-            if (method == null)
-            {
+            if (method == null) {
                 var p = type.GetProperty(methodSuffix);
                 if (p == null && checkOriginalName)
                     p = type.GetProperty(name);
@@ -113,46 +127,36 @@ public class ObjectModelAdaptor : IModelAdaptor
                     method = p.GetGetMethod();
             }
 
-            if (method == null)
-            {
+            if (method == null) {
                 method = type.GetMethod("Get" + methodSuffix, Type.EmptyTypes);
                 if (method == null && checkOriginalName)
                     method = type.GetMethod("Get" + name, Type.EmptyTypes);
             }
 
-            if (method == null)
-            {
+            if (method == null) {
                 method = type.GetMethod("get_" + methodSuffix, Type.EmptyTypes);
                 if (method == null && checkOriginalName)
                     method = type.GetMethod("get_" + name, Type.EmptyTypes);
             }
 
-            if (method == null)
-            {
+            if (method == null) {
                 method = type.GetMethod(name, Type.EmptyTypes);
             }
 
-            if (method != null)
-            {
+            if (method != null) {
                 accessor = BuildAccessor(method);
-            }
-            else
-            {
+            } else {
                 // try for an indexer
                 method = type.GetMethod("get_Item", [typeof(string)]);
-                if (method == null)
-                {
+                if (method == null) {
                     var property = type.GetProperties().FirstOrDefault(IsIndexer);
                     if (property != null)
                         method = property.GetGetMethod();
                 }
 
-                if (method != null)
-                {
+                if (method != null) {
                     accessor = BuildAccessor(method, name);
-                }
-                else
-                {
+                } else {
                     // try for a visible field
                     var field = type.GetField(name);
                     // also check .NET naming convention for fields
@@ -170,22 +174,18 @@ public class ObjectModelAdaptor : IModelAdaptor
         }
     }
 
-    private static bool IsIndexer(PropertyInfo propertyInfo)
-    {
-        if (propertyInfo == null)
-            throw new ArgumentNullException("propertyInfo");
-
+    private static bool IsIndexer(PropertyInfo propertyInfo) {
+        if (propertyInfo == null) {
+            throw new ArgumentNullException(nameof(propertyInfo));
+        }
         var indexParameters = propertyInfo.GetIndexParameters();
-        return indexParameters != null
-               && indexParameters.Length > 0
-               && indexParameters[0].ParameterType == typeof(string);
+        return indexParameters.Length > 0 && indexParameters[0].ParameterType == typeof(string);
     }
 
-    private static System.Func<object, object> BuildAccessor(MethodInfo method)
-    {
+    private static Func<object, object> BuildAccessor(MethodInfo method) {
         var obj = Expression.Parameter(typeof(object), "obj");
-        var instance = !method.IsStatic ? Expression.Convert(obj, method.DeclaringType) : null;
-        var expr = Expression.Lambda<System.Func<object, object>>(
+        var instance = !method.IsStatic ? Expression.Convert(obj, method.DeclaringType!) : null;
+        var expr = Expression.Lambda<Func<object, object>>(
             Expression.Convert(
                 Expression.Call(instance, method),
                 typeof(object)),
@@ -197,11 +197,10 @@ public class ObjectModelAdaptor : IModelAdaptor
     /// <summary>
     /// Builds an accessor for an indexer property that returns a takes a string argument.
     /// </summary>
-    private static System.Func<object, object> BuildAccessor(MethodInfo method, string argument)
-    {
+    private static Func<object, object> BuildAccessor(MethodInfo method, string argument) {
         var obj = Expression.Parameter(typeof(object), "obj");
-        var instance = !method.IsStatic ? Expression.Convert(obj, method.DeclaringType) : null;
-        var expr = Expression.Lambda<System.Func<object, object>>(
+        var instance = !method.IsStatic ? Expression.Convert(obj, method.DeclaringType!) : null;
+        var expr = Expression.Lambda<Func<object, object>>(
             Expression.Convert(
                 Expression.Call(instance, method, Expression.Constant(argument)),
                 typeof(object)),
@@ -210,11 +209,10 @@ public class ObjectModelAdaptor : IModelAdaptor
         return expr.Compile();
     }
 
-    private static System.Func<object, object> BuildAccessor(FieldInfo field)
-    {
+    private static Func<object, object> BuildAccessor(FieldInfo field) {
         var obj = Expression.Parameter(typeof(object), "obj");
-        var instance = !field.IsStatic ? Expression.Convert(obj, field.DeclaringType) : null;
-        var expr = Expression.Lambda<System.Func<object, object>>(
+        var instance = !field.IsStatic ? Expression.Convert(obj, field.DeclaringType!) : null;
+        var expr = Expression.Lambda<Func<object, object>>(
             Expression.Convert(
                 Expression.Field(instance, field),
                 typeof(object)),
@@ -222,4 +220,5 @@ public class ObjectModelAdaptor : IModelAdaptor
 
         return expr.Compile();
     }
+
 }

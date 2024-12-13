@@ -38,46 +38,40 @@ using System.Collections.Generic;
 using Antlr.Runtime;
 using Antlr.Runtime.Tree;
 using Misc;
-using ArgumentNullException = System.ArgumentNullException;
 
 /** A compiler for a single template. */
 public partial class TemplateCompiler
 {
-    public static readonly string SubtemplatePrefix = "_sub";
+    public const string SubtemplatePrefix = "_sub";
 
     public const int InitialCodeSize = 15;
 
-    public static readonly IDictionary<string, RenderOption> supportedOptions =
-        new Dictionary<string, RenderOption>()
-        {
-            {"anchor",       RenderOption.Anchor},
-            {"format",       RenderOption.Format},
-            {"null",         RenderOption.Null},
-            {"separator",    RenderOption.Separator},
-            {"wrap",         RenderOption.Wrap},
-        };
+    public static readonly Dictionary<string,RenderOption> supportedOptions = new() {
+        ["anchor"] = RenderOption.Anchor,
+        ["format"] = RenderOption.Format,
+        ["null"] = RenderOption.Null,
+        ["separator"] = RenderOption.Separator,
+        ["wrap"] = RenderOption.Wrap
+    };
 
     public static readonly int NUM_OPTIONS = supportedOptions.Count;
 
-    public static readonly IDictionary<string, string> defaultOptionValues =
-        new Dictionary<string, string>()
-        {
-            {"anchor", "true"},
-            {"wrap",   "\n"},
-        };
+    public static readonly Dictionary<string, string> defaultOptionValues = new() {
+        ["anchor"] = "true",
+        ["wrap"] =   "\n"
+    };
 
-    public static IDictionary<string, Bytecode> funcs =
-        new Dictionary<string, Bytecode> {
-            {"first", Bytecode.INSTR_FIRST},
-            {"last", Bytecode.INSTR_LAST},
-            {"rest", Bytecode.INSTR_REST},
-            {"trunc", Bytecode.INSTR_TRUNC},
-            {"strip", Bytecode.INSTR_STRIP},
-            {"trim", Bytecode.INSTR_TRIM},
-            {"length", Bytecode.INSTR_LENGTH},
-            {"strlen", Bytecode.INSTR_STRLEN},
-            {"reverse", Bytecode.INSTR_REVERSE},
-        };
+    public static readonly Dictionary<string, Bytecode> funcs = new () {
+        ["first"] = Bytecode.INSTR_FIRST,
+        ["last"] = Bytecode.INSTR_LAST,
+        ["rest"] = Bytecode.INSTR_REST,
+        ["trunc"] = Bytecode.INSTR_TRUNC,
+        ["strip"] = Bytecode.INSTR_STRIP,
+        ["trim"] = Bytecode.INSTR_TRIM,
+        ["length"] = Bytecode.INSTR_LENGTH,
+        ["strlen"] = Bytecode.INSTR_STRLEN,
+        ["reverse"] = Bytecode.INSTR_REVERSE,
+    };
 
     /** Name subtemplates _sub1, _sub2, ... */
     public static int subtemplateCount;
@@ -90,9 +84,9 @@ public partial class TemplateCompiler
 
     public ErrorManager ErrorManager => Group.ErrorManager;
 
-    public char DelimiterStartChar => Group.DelimiterStartChar;
+    private char DelimiterStartChar => Group.DelimiterStartChar;
 
-    public char DelimiterStopChar => Group.DelimiterStopChar;
+    private char DelimiterStopChar => Group.DelimiterStopChar;
 
     public CompiledTemplate Compile(string template) {
         var code = Compile(null, null, null, template, null);
@@ -112,12 +106,9 @@ public partial class TemplateCompiler
         var @is = new ANTLRStringStream(template, srcName) {
             name = srcName ?? name
         };
-        TemplateLexer lexer;
-        if (templateToken != null && templateToken.Type == GroupParser.BIGSTRING_NO_NL) {
-            lexer = new TemplateLexerNoNewlines(ErrorManager, @is, templateToken, DelimiterStartChar, DelimiterStopChar);
-        } else {
-            lexer = new TemplateLexer(ErrorManager, @is, templateToken, DelimiterStartChar, DelimiterStopChar);
-        }
+        var lexer = templateToken is { Type: GroupParser.BIGSTRING_NO_NL } ?
+            new TemplateLexerNoNewlines(ErrorManager, @is, templateToken, DelimiterStartChar, DelimiterStopChar) :
+            new TemplateLexer(ErrorManager, @is, templateToken, DelimiterStartChar, DelimiterStopChar);
         var tokens = new CommonTokenStream(lexer);
         var p = new TemplateParser(tokens, ErrorManager, templateToken);
         IAstRuleReturnScope<CommonTree> r;
@@ -135,8 +126,9 @@ public partial class TemplateCompiler
         }
 
         //System.out.println(((CommonTree)r.getTree()).toStringTree());
-        var nodes = new CommonTreeNodeStream(r.Tree);
-        nodes.TokenStream = tokens;
+        var nodes = new CommonTreeNodeStream(r.Tree) {
+            TokenStream = tokens
+        };
         var gen = new CodeGenerator(nodes, this, name, template, templateToken);
 
         CompiledTemplate impl2 = null;
@@ -163,11 +155,12 @@ public partial class TemplateCompiler
         }
         var outermostTemplateName = outermostImpl.Name;
         var mangled = TemplateGroup.GetMangledRegionName(outermostTemplateName, nameToken.Text);
-        var blank = new CompiledTemplate();
-        blank.IsRegion = true;
-        blank.TemplateDefStartToken = nameToken;
-        blank.RegionDefType = Template.RegionType.Implicit;
-        blank.Name = mangled;
+        var blank = new CompiledTemplate {
+            IsRegion = true,
+            TemplateDefStartToken = nameToken,
+            RegionDefType = CompiledTemplate.RegionType.Implicit,
+            Name = mangled
+        };
         outermostImpl.AddImplicitlyDefinedTemplate(blank);
         return blank;
     }
@@ -177,7 +170,7 @@ public partial class TemplateCompiler
         return SubtemplatePrefix + subtemplateCount;
     }
 
-    protected void ReportMessageAndThrowTemplateException(ITokenStream tokens, IToken templateToken,
+    private void ReportMessageAndThrowTemplateException(ITokenStream tokens, IToken templateToken,
         Parser parser, RecognitionException re) {
         if (re.Token.Type == TemplateLexer.EOF_TYPE) {
             var msg = "premature EOF";
@@ -187,7 +180,7 @@ public partial class TemplateCompiler
             ErrorManager.CompiletimeError(ErrorType.SYNTAX_ERROR, templateToken, re.Token, msg);
         } else if (tokens.Index == 0) {
             // couldn't parse anything
-            var msg = string.Format("this doesn't look like a template: \"{0}\"", tokens);
+            var msg = $"this doesn't look like a template: \"{tokens}\"";
             ErrorManager.CompiletimeError(ErrorType.SYNTAX_ERROR, templateToken, re.Token, msg);
         } else if (tokens.LA(1) == TemplateLexer.LDELIM) {
             // couldn't parse expr

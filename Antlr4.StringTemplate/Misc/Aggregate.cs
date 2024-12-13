@@ -51,12 +51,12 @@ using System.Collections.Generic;
  *  This example will call getName() on the objects in items attribute, but
  *  what if they aren't objects?  I have perhaps two parallel arrays
  *  instead of a single array of objects containing two fields.  One
- *  solution is allow Maps to be handled like properties so that it.name
+ *  solution is allowing Maps to be handled like properties so that it.name
  *  would fail getName() but then see that it's a Map and do
  *  it.get("name") instead.
  *
  *  This very clean approach is espoused by some, but the problem is that
- *  it's a hole in my separation rules.  People can put the logic in the
+ *  it's a hole in my separation rules. People can put the logic in the
  *  view because you could say: "go get bob's data" in the view:
  *
  *  Bob's Phone: $db.bob.phone$
@@ -78,32 +78,15 @@ public class Aggregate {
 
     private readonly Dictionary<string, object> _properties = new();
 
-    public IDictionary<string, object> Properties
-    {
-        get
-        {
-            return _properties;
-        }
-    }
+    public IDictionary<string, object> Properties => _properties;
 
     /** Allow StringTemplate to add values, but prevent the end
      *  user from doing so.
      */
-    public object this[string propertyName]
-    {
-        get
-        {
-            return _properties[propertyName];
-        }
+    public object this[string propertyName] {
+        get => _properties[propertyName];
 
-        internal set
-        {
-            _properties[propertyName] = value;
-        }
+        internal set => _properties[propertyName] = value;
     }
 
-    public bool TryGetValue(string propertyName, out object value)
-    {
-        return _properties.TryGetValue(propertyName, out value);
-    }
 }

@@ -38,15 +38,9 @@ using ArgumentException = System.ArgumentException;
 using BitConverter = System.BitConverter;
 using StringBuilder = System.Text.StringBuilder;
 
-public class BytecodeDisassembler {
+public static class BytecodeDisassembler {
 
-    private readonly CompiledTemplate code;
-
-    public BytecodeDisassembler(CompiledTemplate code) {
-        this.code = code;
-    }
-
-    public string GetInstructions() {
+    public static string GetInstructions(CompiledTemplate code) {
         var buf = new StringBuilder();
         var ip = 0;
         while (ip < code.codeSize) {
@@ -66,17 +60,17 @@ public class BytecodeDisassembler {
         return buf.ToString();
     }
 
-    public string Disassemble() {
+    public static string Disassemble(CompiledTemplate code) {
         var buf = new StringBuilder();
         var i = 0;
         while (i < code.codeSize) {
-            i = DisassembleInstruction(buf, i);
+            i = DisassembleInstruction(code, buf, i);
             buf.AppendLine();
         }
         return buf.ToString();
     }
 
-    public int DisassembleInstruction(StringBuilder buf, int ip) {
+    public static int DisassembleInstruction(CompiledTemplate code, StringBuilder buf, int ip) {
         int opcode = code.instrs[ip];
         if (ip >= code.codeSize) {
             throw new ArgumentException("ip out of range: " + ip);
@@ -98,7 +92,7 @@ public class BytecodeDisassembler {
             ip += Instruction.OperandSizeInBytes;
             switch (I.type[i]) {
                 case OperandType.String:
-                    operands.Add(ShowConstantPoolOperand(operand));
+                    operands.Add(ShowConstantPoolOperand(code, operand));
                     break;
 
                 case OperandType.Address:
@@ -122,7 +116,7 @@ public class BytecodeDisassembler {
         return ip;
     }
 
-    private string ShowConstantPoolOperand(int poolIndex) {
+    private static string ShowConstantPoolOperand(CompiledTemplate code, int poolIndex) {
         var buf = new StringBuilder();
         buf.Append("#");
         buf.Append(poolIndex);
@@ -147,7 +141,7 @@ public class BytecodeDisassembler {
         return BitConverter.ToInt16(memory, index);
     }
 
-    public string GetStrings() {
+    public static string GetStrings(CompiledTemplate code) {
         var buf = new StringBuilder();
         var addr = 0;
         if (code.strings == null) {
@@ -161,7 +155,7 @@ public class BytecodeDisassembler {
         return buf.ToString();
     }
 
-    public string GetSourceMap() {
+    public static string GetSourceMap(CompiledTemplate code) {
         var buf = new StringBuilder();
         var addr = 0;
         foreach (var interval in code.sourceMap) {

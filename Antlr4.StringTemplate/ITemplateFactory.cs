@@ -5,7 +5,7 @@ namespace Antlr4.StringTemplate;
 
 public interface ITemplateFactory {
     ITemplate CreateTemplate(string content, char delimiterStartChar = '<', char delimiterStopChar = '>');
-    ITemplate CreateTemplate(string content, ITemplateGroup group);
+    ITemplate CreateTemplateImplicit(string content, ITemplateGroup group);
     TemplateGroupBuilder CreateTemplateGroup();
     TemplateGroupBuilder CreateTemplateGroupDirectory(string dirName);
     TemplateGroupBuilder CreateRawGroupDirectory(string dirName);
