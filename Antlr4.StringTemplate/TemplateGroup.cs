@@ -419,7 +419,7 @@ public class TemplateGroup : ITemplateGroup {
         }
         code.Name = mangled;
         code.IsRegion = true;
-        code.RegionDefType = Template.RegionType.Explicit;
+        code.RegionDefType = CompiledTemplate.RegionType.Explicit;
         code.TemplateDefStartToken = regionT;
         RawDefineTemplate(mangled, code, regionT);
         code.DefineArgumentDefaultValueTemplates(this);
@@ -485,9 +485,9 @@ public class TemplateGroup : ITemplateGroup {
              *                                                          template. Give an error and use the previous one.
              */
             // handle the Explicit/Explicit and Embedded/Embedded error cases
-            if (code.RegionDefType != Template.RegionType.Implicit && code.RegionDefType == prev.RegionDefType) {
+            if (code.RegionDefType != CompiledTemplate.RegionType.Implicit && code.RegionDefType == prev.RegionDefType) {
                 ErrorManager.CompiletimeError(
-                    code.RegionDefType == Template.RegionType.Embedded
+                    code.RegionDefType == CompiledTemplate.RegionType.Embedded
                         ? ErrorType.EMBEDDED_REGION_REDEFINITION
                         : ErrorType.REGION_REDEFINITION, null, defT, GetUnmangledTemplateName(name));
                 // keep the previous one
@@ -495,18 +495,18 @@ public class TemplateGroup : ITemplateGroup {
             }
             switch (code.RegionDefType) {
                 // handle the Explicit/Embedded and Embedded/Explicit warning cases
-                case Template.RegionType.Embedded when prev.RegionDefType == Template.RegionType.Explicit:
-                case Template.RegionType.Explicit when prev.RegionDefType == Template.RegionType.Embedded: {
+                case CompiledTemplate.RegionType.Embedded when prev.RegionDefType == CompiledTemplate.RegionType.Explicit:
+                case CompiledTemplate.RegionType.Explicit when prev.RegionDefType == CompiledTemplate.RegionType.Embedded: {
                     // TODO: can we make this a warning?
                     ErrorManager.CompiletimeError(ErrorType.HIDDEN_EMBEDDED_REGION_DEFINITION, null, defT, GetUnmangledTemplateName(name));
                     // keep the previous one only if that's the explicit definition
-                    if (prev.RegionDefType == Template.RegionType.Explicit) {
+                    if (prev.RegionDefType == CompiledTemplate.RegionType.Explicit) {
                         return;
                     }
                     break;
                 }
                 // else if the current definition type is implicit, keep the previous one
-                case Template.RegionType.Implicit: {
+                case CompiledTemplate.RegionType.Implicit: {
                     return;
                 }
             }
@@ -835,7 +835,7 @@ public class TemplateGroup : ITemplateGroup {
             compiledTemplate.HasFormalArgs = reader.ReadBoolean();
             reader.ReadInt32(); // nativeGroupObject
             compiledTemplate.IsRegion = reader.ReadBoolean();
-            compiledTemplate.RegionDefType = (Template.RegionType)reader.ReadInt32();
+            compiledTemplate.RegionDefType = (CompiledTemplate.RegionType)reader.ReadInt32();
             compiledTemplate.IsAnonSubtemplate = reader.ReadBoolean();
 
             var formalArgsLength = reader.ReadInt32();
@@ -1475,7 +1475,7 @@ public class TemplateGroup : ITemplateGroup {
         lastModified = DateTime.MinValue;
         return  false;
     }
-        
+
     public static Assembly ResourceAssembly { get; set; }
 
     public static string ResourceRoot { get; set; } = "Resources";

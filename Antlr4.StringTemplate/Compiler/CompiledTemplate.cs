@@ -48,6 +48,24 @@ namespace Antlr4.StringTemplate.Compiler;
  */
 public class CompiledTemplate {
 
+    /** &lt;@r()&gt;, &lt;@r&gt;...&lt;@end&gt;, and @t.r() ::= "..." defined manually by coder */
+    public enum RegionType {
+        /// <summary>
+        /// The region is defined by &lt;@r()&gt;
+        /// </summary>
+        Implicit,
+
+        /// <summary>
+        /// The region is defined by &lt;@r&gt;...&lt;@end&gt;
+        /// </summary>
+        Embedded,
+
+        /// <summary>
+        /// The region is defined by @t.r ::= "..."
+        /// </summary>
+        Explicit
+    }
+
     private static readonly ReadOnlyCollection<CompiledTemplate> EmptyImplicitlyDefinedTemplates =
         new (Array.Empty<CompiledTemplate>());
 
@@ -146,7 +164,7 @@ public class CompiledTemplate {
      *  own.  We need to prevent more than one manual def though.  Between
      *  this var and isEmbeddedRegion we can determine these cases.
      */
-    public Template.RegionType RegionDefType { get; set; }
+    public RegionType RegionDefType { get; set; }
 
     public bool IsAnonSubtemplate { get; set; }
 

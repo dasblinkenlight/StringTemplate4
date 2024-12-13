@@ -60,31 +60,13 @@ namespace Antlr4.StringTemplate;
  */
 public sealed class Template : ITemplate {
 
-    /** &lt;@r()&gt;, &lt;@r&gt;...&lt;@end&gt;, and @t.r() ::= "..." defined manually by coder */
-    public enum RegionType {
-        /// <summary>
-        /// The region is defined by &lt;@r()&gt;
-        /// </summary>
-        Implicit,
-
-        /// <summary>
-        /// The region is defined by &lt;@r&gt;...&lt;@end&gt;
-        /// </summary>
-        Embedded,
-
-        /// <summary>
-        /// The region is defined by @t.r ::= "..."
-        /// </summary>
-        Explicit
-    }
-
-    public static readonly string UnknownName = "anonymous";
+    public const string UnknownName = "anonymous";
     public static readonly object EmptyAttribute = new();
 
     /** When there are no formal args for template t, and you map t across
      *  some values, t implicitly gets arg "it".  E.g., "<b>$it$</b>"
      */
-    public static readonly string ImplicitArgumentName = "it";
+    public const string ImplicitArgumentName = "it";
 
     /** The implementation for this template among all instances of same template . */
     public CompiledTemplate impl;
@@ -419,10 +401,7 @@ public sealed class Template : ITemplate {
 
     internal List<InterpEvent> GetEvents(ITemplateWriter writer) => GetEvents(CultureInfo.CurrentCulture, writer);
 
-    private List<InterpEvent> GetEvents(CultureInfo locale)
-    {
-        return GetEvents(locale, AutoIndentWriter.NoWrap);
-    }
+    private List<InterpEvent> GetEvents(CultureInfo locale) => GetEvents(locale, AutoIndentWriter.NoWrap);
 
     private List<InterpEvent> GetEvents(CultureInfo locale, int lineWidth) {
         var @out = new StringWriter();
@@ -454,9 +433,8 @@ public sealed class Template : ITemplate {
     }
 
     // Template.Format("<%1>:<%2>", n, p);
-    public static string Format(string template, params object[] attributes) {
-        return Format(AutoIndentWriter.NoWrap, template, attributes);
-    }
+    public static string Format(string template, params object[] attributes) =>
+        Format(AutoIndentWriter.NoWrap, template, attributes);
 
     private static string Format(int lineWidth, string template, params object[] attributes) {
         template = Regex.Replace(template, "[0-9]+", "arg$0");

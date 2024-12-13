@@ -113,7 +113,7 @@ region[CommonTree indent] returns [string name]
 			{
 			CompiledTemplate sub = $template.impl;
 	        sub.IsRegion = true;
-	        sub.RegionDefType = Template.RegionType.Embedded;
+	        sub.RegionDefType = CompiledTemplate.RegionType.Embedded;
 			sub.TemplateDefStartToken = $ID.Token;
 			outermostImpl.AddImplicitlyDefinedTemplate(sub);
 			emit2($start, Bytecode.INSTR_NEW, $region.name, 0);
@@ -228,7 +228,7 @@ expr
 prop:	^(PROP expr ID)						{emit1($PROP, Bytecode.INSTR_LOAD_PROP, $ID.text);}
 	|	^(PROP_IND expr expr)				{emit($PROP_IND, Bytecode.INSTR_LOAD_PROP_IND);}
 	;
-	
+
 mapTemplateRef[int num_exprs]
 	:	^(	INCLUDE ID
 			{for (int i=1; i<=$num_exprs; i++) emit($INCLUDE,Bytecode.INSTR_NULL);}
@@ -288,13 +288,13 @@ includeExpr
 
 primary
 	:	ID				{refAttr($ID);}
-	|	STRING			{emit1($STRING,Bytecode.INSTR_LOAD_STR, Utility.Strip($STRING.text,1));}	
+	|	STRING			{emit1($STRING,Bytecode.INSTR_LOAD_STR, Utility.Strip($STRING.text,1));}
 	|	TRUE			{emit($TRUE, Bytecode.INSTR_TRUE);}
 	|	FALSE			{emit($FALSE, Bytecode.INSTR_FALSE);}
 	|	subtemplate		// push a subtemplate but ignore args since we can't pass any to it here
 		                {emit2($start,Bytecode.INSTR_NEW, $subtemplate.name, 0);}
 	|	list
-	|	^(	INCLUDE_IND	
+	|	^(	INCLUDE_IND
 			expr 		{emit($INCLUDE_IND, Bytecode.INSTR_TOSTR);}
 			args		{emit1($INCLUDE_IND, Bytecode.INSTR_NEW_IND, $args.n);}
 		 )
@@ -315,7 +315,7 @@ args returns [int n=0, bool namedArgs=false, bool passThru]
  	;
 
 list:	{emit($start, Bytecode.INSTR_LIST);}
-		^(LIST (listElement {emit($listElement.start, Bytecode.INSTR_ADD);})* ) 
+		^(LIST (listElement {emit($listElement.start, Bytecode.INSTR_ADD);})* )
 	;
 
 listElement : expr | NULL {emit($NULL,Bytecode.INSTR_NULL);} ;
