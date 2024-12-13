@@ -346,28 +346,28 @@ public sealed class Template : ITemplate {
 
     public bool IsAnonymousSubtemplate => impl.IsAnonSubtemplate;
 
-    public int Write(ITemplateWriter @out) {
+    public int Write(ITemplateWriter tw) {
         var interp = new Interpreter(groupThatCreatedThisInstance, impl.NativeGroup.ErrorManager, false);
         var frame = new TemplateFrame(this, null);
-        return interp.Execute(@out, frame);
+        return interp.Execute(tw, frame);
     }
 
-    private void Write(ITemplateWriter @out, CultureInfo culture) {
+    private void Write(ITemplateWriter tw, CultureInfo culture) {
         var interp = new Interpreter(groupThatCreatedThisInstance, culture, impl.NativeGroup.ErrorManager, false);
         var frame = new TemplateFrame(this, null);
-        interp.Execute(@out, frame);
+        interp.Execute(tw, frame);
     }
 
-    public int Write(ITemplateWriter @out, ITemplateErrorListener listener) {
+    public int Write(ITemplateWriter tw, ITemplateErrorListener listener) {
         var interp = new Interpreter(groupThatCreatedThisInstance, new ErrorManager(listener), false);
         var frame = new TemplateFrame(this, null);
-        return interp.Execute(@out, frame);
+        return interp.Execute(tw, frame);
     }
 
-    private int Write(ITemplateWriter @out, CultureInfo culture, ITemplateErrorListener listener) {
+    private int Write(ITemplateWriter tw, CultureInfo culture, ITemplateErrorListener listener) {
         var interp = new Interpreter(groupThatCreatedThisInstance, culture, new ErrorManager(listener), false);
         var frame = new TemplateFrame(this, null);
-        return interp.Execute(@out, frame);
+        return interp.Execute(tw, frame);
     }
 
     public int Write(TextWriter writer, ITemplateErrorListener listener) {
@@ -386,11 +386,11 @@ public sealed class Template : ITemplate {
     }
 
     public string Render(int lineWidth = AutoIndentWriter.NoWrap, CultureInfo culture = null) {
-        var @out = new StringWriter();
-        ITemplateWriter wr = new AutoIndentWriter(@out);
+        using var sw = new StringWriter();
+        ITemplateWriter wr = new AutoIndentWriter(sw);
         wr.LineWidth = lineWidth;
         Write(wr, culture ?? CultureInfo.CurrentCulture);
-        return @out.ToString();
+        return sw.ToString();
     }
 
     // TESTING SUPPORT
@@ -404,14 +404,14 @@ public sealed class Template : ITemplate {
     private List<InterpEvent> GetEvents(CultureInfo locale) => GetEvents(locale, AutoIndentWriter.NoWrap);
 
     private List<InterpEvent> GetEvents(CultureInfo locale, int lineWidth) {
-        var @out = new StringWriter();
-        ITemplateWriter wr = new AutoIndentWriter(@out);
+        using var sw = new StringWriter();
+        ITemplateWriter wr = new AutoIndentWriter(sw);
         wr.LineWidth = lineWidth;
         return GetEvents(locale, wr);
     }
 
     private List<InterpEvent> GetEvents(CultureInfo culture, ITemplateWriter writer) {
-        var interp = new Interpreter(groupThatCreatedThisInstance, culture, true);
+        var interp = new Interpreter(groupThatCreatedThisInstance, culture, debug:true);
         var frame = new TemplateFrame(this, null);
         interp.Execute(writer, frame); // Render and track events
         return interp.GetEvents();

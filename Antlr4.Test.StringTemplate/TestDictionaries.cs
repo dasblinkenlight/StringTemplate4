@@ -505,15 +505,16 @@ public class TestDictionaries : BaseTest {
 
     [TestMethod]
     public void TestDictionaryBehaviorTrue() {
-        const string templates =
-            "d ::= [\n" +
-            "	\"x\" : true,\n" +
-            "	default : false,\n" +
-            "]\n" +
-            "\n" +
-            "t() ::= <<\n" +
-            "<d.(\"x\")><if(d.(\"x\"))>+<else>-<endif>\n" +
-            ">>\n";
+        const string templates = """
+            d ::= [
+                "x" : true,
+                default : false,
+            ]
+
+            t() ::= <<
+            <d.("x")><if(d.("x"))>+<else>-<endif>
+            >>
+            """;
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg").Build();
@@ -525,15 +526,16 @@ public class TestDictionaries : BaseTest {
 
     [TestMethod]
     public void TestDictionaryBehaviorFalse() {
-        const string templates =
-            "d ::= [\n" +
-            "	\"x\" : false,\n" +
-            "	default : false,\n" +
-            "]\n" +
-            "\n" +
-            "t() ::= <<\n" +
-            "<d.(\"x\")><if(d.(\"x\"))>+<else>-<endif>\n" +
-            ">>\n";
+        const string templates = """
+            d ::= [
+                "x" : false,
+                default : false,
+            ]
+
+            t() ::= <<
+            <d.("x")><if(d.("x"))>+<else>-<endif>
+            >>
+            """;
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg").Build();
@@ -545,15 +547,16 @@ public class TestDictionaries : BaseTest {
 
     [TestMethod]
     public void TestDictionaryBehaviorEmptyTemplate() {
-        const string templates =
-            "d ::= [\n" +
-            "	\"x\" : {},\n" +
-            "	default : false,\n" +
-            "]\n" +
-            "\n" +
-            "t() ::= <<\n" +
-            "<d.(\"x\")><if(d.(\"x\"))>+<else>-<endif>\n" +
-            ">>\n";
+        const string templates = """
+            d ::= [
+                "x" : {},
+                default : false,
+            ]
+
+            t() ::= <<
+            <d.("x")><if(d.("x"))>+<else>-<endif>
+            >>
+            """;
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg").Build();
@@ -565,15 +568,16 @@ public class TestDictionaries : BaseTest {
 
     [TestMethod]
     public void TestDictionaryBehaviorEmptyList() {
-        const string templates =
-            "d ::= [\n" +
-            "	\"x\" : [],\n" +
-            "	default : false,\n" +
-            "]\n" +
-            "\n" +
-            "t() ::= <<\n" +
-            "<d.(\"x\")><if(d.(\"x\"))>+<else>-<endif>\n" +
-            ">>\n";
+        const string templates = """
+            d ::= [
+                "x" : [],
+                default : false,
+            ]
+
+            t() ::= <<
+            <d.("x")><if(d.("x"))>+<else>-<endif>
+            >>
+            """;
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg").Build();
@@ -590,14 +594,15 @@ public class TestDictionaries : BaseTest {
     /// <seealso href="https://github.com/antlr/stringtemplate4/issues/114">dictionary value using &lt;% %&gt; is broken</seealso>
     [TestMethod]
     public void TestDictionaryBehaviorNoNewlineTemplate() {
-        const string templates =
-            "d ::= [\n" +
-            "	\"x\" : <%hi%>\n" +
-            "]\n" +
-            "\n" +
-            "t() ::= <<\n" +
-            "<d.x>\n" +
-            ">>\n";
+        const string templates = """
+            d ::= [
+                "x" : <%hi%>
+            ]
+
+            t() ::= <<
+            <d.x>
+            >>
+            """;
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(TmpDir + Path.DirectorySeparatorChar + "t.stg").Build();
@@ -609,16 +614,18 @@ public class TestDictionaries : BaseTest {
 
     [TestMethod]
     public void TestDictionarySpecialValues() {
-        const string templates = @"
-t(id) ::= <<
-<identifier.(id)>
->>
+        const string templates = """
 
-identifier ::= [
-    ""keyword"" : ""@keyword"",
-    default : key
-]
-";
+             t(id) ::= <<
+             <identifier.(id)>
+             >>
+
+             identifier ::= [
+                 "keyword" : "@keyword",
+                 default : key
+             ]
+
+             """;
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
@@ -644,18 +651,20 @@ identifier ::= [
 
     [TestMethod]
     public void TestDictionarySpecialValuesOverride() {
-        const string templates = @"
-t(id) ::= <<
-<identifier.(id)>
->>
+        const string templates = """
 
-identifier ::= [
-    ""keyword"" : ""@keyword"",
-    ""keys"" : ""keys"",
-    ""values"" : ""values"",
-    default : key
-]
-";
+             t(id) ::= <<
+             <identifier.(id)>
+             >>
+
+             identifier ::= [
+                 "keyword" : "@keyword",
+                 "keys" : "keys",
+                 "values" : "values",
+                 default : key
+             ]
+
+             """;
 
         WriteFile(TmpDir, "t.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();

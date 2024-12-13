@@ -136,14 +136,14 @@ public sealed class Interpreter {
         new(predefinedAnonSubtemplateAttributes);
 
     /** Execute template self and return how many characters it wrote to out */
-    public int Execute(ITemplateWriter @out, TemplateFrame frame) {
+    public int Execute(ITemplateWriter tw, TemplateFrame frame) {
         try {
             if (frame.StackDepth > 200) {
                 throw new TemplateException("Template stack overflow.", null);
             }
             _logger.LogTrace("Execute({Name})", frame.Template.Name);
             SetDefaultArguments(frame);
-            return ExecuteImpl(@out, frame);
+            return ExecuteImpl(tw, frame);
         } catch (Exception e) when (!e.IsCritical()) {
             var builder = new StringBuilder();
             builder.AppendLine(e.ToString());
@@ -153,9 +153,9 @@ public sealed class Interpreter {
         }
     }
 
-    private int ExecuteImpl(ITemplateWriter @out, TemplateFrame frame) {
+    private int ExecuteImpl(ITemplateWriter tw, TemplateFrame frame) {
         var self = frame.Template;
-        var start = @out.Index; // track char we're about to Write
+        var start = tw.Index; // track char we're about to Write
         var prevOpcode = Bytecode.Invalid;
         var n = 0; // how many char we Write out
         var code = self.impl.instrs;        // which code block are we executing
@@ -298,7 +298,7 @@ public sealed class Interpreter {
 
                 case Bytecode.INSTR_WRITE:
                     o = operands[sp--];
-                    var n1 = WriteObjectNoOptions(@out, frame, o);
+                    var n1 = WriteObjectNoOptions(tw, frame, o);
                     n += n1;
                     nwline += n1;
                     break;
@@ -306,7 +306,7 @@ public sealed class Interpreter {
                 case Bytecode.INSTR_WRITE_OPT:
                     options = (object[])operands[sp--]; // get options
                     o = operands[sp--];                 // get option to Write
-                    var n2 = WriteObjectWithOptions(@out, frame, o, options);
+                    var n2 = WriteObjectWithOptions(tw, frame, o, options);
                     n += n2;
                     nwline += n2;
                     break;
@@ -452,11 +452,11 @@ public sealed class Interpreter {
                 case Bytecode.INSTR_INDENT:
                     strIndex = GetShort(code, ip);
                     ip += Instruction.OperandSizeInBytes;
-                    Indent(@out, frame, strIndex);
+                    Indent(tw, frame, strIndex);
                     break;
 
                 case Bytecode.INSTR_DEDENT:
-                    @out.PopIndentation();
+                    tw.PopIndentation();
                     break;
 
                 case Bytecode.INSTR_NEWLINE:
@@ -465,7 +465,7 @@ public sealed class Interpreter {
                         if (prevOpcode == Bytecode.INSTR_NEWLINE ||
                             prevOpcode == Bytecode.INSTR_INDENT ||
                             nwline > 0) {
-                            @out.Write(Environment.NewLine);
+                            tw.Write(Environment.NewLine);
                         }
                         nwline = 0;
                     } catch (IOException ioe) {
@@ -496,7 +496,7 @@ public sealed class Interpreter {
                     strIndex = GetShort(code, ip);
                     ip += Instruction.OperandSizeInBytes;
                     o = self.impl.strings[strIndex];
-                    n1 = WriteObjectNoOptions(@out, frame, o);
+                    n1 = WriteObjectNoOptions(tw, frame, o);
                     n += n1;
                     nwline += n1;
                     break;
@@ -509,7 +509,7 @@ public sealed class Interpreter {
                 //    if (o == Template.EmptyAttribute)
                 //        o = null;
 
-                //    n1 = WriteObjectNoOptions(@out, frame, o);
+                //    n1 = WriteObjectNoOptions(tw, frame, o);
                 //    n += n1;
                 //    nwline += n1;
                 //    break;
@@ -526,7 +526,7 @@ public sealed class Interpreter {
         }
 
         if (_debug) {
-            var e = new EvalTemplateEvent(frame, Interval.FromBounds(start, @out.Index));
+            var e = new EvalTemplateEvent(frame, Interval.FromBounds(start, tw.Index));
             TrackDebugEvent(frame, e);
         }
         return n;
@@ -696,28 +696,28 @@ public sealed class Interpreter {
         }
     }
 
-    private void Indent(ITemplateWriter @out, TemplateFrame frame, int strIndex)
+    private void Indent(ITemplateWriter tw, TemplateFrame frame, int strIndex)
     {
         var self = frame.Template;
         var indent = self.impl.strings[strIndex];
         if (_debug) {
-            var start = @out.Index; // track char we're about to write
+            var start = tw.Index; // track char we're about to write
             EvalExprEvent e = new IndentEvent(frame, new Interval(start, indent.Length), GetExpressionInterval(frame));
             TrackDebugEvent(frame, e);
         }
 
-        @out.PushIndentation(indent);
+        tw.PushIndentation(indent);
     }
 
     /** Write out an expression result that doesn't use expression options.
      *  E.g., &lt;name&gt;
      */
-    private int WriteObjectNoOptions(ITemplateWriter @out, TemplateFrame frame, object o) {
-        var start = @out.Index; // track char we're about to Write
-        var n = WriteObject(@out, frame, o, null);
+    private int WriteObjectNoOptions(ITemplateWriter tw, TemplateFrame frame, object o) {
+        var start = tw.Index; // track char we're about to Write
+        var n = WriteObject(tw, frame, o, null);
         if (_debug) {
             var templateLocation = frame.Template.impl.sourceMap[frame.InstructionPointer];
-            var e = new EvalExprEvent(frame, Interval.FromBounds(start, @out.Index), templateLocation);
+            var e = new EvalExprEvent(frame, Interval.FromBounds(start, tw.Index), templateLocation);
             TrackDebugEvent(frame, e);
         }
 
@@ -727,8 +727,8 @@ public sealed class Interpreter {
     /** Write out an expression result that uses expression options.
      *  E.g., &lt;names; separator=", "&gt;
      */
-    private int WriteObjectWithOptions(ITemplateWriter @out, TemplateFrame frame, object o, object[] options) {
-        var start = @out.Index; // track char we're about to Write
+    private int WriteObjectWithOptions(ITemplateWriter tw, TemplateFrame frame, object o, object[] options) {
+        var start = tw.Index; // track char we're about to Write
         // precompute all option values (Render all the way to strings)
         string[] optionStrings = null;
         if (options != null) {
@@ -739,16 +739,16 @@ public sealed class Interpreter {
         }
 
         if (options != null && options[(int)RenderOption.Anchor] != null) {
-            @out.PushAnchorPoint();
+            tw.PushAnchorPoint();
         }
-        var n = WriteObject(@out, frame, o, optionStrings);
+        var n = WriteObject(tw, frame, o, optionStrings);
         if (options != null && options[(int)RenderOption.Anchor] != null) {
-            @out.PopAnchorPoint();
+            tw.PopAnchorPoint();
         }
 
         if (_debug) {
             var templateLocation = frame.Template.impl.sourceMap[frame.InstructionPointer];
-            var e = new EvalExprEvent(frame, Interval.FromBounds(start, @out.Index), templateLocation);
+            var e = new EvalExprEvent(frame, Interval.FromBounds(start, tw.Index), templateLocation);
             TrackDebugEvent(frame, e);
         }
         return n;
@@ -757,7 +757,7 @@ public sealed class Interpreter {
     /** Generic method to emit text for an object. It differentiates
      *  between templates, iterable objects, and plain old Java objects (POJOs)
      */
-    private int WriteObject(ITemplateWriter @out, TemplateFrame frame, object o, string[] options) {
+    private int WriteObject(ITemplateWriter tw, TemplateFrame frame, object o, string[] options) {
         var n = 0;
         if (o == null) {
             if (options != null && options[(int)RenderOption.Null] != null) {
@@ -778,18 +778,18 @@ public sealed class Interpreter {
                 // if we have a wrap string, then inform writer it
                 // might need to wrap
                 try {
-                    @out.WriteWrap(options[(int)RenderOption.Wrap]);
+                    tw.WriteWrap(options[(int)RenderOption.Wrap]);
                 } catch (IOException ioe) {
                     _errorManager.IOError(template, ErrorType.WRITE_IO_ERROR, ioe);
                 }
             }
-            n = Execute(@out, frame);
+            n = Execute(tw, frame);
         } else {
             o = ConvertAnythingIterableToIterator(frame, o); // normalize
             try {
                 n = o is IEnumerator ?
-                    WriteIterator(@out, frame, o, options) :
-                    WritePlainObject(@out, frame, o, options);
+                    WriteIterator(tw, frame, o, options) :
+                    WritePlainObject(tw, frame, o, options);
             } catch (IOException ioe) {
                 _errorManager.IOError(frame.Template, ErrorType.WRITE_IO_ERROR, ioe, o);
             }
@@ -797,7 +797,7 @@ public sealed class Interpreter {
         return n;
     }
 
-    private int WriteIterator(ITemplateWriter @out, TemplateFrame frame, object o, string[] options) {
+    private int WriteIterator(ITemplateWriter tw, TemplateFrame frame, object o, string[] options) {
         if (o == null) {
             return 0;
         }
@@ -816,8 +816,8 @@ public sealed class Interpreter {
                                 (iterValue != null ||           // either we have a value
                                  options[(int)RenderOption.Null] != null); // or no value but null option
             if (needSeparator)
-                n += @out.WriteSeparator(separator);
-            var nw = WriteObject(@out, frame, iterValue, options);
+                n += tw.WriteSeparator(separator);
+            var nw = WriteObject(tw, frame, iterValue, options);
             if (nw > 0)
                 seenAValue = true;
             n += nw;
@@ -825,7 +825,7 @@ public sealed class Interpreter {
         return n;
     }
 
-    private int WritePlainObject(ITemplateWriter @out, TemplateFrame frame, object o, string[] options) {
+    private int WritePlainObject(ITemplateWriter tw, TemplateFrame frame, object o, string[] options) {
         string formatString = null;
         if (options != null) {
             formatString = options[(int)RenderOption.Format];
@@ -844,9 +844,9 @@ public sealed class Interpreter {
         }
         int n;
         if (options != null && options[(int)RenderOption.Wrap] != null) {
-            n = @out.Write(v, options[(int)RenderOption.Wrap]);
+            n = tw.Write(v, options[(int)RenderOption.Wrap]);
         } else {
-            n = @out.Write(v);
+            n = tw.Write(v);
         }
         return n;
     }
