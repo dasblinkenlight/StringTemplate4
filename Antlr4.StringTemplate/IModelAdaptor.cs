@@ -52,6 +52,6 @@ public interface IModelAdaptor {
      *  if o is Map, property could be any key type.  If we need to convert
      *  to string, then it's done by Template and passed in here.
      */
-    object GetProperty(Interpreter interpreter, TemplateFrame frame, object obj, object property, string propertyName);
+    object GetProperty(object obj, object property, string propertyName);
 
 }

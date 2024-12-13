@@ -1232,7 +1232,7 @@ public sealed class Interpreter {
                 o = proxyFactory.CreateProxy(frame, o);
             }
             var adap = (self.Group as TemplateGroup)!.GetModelAdaptor(o.GetType());
-            return adap.GetProperty(this, frame, o, property, ToString(frame, property));
+            return adap.GetProperty(o, property, ToString(frame, property));
         } catch (TemplateNoSuchPropertyException e) {
             _errorManager.RuntimeError(frame, ErrorType.NO_SUCH_PROPERTY,
                 e, o.GetType().Name + "." + property);

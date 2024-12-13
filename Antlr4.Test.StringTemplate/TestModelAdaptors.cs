@@ -41,7 +41,7 @@ using Path = System.IO.Path;
 public class TestModelAdaptors : BaseTest {
 
     private class UserAdaptor : IModelAdaptor {
-        public object GetProperty(Interpreter interpreter, TemplateFrame frame, object o, object property, string propertyName) {
+        public object GetProperty(object o, object property, string propertyName) {
             return propertyName switch {
                 "id" => ((User)o).id,
                 "name" => ((User)o).Name,
@@ -51,7 +51,7 @@ public class TestModelAdaptors : BaseTest {
     }
 
     private class UserAdaptorConst : IModelAdaptor {
-        public object GetProperty(Interpreter interpreter, TemplateFrame frame, object o, object property, string propertyName) {
+        public object GetProperty(object o, object property, string propertyName) {
             return propertyName switch {
                 "id" => "const id value",
                 "name" => "const name value",

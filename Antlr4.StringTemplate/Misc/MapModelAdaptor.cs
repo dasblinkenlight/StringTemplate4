@@ -34,10 +34,9 @@ namespace Antlr4.StringTemplate.Misc;
 
 using IDictionary = System.Collections.IDictionary;
 
-public class MapModelAdaptor : IModelAdaptor
-{
-    public virtual object GetProperty(Interpreter interpreter, TemplateFrame frame, object o, object property, string propertyName)
-    {
+public class MapModelAdaptor : IModelAdaptor {
+
+    public virtual object GetProperty(object o, object property, string propertyName) {
         object value;
         var map = (IDictionary)o;
 

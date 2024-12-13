@@ -41,34 +41,28 @@ using MethodInfo = System.Reflection.MethodInfo;
 using PropertyInfo = System.Reflection.PropertyInfo;
 using Type = System.Type;
 
-public class ObjectModelAdaptor : IModelAdaptor
-{
-    private static readonly Dictionary<Type, Dictionary<string, System.Func<object, object>>> _memberAccessors =
-        new Dictionary<Type, Dictionary<string, System.Func<object, object>>>();
+public class ObjectModelAdaptor : IModelAdaptor {
+    private static readonly Dictionary<Type, Dictionary<string, System.Func<object, object>>> _memberAccessors = new();
 
-    public virtual object GetProperty(Interpreter interpreter, TemplateFrame frame, object o, object property, string propertyName)
+    public virtual object GetProperty(object o, object property, string propertyName)
     {
         if (o == null)
             throw new ArgumentNullException("o");
 
         var c = o.GetType();
-        if (o is DynamicXml xml)
-        {
+        if (o is DynamicXml xml) {
             xml.TryGetMember(new Goof(propertyName, true), out var x3);
             return x3;
-        }    
+        }
 
         if (property == null)
             throw new TemplateNoSuchPropertyException(o, string.Format("{0}.{1}", c.FullName, propertyName ?? "null"));
 
         object value;
         var accessor = FindMember(c, propertyName);
-        if (accessor != null)
-        {
+        if (accessor != null) {
             value = accessor(o);
-        }
-        else
-        {
+        } else {
             throw new TemplateNoSuchPropertyException(o, string.Format("{0}.{1}", c.FullName, propertyName));
         }
 
@@ -78,9 +72,9 @@ public class ObjectModelAdaptor : IModelAdaptor
     private static System.Func<object, object> FindMember(Type type, string name)
     {
         if (type == null)
-            throw new ArgumentNullException("type");
+            throw new ArgumentNullException(nameof(type));
         if (name == null)
-            throw new ArgumentNullException("name");
+            throw new ArgumentNullException(nameof(name));
 
         lock (_memberAccessors)
         {
@@ -103,8 +97,7 @@ public class ObjectModelAdaptor : IModelAdaptor
             var checkOriginalName = !string.Equals(methodSuffix, name);
 
             MethodInfo method = null;
-            if (method == null)
-            {
+            if (method == null) {
                 var p = type.GetProperty(methodSuffix);
                 if (p == null && checkOriginalName)
                     p = type.GetProperty(name);
@@ -113,46 +106,36 @@ public class ObjectModelAdaptor : IModelAdaptor
                     method = p.GetGetMethod();
             }
 
-            if (method == null)
-            {
+            if (method == null) {
                 method = type.GetMethod("Get" + methodSuffix, Type.EmptyTypes);
                 if (method == null && checkOriginalName)
                     method = type.GetMethod("Get" + name, Type.EmptyTypes);
             }
 
-            if (method == null)
-            {
+            if (method == null) {
                 method = type.GetMethod("get_" + methodSuffix, Type.EmptyTypes);
                 if (method == null && checkOriginalName)
                     method = type.GetMethod("get_" + name, Type.EmptyTypes);
             }
 
-            if (method == null)
-            {
+            if (method == null) {
                 method = type.GetMethod(name, Type.EmptyTypes);
             }
 
-            if (method != null)
-            {
+            if (method != null) {
                 accessor = BuildAccessor(method);
-            }
-            else
-            {
+            } else {
                 // try for an indexer
                 method = type.GetMethod("get_Item", [typeof(string)]);
-                if (method == null)
-                {
+                if (method == null) {
                     var property = type.GetProperties().FirstOrDefault(IsIndexer);
                     if (property != null)
                         method = property.GetGetMethod();
                 }
 
-                if (method != null)
-                {
+                if (method != null) {
                     accessor = BuildAccessor(method, name);
-                }
-                else
-                {
+                } else {
                     // try for a visible field
                     var field = type.GetField(name);
                     // also check .NET naming convention for fields
@@ -170,10 +153,9 @@ public class ObjectModelAdaptor : IModelAdaptor
         }
     }
 
-    private static bool IsIndexer(PropertyInfo propertyInfo)
-    {
+    private static bool IsIndexer(PropertyInfo propertyInfo) {
         if (propertyInfo == null)
-            throw new ArgumentNullException("propertyInfo");
+            throw new ArgumentNullException(nameof(propertyInfo));
 
         var indexParameters = propertyInfo.GetIndexParameters();
         return indexParameters != null

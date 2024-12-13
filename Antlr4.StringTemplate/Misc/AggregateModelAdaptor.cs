@@ -35,14 +35,13 @@ namespace Antlr4.StringTemplate.Misc;
 using ArgumentException = System.ArgumentException;
 
 /** Deal with structs created via ST.add("structname.{prop1, prop2}", ...); */
-public class AggregateModelAdaptor : MapModelAdaptor
-{
-    public override object GetProperty(Interpreter interpreter, TemplateFrame frame, object o, object property, string propertyName)
-    {
-        var aggregate = o as Aggregate;
-        if (aggregate == null)
-            throw new ArgumentException();
+public class AggregateModelAdaptor : MapModelAdaptor {
 
-        return base.GetProperty(interpreter, frame, aggregate.Properties, property, propertyName);
+    public override object GetProperty(object o, object property, string propertyName) {
+        if (o is not Aggregate aggregate) {
+            throw new ArgumentException();
+        }
+        return base.GetProperty(aggregate.Properties, property, propertyName);
     }
+
 }
