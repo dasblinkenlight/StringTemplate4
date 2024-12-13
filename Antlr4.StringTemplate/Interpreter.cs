@@ -1231,8 +1231,8 @@ public sealed class Interpreter {
             if (proxyFactory != null) {
                 o = proxyFactory.CreateProxy(frame, o);
             }
-            var adap = (self.Group as TemplateGroup)!.GetModelAdaptor(o.GetType());
-            return adap.GetProperty(o, property, ToString(frame, property));
+            var adaptorDelegate = (self.Group as TemplateGroup)!.GetModelAdaptor(o.GetType());
+            return adaptorDelegate(o, property, ToString(frame, property));
         } catch (TemplateNoSuchPropertyException e) {
             _errorManager.RuntimeError(frame, ErrorType.NO_SUCH_PROPERTY,
                 e, o.GetType().Name + "." + property);

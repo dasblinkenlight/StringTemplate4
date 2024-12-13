@@ -32,7 +32,6 @@
 
 namespace Antlr4.Test.StringTemplate;
 
-using Antlr4.StringTemplate;
 using Antlr4.StringTemplate.Misc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Path = System.IO.Path;
@@ -40,24 +39,20 @@ using Path = System.IO.Path;
 [TestClass]
 public class TestModelAdaptors : BaseTest {
 
-    private class UserAdaptor : IModelAdaptor {
-        public object GetProperty(object o, object property, string propertyName) {
-            return propertyName switch {
-                "id" => ((User)o).id,
-                "name" => ((User)o).Name,
-                _ => throw new TemplateNoSuchPropertyException(null, "User." + propertyName)
-            };
-        }
+    private static object GetUserProperty(object o, object property, string propertyName) {
+        return propertyName switch {
+            "id" => ((User)o).id,
+            "name" => ((User)o).Name,
+            _ => throw new TemplateNoSuchPropertyException(null, "User." + propertyName)
+        };
     }
 
-    private class UserAdaptorConst : IModelAdaptor {
-        public object GetProperty(object o, object property, string propertyName) {
-            return propertyName switch {
-                "id" => "const id value",
-                "name" => "const name value",
-                _ => throw new TemplateNoSuchPropertyException(null, "User." + propertyName)
-            };
-        }
+    private static object GetUserPropertyConst(object o, object property, string propertyName) {
+        return propertyName switch {
+            "id" => "const id value",
+            "name" => "const name value",
+            _ => throw new TemplateNoSuchPropertyException(null, "User." + propertyName)
+        };
     }
 
     private class SuperUser : User {
@@ -75,7 +70,7 @@ public class TestModelAdaptors : BaseTest {
         const string templates = "foo(x) ::= \"<x.id>: <x.name>\"\n";
         WriteFile(TmpDir, "foo.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "foo.stg")).Build();
-        group.RegisterModelAdaptor(typeof(User), new UserAdaptor());
+        group.RegisterModelAdaptor(typeof(User), GetUserProperty);
         var st = group.FindTemplate("foo");
         st.Add("x", new User(100, "parrt"));
         const string expected = "100: parrt";
@@ -89,7 +84,7 @@ public class TestModelAdaptors : BaseTest {
         const string templates = "foo(x) ::= \"<x.qqq>\"\n";
         WriteFile(TmpDir, "foo.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "foo.stg")).WithErrorListener(errors).Build();
-        group.RegisterModelAdaptor(typeof(User), new UserAdaptor());
+        group.RegisterModelAdaptor(typeof(User), GetUserProperty);
         var st = group.FindTemplate("foo");
         st.Add("x", new User(100, "parrt"));
         var result = st.Render();
@@ -105,7 +100,7 @@ public class TestModelAdaptors : BaseTest {
         const string templates = "foo(x) ::= \"<x.id>: <x.name>\"\n";
         WriteFile(TmpDir, "foo.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "foo.stg")).Build();
-        group.RegisterModelAdaptor(typeof(User), new UserAdaptor());
+        group.RegisterModelAdaptor(typeof(User), GetUserProperty);
         var st = group.FindTemplate("foo");
         st.Add("x", new SuperUser(100, "parrt")); // create subclass of User
         const string expected = "100: super parrt";
@@ -118,11 +113,11 @@ public class TestModelAdaptors : BaseTest {
         const string templates = "foo(x) ::= \"<x.id>: <x.name>\"\n";
         WriteFile(TmpDir, "foo.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "foo.stg")).Build();
-        group.RegisterModelAdaptor(typeof(User), new UserAdaptor());
+        group.RegisterModelAdaptor(typeof(User), GetUserProperty);
         group.GetModelAdaptor(typeof(User)); // get User, SuperUser into cache
         group.GetModelAdaptor(typeof(SuperUser));
 
-        group.RegisterModelAdaptor(typeof(User), new UserAdaptorConst());
+        group.RegisterModelAdaptor(typeof(User), GetUserPropertyConst);
         // cache should be reset so we see new adaptor
         var st = group.FindTemplate("foo");
         st.Add("x", new User(100, "parrt"));
@@ -136,8 +131,8 @@ public class TestModelAdaptors : BaseTest {
         const string templates = "foo(x) ::= \"<x.id>: <x.name>\"\n";
         WriteFile(TmpDir, "foo.stg", templates);
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "foo.stg")).Build();
-        group.RegisterModelAdaptor(typeof(User), new UserAdaptor());
-        group.RegisterModelAdaptor(typeof(SuperUser), new UserAdaptorConst()); // most specific
+        group.RegisterModelAdaptor(typeof(User), GetUserProperty);
+        group.RegisterModelAdaptor(typeof(SuperUser), GetUserPropertyConst); // most specific
         var st = group.FindTemplate("foo");
         st.Add("x", new User(100, "parrt"));
         const string expected1 = "100: parrt";

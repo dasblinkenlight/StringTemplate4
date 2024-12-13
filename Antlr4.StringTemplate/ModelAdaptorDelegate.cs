@@ -1,10 +1,10 @@
-﻿/*
+/*
  * [The "BSD license"]
  * Copyright (c) 2011 Terence Parr
  * All rights reserved.
  *
  * Conversion to C#:
- * Copyright (c) 2011 Sam Harwell, Tunnel Vision Laboratories, LLC
+ * Copyright (c) 2024 Sergey Kalinichenko
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,33 +30,26 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate.Misc;
+namespace Antlr4.StringTemplate;
 
-using IDictionary = System.Collections.IDictionary;
+/** A delegate that knows how to convert property references to appropriate
+ *  actions on a model object.  Some models, such as JDBC, are interface-based
+ *  (we aren't supposed to care about implementation classes). Other
+ *  models don't follow getter method naming convention.  So, if we have
+ *  an object of type M with property method foo() (not getFoo()), we
+ *  register a model adaptor object, adap, that converts foo lookup to foo().
+ *
+ *  Given &lt;a.foo&gt;, we look up foo via the adaptor if "an instanceof(M)".
+ *
+ *  Lookup property name in o and return its value.  It's a good
+ *  idea to cache a Method or Field reflection object to make
+ *  this fast after the first lookup.
+ *
+ *  property is normally a String but doesn't have to be. E.g.,
+ *  if o is Map, property could be any key type.  If we need to convert
+ *  to string, then it's done by Template and passed in here.
+ *
+ *  See unit tests.
+ */
 
-public class MapModelAdaptor : IModelAdaptor {
-
-    public virtual object GetProperty(object o, object property, string propertyName) {
-        object value;
-        var map = (IDictionary)o;
-
-        if (property == null) {
-            value = map[TemplateGroup.DefaultKey];
-        } else if (map.Contains(property)) {
-            value = map[property];
-        } else if (map.Contains(propertyName)) {
-            value = map[propertyName]; // if can't find the key, try ToString version
-        } else if (property.Equals("keys")) {
-            value = map.Keys;
-        } else if (property.Equals("values")) {
-            value = map.Values;
-        } else {
-            value = map[TemplateGroup.DefaultKey]; // not found, use default
-        }
-        if (ReferenceEquals(value, TemplateGroup.DictionaryKey)) {
-            value = property;
-        }
-        return value;
-    }
-
-}
+public delegate object ModelAdaptorDelegate(object obj, object property, string propertyName);

@@ -140,11 +140,11 @@ public class TemplateGroup : ITemplateGroup {
      *  Template initializes with model adaptors that know how to pull
      *  properties out of Objects, Maps, and STs.
      */
-    private readonly TypeRegistry<IModelAdaptor> adaptors = new() {
-        {typeof(object), new ObjectModelAdaptor()},
-        {typeof(Template), new TemplateModelAdaptor()},
-        {typeof(IDictionary), new MapModelAdaptor()},
-        {typeof(Aggregate), new AggregateModelAdaptor()},
+    private readonly TypeRegistry<ModelAdaptorDelegate> adaptors = new() {
+        {typeof(object), BuiltinModelAdaptors.ObjectModelAdaptorDelegate },
+        {typeof(Template), BuiltinModelAdaptors.TemplateModelAdaptorDelegate },
+        {typeof(IDictionary), BuiltinModelAdaptors.MapModelAdaptorDelegate },
+        {typeof(Aggregate), BuiltinModelAdaptors.AggregateModelAdaptorDelegate },
     };
 
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
@@ -1314,11 +1314,11 @@ public class TemplateGroup : ITemplateGroup {
      *  This must invalidate cache entries, so set your adaptors up before
      *  Render()ing your templates for efficiency.
      */
-    public void RegisterModelAdaptor(Type attributeType, IModelAdaptor adaptor) {
+    public void RegisterModelAdaptor(Type attributeType, ModelAdaptorDelegate adaptor) {
         adaptors[attributeType] = adaptor;
     }
 
-    public IModelAdaptor GetModelAdaptor(Type attributeType) {
+    public ModelAdaptorDelegate GetModelAdaptor(Type attributeType) {
         return adaptors.TryGetValue(attributeType, out var adaptor) ? adaptor : null;
     }
 
