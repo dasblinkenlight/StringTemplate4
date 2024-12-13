@@ -46,8 +46,9 @@ public class ObjectModelAdaptor : IModelAdaptor {
 
     public virtual object GetProperty(object o, object property, string propertyName)
     {
-        if (o == null)
-            throw new ArgumentNullException("o");
+        if (o == null) {
+            throw new ArgumentNullException(nameof(o));
+        }
 
         var c = o.GetType();
         if (o is DynamicXml xml) {
@@ -55,15 +56,16 @@ public class ObjectModelAdaptor : IModelAdaptor {
             return x3;
         }
 
-        if (property == null)
-            throw new TemplateNoSuchPropertyException(o, string.Format("{0}.{1}", c.FullName, propertyName ?? "null"));
+        if (property == null) {
+            throw new TemplateNoSuchPropertyException(o, $"{c.FullName}.{propertyName ?? "null"}");
+        }
 
         object value;
         var accessor = FindMember(c, propertyName);
         if (accessor != null) {
             value = accessor(o);
         } else {
-            throw new TemplateNoSuchPropertyException(o, string.Format("{0}.{1}", c.FullName, propertyName));
+            throw new TemplateNoSuchPropertyException(o, $"{c.FullName}.{propertyName}");
         }
 
         return value;
@@ -76,18 +78,13 @@ public class ObjectModelAdaptor : IModelAdaptor {
         if (name == null)
             throw new ArgumentNullException(nameof(name));
 
-        lock (_memberAccessors)
-        {
-            Dictionary<string, System.Func<object, object>> members;
+        lock (_memberAccessors) {
             System.Func<object, object> accessor = null;
 
-            if (_memberAccessors.TryGetValue(type, out members))
-            {
+            if (_memberAccessors.TryGetValue(type, out var members)) {
                 if (members.TryGetValue(name, out accessor))
                     return accessor;
-            }
-            else
-            {
+            } else {
                 members = new Dictionary<string, System.Func<object, object>>();
                 _memberAccessors[type] = members;
             }
@@ -158,15 +155,12 @@ public class ObjectModelAdaptor : IModelAdaptor {
             throw new ArgumentNullException(nameof(propertyInfo));
 
         var indexParameters = propertyInfo.GetIndexParameters();
-        return indexParameters != null
-               && indexParameters.Length > 0
-               && indexParameters[0].ParameterType == typeof(string);
+        return indexParameters.Length > 0 && indexParameters[0].ParameterType == typeof(string);
     }
 
-    private static System.Func<object, object> BuildAccessor(MethodInfo method)
-    {
+    private static System.Func<object, object> BuildAccessor(MethodInfo method) {
         var obj = Expression.Parameter(typeof(object), "obj");
-        var instance = !method.IsStatic ? Expression.Convert(obj, method.DeclaringType) : null;
+        var instance = !method.IsStatic ? Expression.Convert(obj, method.DeclaringType!) : null;
         var expr = Expression.Lambda<System.Func<object, object>>(
             Expression.Convert(
                 Expression.Call(instance, method),
@@ -179,10 +173,9 @@ public class ObjectModelAdaptor : IModelAdaptor {
     /// <summary>
     /// Builds an accessor for an indexer property that returns a takes a string argument.
     /// </summary>
-    private static System.Func<object, object> BuildAccessor(MethodInfo method, string argument)
-    {
+    private static System.Func<object, object> BuildAccessor(MethodInfo method, string argument) {
         var obj = Expression.Parameter(typeof(object), "obj");
-        var instance = !method.IsStatic ? Expression.Convert(obj, method.DeclaringType) : null;
+        var instance = !method.IsStatic ? Expression.Convert(obj, method.DeclaringType!) : null;
         var expr = Expression.Lambda<System.Func<object, object>>(
             Expression.Convert(
                 Expression.Call(instance, method, Expression.Constant(argument)),
@@ -192,10 +185,9 @@ public class ObjectModelAdaptor : IModelAdaptor {
         return expr.Compile();
     }
 
-    private static System.Func<object, object> BuildAccessor(FieldInfo field)
-    {
+    private static System.Func<object, object> BuildAccessor(FieldInfo field) {
         var obj = Expression.Parameter(typeof(object), "obj");
-        var instance = !field.IsStatic ? Expression.Convert(obj, field.DeclaringType) : null;
+        var instance = !field.IsStatic ? Expression.Convert(obj, field.DeclaringType!) : null;
         var expr = Expression.Lambda<System.Func<object, object>>(
             Expression.Convert(
                 Expression.Field(instance, field),
@@ -204,4 +196,5 @@ public class ObjectModelAdaptor : IModelAdaptor {
 
         return expr.Compile();
     }
+
 }

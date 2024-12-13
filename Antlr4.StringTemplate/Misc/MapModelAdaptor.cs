@@ -40,24 +40,23 @@ public class MapModelAdaptor : IModelAdaptor {
         object value;
         var map = (IDictionary)o;
 
-        if (property == null)
+        if (property == null) {
             value = map[TemplateGroup.DefaultKey];
-        else if (map.Contains(property))
+        } else if (map.Contains(property)) {
             value = map[property];
-        else if (map.Contains(propertyName))
+        } else if (map.Contains(propertyName)) {
             value = map[propertyName]; // if can't find the key, try ToString version
-        else if (property.Equals("keys"))
+        } else if (property.Equals("keys")) {
             value = map.Keys;
-        else if (property.Equals("values"))
+        } else if (property.Equals("values")) {
             value = map.Values;
-        else
+        } else {
             value = map[TemplateGroup.DefaultKey]; // not found, use default
-
-        if (ReferenceEquals(value, TemplateGroup.DictionaryKey))
-        {
+        }
+        if (ReferenceEquals(value, TemplateGroup.DictionaryKey)) {
             value = property;
         }
-
         return value;
     }
+
 }
