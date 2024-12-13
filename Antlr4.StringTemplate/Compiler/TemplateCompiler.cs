@@ -106,8 +106,7 @@ public partial class TemplateCompiler
         var @is = new ANTLRStringStream(template, srcName) {
             name = srcName ?? name
         };
-        TemplateLexer lexer;
-        lexer = templateToken is { Type: GroupParser.BIGSTRING_NO_NL } ?
+        var lexer = templateToken is { Type: GroupParser.BIGSTRING_NO_NL } ?
             new TemplateLexerNoNewlines(ErrorManager, @is, templateToken, DelimiterStartChar, DelimiterStopChar) :
             new TemplateLexer(ErrorManager, @is, templateToken, DelimiterStartChar, DelimiterStopChar);
         var tokens = new CommonTokenStream(lexer);

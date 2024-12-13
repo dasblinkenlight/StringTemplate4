@@ -239,12 +239,8 @@ public class TemplateGroup : ITemplateGroup {
 
     /** Create singleton template for use with dictionary values */
     public Template CreateSingleton(IToken templateToken) {
-        string template;
-        if (templateToken.Type == GroupParser.BIGSTRING || templateToken.Type == GroupParser.BIGSTRING_NO_NL) {
-            template = Utility.Strip(templateToken.Text, 2);
-        } else {
-            template = Utility.Strip(templateToken.Text, 1);
-        }
+        var template = Utility.Strip(templateToken.Text,
+            templateToken.Type is GroupParser.BIGSTRING or GroupParser.BIGSTRING_NO_NL ? 2 : 1);
         var impl = Compile(FileName, null, null, template, templateToken);
         var st = CreateStringTemplateInternally(impl);
         st.Group = this;

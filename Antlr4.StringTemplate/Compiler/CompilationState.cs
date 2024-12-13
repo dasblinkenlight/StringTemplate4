@@ -43,19 +43,19 @@ using Array = System.Array;
 public class CompilationState {
 
     /** The compiled code implementation to fill in. */
-    internal CompiledTemplate impl = new();
+    internal readonly CompiledTemplate impl = new();
 
     /** Track unique strings; copy into CompiledTemplate's String[] after compilation */
-    internal StringTable stringtable = new();
+    internal readonly StringTable stringtable = new();
 
     /** Track instruction location within code.instrs array; this is
      *  next address to Write to.  Byte-addressable memory.
      */
     internal int ip;
 
-    internal ITokenStream tokens;
+    private readonly ITokenStream tokens;
 
-    internal ErrorManager errMgr;
+    private readonly ErrorManager errMgr;
 
     public CompilationState(ErrorManager errMgr, string name, ITokenStream tokens) {
         this.errMgr = errMgr;
@@ -122,7 +122,7 @@ public class CompilationState {
         ip += Instruction.OperandSizeInBytes;
     }
 
-    public void Emit2(CommonTree opAST, Bytecode opcode, int arg, int arg2) {
+    private void Emit2(CommonTree opAST, Bytecode opcode, int arg, int arg2) {
         Emit(opAST, opcode);
         EnsureCapacity(Instruction.OperandSizeInBytes * 2);
         WriteShort(impl.instrs, ip, (short)arg);
@@ -139,31 +139,6 @@ public class CompilationState {
     public void Emit1(CommonTree opAST, Bytecode opcode, string s) {
         var i = DefineString(s);
         Emit1(opAST, opcode, i);
-    }
-
-    public void Insert(int addr, Bytecode opcode, string s) {
-        //System.out.println("before insert of "+opcode+"("+s+"):"+ Arrays.toString(impl.instrs));
-        EnsureCapacity(1 + Instruction.OperandSizeInBytes);
-        var instrSize = 1 + Instruction.OperandSizeInBytes;
-        // make room for opcode, opnd
-        Array.Copy(impl.instrs, addr, impl.instrs, addr + instrSize, ip - addr);
-        var save = ip;
-        ip = addr;
-        Emit1(null, opcode, s);
-        ip = save + instrSize;
-        //System.out.println("after  insert of "+opcode+"("+s+"):"+ Arrays.toString(impl.instrs));
-        // adjust addresses for BR and BRF
-        var a = addr + instrSize;
-        while (a < ip) {
-            var op = (Bytecode)impl.instrs[a];
-            var I = Instruction.instructions[(int)op];
-            if (op == Bytecode.INSTR_BR || op == Bytecode.INSTR_BRF) {
-                var operand = BytecodeDisassembler.GetShort(impl.instrs, a + 1);
-                WriteShort(impl.instrs, a + 1, (short)(operand + instrSize));
-            }
-            a += I.nopnds * Instruction.OperandSizeInBytes + 1;
-        }
-        //System.out.println("after  insert of "+opcode+"("+s+"):"+ Arrays.toString(impl.instrs));
     }
 
     public void Write(int addr, short value) {

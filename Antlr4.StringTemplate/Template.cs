@@ -109,7 +109,7 @@ public sealed class Template : ITemplate {
 
     /** Used by group creation routine, not by users */
     internal Template(ITemplateGroup group) {
-        groupThatCreatedThisInstance = group as TemplateGroup ?? throw new ArgumentNullException(nameof(group));
+        groupThatCreatedThisInstance = group as TemplateGroup ?? throw new ArgumentException(nameof(group));
 
         if (groupThatCreatedThisInstance.TrackCreationEvents) {
             DebugState = new TemplateDebugState {
@@ -139,7 +139,7 @@ public sealed class Template : ITemplate {
     }
 
     public Template(string template, ITemplateGroup group) {
-        groupThatCreatedThisInstance = group as TemplateGroup ?? throw new ArgumentNullException(nameof(group));
+        groupThatCreatedThisInstance = group as TemplateGroup ?? throw new ArgumentException(nameof(group));
         impl = groupThatCreatedThisInstance.Compile(groupThatCreatedThisInstance.FileName, null, null, template, null);
         impl.HasFormalArgs = false;
         impl.Name = UnknownName;
@@ -172,7 +172,7 @@ public sealed class Template : ITemplate {
 
     public ITemplateGroup Group {
         get => groupThatCreatedThisInstance;
-        set => groupThatCreatedThisInstance = value as TemplateGroup ?? throw new ArgumentNullException(nameof(value));
+        set => groupThatCreatedThisInstance = value as TemplateGroup ?? throw new ArgumentException(nameof(value));
     }
 
     public void SetGroup(ITemplateGroup group) {

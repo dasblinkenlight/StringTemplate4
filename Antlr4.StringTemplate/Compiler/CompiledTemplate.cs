@@ -168,26 +168,6 @@ public class CompiledTemplate {
 
     public bool IsAnonSubtemplate { get; set; }
 
-    public Interval TemplateRange {
-        get {
-            if (!IsAnonSubtemplate) {
-                return new Interval(0, Template.Length);
-            }
-            var start = int.MaxValue;
-            var stop = int.MinValue;
-            foreach (var interval in sourceMap) {
-                if (interval == null) {
-                    continue;
-                }
-                start = Math.Min(start, interval.Start);
-                stop = Math.Max(stop, interval.End);
-            }
-            return start <= stop + 1 ?
-                new Interval(start, stop) :
-                new Interval(0, Template.Length);
-        }
-    }
-
     public int NumberOfArgsWithDefaultValues => _numberOfArgsWithDefaultValues;
 
     public FormalArgument TryGetFormalArgument(string name) {
