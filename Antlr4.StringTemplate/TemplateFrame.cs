@@ -69,7 +69,7 @@ public sealed class TemplateFrame {
         var p = this;
         var i = StackDepth-1;
         while (p != null) {
-            names[i--] = p.Template.Name;
+            names[i--] = p.Template.impl.Name;
             p = p.Parent;
         }
         System.Diagnostics.Debug.Assert(i == -1);

@@ -100,8 +100,8 @@ public class DebugTemplate : Template {
     }
 
     public virtual List<InterpEvent> GetEvents(CultureInfo locale, int lineWidth) {
-        StringWriter @out = new StringWriter();
-        ITemplateWriter wr = new AutoIndentWriter(@out);
+        using var sw = new StringWriter();
+        ITemplateWriter wr = new AutoIndentWriter(sw);
         wr.LineWidth = lineWidth;
         return GetEvents(locale, wr);
     }

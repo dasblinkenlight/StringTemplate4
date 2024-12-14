@@ -495,7 +495,7 @@ public class TestGroups : BaseTest {
     }
 
     private class Counter {
-        int n = 0;
+        int n;
         public override string ToString() {
             return (n++).ToString();
         }
@@ -704,8 +704,8 @@ public class TestGroups : BaseTest {
         Assert.AreEqual("foobar", sta.Render());
 
         // Are the correct "ThatCreatedThisInstance" groups assigned
-        Assert.AreEqual("group1", sta.Group.Name);
-        Assert.AreEqual("group1", stb.Group.Name);
+        Assert.AreEqual("group1",  sta.GetTemplateGroupName());
+        Assert.AreEqual("group1", stb.GetTemplateGroupName());
 
         // Are the correct (native) groups assigned for the templates
         Assert.AreEqual("group1", sta.GetCompiledTemplate().NativeGroup.Name);

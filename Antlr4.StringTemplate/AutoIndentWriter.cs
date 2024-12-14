@@ -30,13 +30,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Antlr4.StringTemplate;
-
+using System;
+using System.Text;
+using System.IO;
 using System.Collections.Generic;
-using Antlr.Runtime.Misc;
 
-using Environment = System.Environment;
-using TextWriter = System.IO.TextWriter;
+namespace Antlr4.StringTemplate;
 
 /** Essentially a char filter that knows how to auto-indent output
  *  by maintaining a stack of indent levels.
@@ -59,15 +58,16 @@ using TextWriter = System.IO.TextWriter;
 public class AutoIndentWriter : ITemplateWriter {
     public const int NoWrap = -1;
 
+    private readonly StringBuilder _currentIndent = new ();
     /// <summary>
-    /// Stack of indents
+    /// Stack of indent positions inside the _currentIndent
     /// </summary>
-    private readonly ListStack<string> _indents = [];
+    private readonly Stack<int> _indentPositions = new ();
 
     /// <summary>
     /// Stack of integer anchors (char positions in line)
     /// </summary>
-    private readonly Stack<int> _anchors = new Stack<int>();
+    private readonly Stack<int> _anchors = new ();
 
     /// <summary>
     /// The newline character used for this writer
@@ -88,7 +88,6 @@ public class AutoIndentWriter : ITemplateWriter {
 
     public AutoIndentWriter(TextWriter writer, string newline) {
         Writer = writer;
-        _indents.Push(null); // start with no indent
         _newline = newline;
     }
 
@@ -107,11 +106,16 @@ public class AutoIndentWriter : ITemplateWriter {
     private TextWriter Writer { get; set; }
 
     public virtual void PushIndentation(string indent) {
-        _indents.Push(indent);
+        _indentPositions.Push(_currentIndent.Length);
+        _currentIndent.Append(indent);
     }
 
-    public virtual string PopIndentation() {
-        return _indents.Pop();
+    public virtual void PopIndentation() {
+        if (_indentPositions.Count == 0) {
+            throw new InvalidOperationException("Pop indentation called without a prior push.");
+        }
+        var posToRemove = _indentPositions.Pop();
+        _currentIndent.Remove(posToRemove, _currentIndent.Length - posToRemove);
     }
 
     public virtual void PushAnchorPoint() {
@@ -123,8 +127,8 @@ public class AutoIndentWriter : ITemplateWriter {
     }
 
     /** Write out a string literal or attribute expression or expression element.*/
-    public virtual int Write(string value) {
-        var n = 0;
+    public virtual int Write(string value, string wrap) {
+        var n = wrap != null ? WriteWrap(wrap) : 0;
         var valueLength = value.Length;
         var newlineLength = _newline.Length;
         for (var i = 0; i < valueLength; i++) {
@@ -155,18 +159,7 @@ public class AutoIndentWriter : ITemplateWriter {
     }
 
     public virtual int WriteSeparator(string value) {
-        return Write(value);
-    }
-
-    /** Write out a string literal or attribute expression or expression element.
-     *
-     *  If doing line wrap, then check wrap before emitting this str.  If
-     *  at or beyond desired line width then emit a \n and any indentation
-     *  before spitting out this str.
-     */
-    public virtual int Write(string value, string wrap) {
-        var n = WriteWrap(wrap);
-        return n + Write(value);
+        return Write(value, null);
     }
 
     public virtual int WriteWrap(string wrap) {
@@ -204,13 +197,8 @@ public class AutoIndentWriter : ITemplateWriter {
     }
 
     protected virtual int Indent() {
-        var n = 0;
-        foreach (var ind in _indents) {
-            if (ind != null) {
-                n += ind.Length;
-                Writer.Write(ind);
-            }
-        }
+        var n = _currentIndent.Length;
+        Writer.Write(_currentIndent);
         // If current anchor is beyond current indent width, indent to anchor
         // *after* doing indents (might be tabs in there or whatever)
         var indentWidth = n;

@@ -21,4 +21,10 @@ internal static class TemplateDebugExtensions {
 
     public static void DefineTemplate(this ITemplateGroup group, string name, string template, string[] arguments) =>
         (group as TemplateGroup)?.DefineTemplate(name, template, arguments);
+
+    public static string GetTemplateGroupName(this ITemplate template) => ((Template)template).Group.Name;
+
+    public static void SetTemplateGroup(this ITemplate template, ITemplateGroup group) =>
+        (template as Template)!.Group = group as TemplateGroup;
+
 }
