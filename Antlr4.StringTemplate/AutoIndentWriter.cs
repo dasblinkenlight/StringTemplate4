@@ -127,8 +127,8 @@ public class AutoIndentWriter : ITemplateWriter {
     }
 
     /** Write out a string literal or attribute expression or expression element.*/
-    public virtual int Write(string value) {
-        var n = 0;
+    public virtual int Write(string value, string wrap) {
+        var n = wrap != null ? WriteWrap(wrap) : 0;
         var valueLength = value.Length;
         var newlineLength = _newline.Length;
         for (var i = 0; i < valueLength; i++) {
@@ -159,18 +159,7 @@ public class AutoIndentWriter : ITemplateWriter {
     }
 
     public virtual int WriteSeparator(string value) {
-        return Write(value);
-    }
-
-    /** Write out a string literal or attribute expression or expression element.
-     *
-     *  If doing line wrap, then check wrap before emitting this str.  If
-     *  at or beyond desired line width then emit a \n and any indentation
-     *  before spitting out this str.
-     */
-    public virtual int Write(string value, string wrap) {
-        var n = WriteWrap(wrap);
-        return n + Write(value);
+        return Write(value, null);
     }
 
     public virtual int WriteWrap(string wrap) {

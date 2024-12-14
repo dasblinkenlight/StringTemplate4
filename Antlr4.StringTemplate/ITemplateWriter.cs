@@ -64,15 +64,11 @@ public interface ITemplateWriter
  void PopAnchorPoint();
 
  /** Write the string and return how many actual chars were written.
-  *  With autoindentation and wrapping, more chars than length(str)
-  *  can be emitted.  No wrapping is done.
+  *  With auto-indentation and wrapping, more chars than length(str)
+  *  can be emitted. If wrap is supplied, and we are at or beyond
+  *  the wrapping position, write the wrap before the string.
   */
- int Write(string str);
-
- /** Same as Write, but wrap lines using the indicated string as the
-  *  wrap character (such as "\n").
-  */
- int Write(string str, string wrap);
+ int Write(string str, string wrap = null);
 
  /** Because we evaluate Template instance by invoking exec() again, we
   *  can't pass options in.  So the WRITE instruction of an applied
