@@ -42,11 +42,7 @@ public class AttributeNotFoundException : TemplateException
         _attributeName = attributeName;
     }
 
-    public override string Message
-    {
-        get
-        {
-            return "from template " + _frame.Template.Name + " no attribute " + _attributeName + " is visible";
-        }
-    }
+    public override string Message =>
+        $"from template {_frame.Template.impl.Name} no attribute {_attributeName} is visible";
+
 }

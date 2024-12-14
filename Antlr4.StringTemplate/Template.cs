@@ -79,7 +79,7 @@ public sealed class Template : ITemplate {
     internal object[] locals;
 
     /** Created as instance of which group? We need this to init interpreter
-     *  via Render.  So, we create st, and then it needs to know which
+     *  via Render.  So, we create a Template, and then it needs to know which
      *  group created it for sake of polymorphism:
      *
      *  st = skin1.GetInstanceOf("searchBox");
@@ -108,9 +108,8 @@ public sealed class Template : ITemplate {
     }
 
     /** Used by group creation routine, not by users */
-    internal Template(ITemplateGroup group) {
-        groupThatCreatedThisInstance = group as TemplateGroup ?? throw new ArgumentException(nameof(group));
-
+    internal Template(TemplateGroup group) {
+        groupThatCreatedThisInstance = group;
         if (groupThatCreatedThisInstance.TrackCreationEvents) {
             DebugState = new TemplateDebugState {
                 NewTemplateEvent = new ConstructionEvent()
@@ -138,8 +137,8 @@ public sealed class Template : ITemplate {
         }) {
     }
 
-    public Template(string template, ITemplateGroup group) {
-        groupThatCreatedThisInstance = group as TemplateGroup ?? throw new ArgumentException(nameof(group));
+    public Template(string template, TemplateGroup group) {
+        groupThatCreatedThisInstance = group;
         impl = groupThatCreatedThisInstance.Compile(groupThatCreatedThisInstance.FileName, null, null, template, null);
         impl.HasFormalArgs = false;
         impl.Name = UnknownName;
@@ -170,13 +169,9 @@ public sealed class Template : ITemplate {
      */
     public TemplateDebugState DebugState { get; private set; }
 
-    public ITemplateGroup Group {
+    public TemplateGroup Group {
         get => groupThatCreatedThisInstance;
-        set => groupThatCreatedThisInstance = value as TemplateGroup ?? throw new ArgumentException(nameof(value));
-    }
-
-    public void SetGroup(ITemplateGroup group) {
-        groupThatCreatedThisInstance = group as TemplateGroup ?? throw new ArgumentNullException(nameof(group));
+        set => groupThatCreatedThisInstance = value;
     }
 
     public Template CreateShadow() {
@@ -342,10 +337,6 @@ public sealed class Template : ITemplate {
         return multi;
     }
 
-    public string Name => impl.Name;
-
-    public bool IsAnonymousSubtemplate => impl.IsAnonSubtemplate;
-
     public int Write(ITemplateWriter tw) {
         var interp = new Interpreter(groupThatCreatedThisInstance, impl.NativeGroup.ErrorManager, false);
         var frame = new TemplateFrame(this, null);
@@ -425,7 +416,7 @@ public sealed class Template : ITemplate {
         if (impl.FormalArguments != null) {
             args = string.Join(",", impl.FormalArguments.Select(i => i.Name).ToArray());
         }
-        var name = Name;
+        var name = impl.Name;
         if (impl.IsRegion) {
             name = "@" + TemplateGroup.GetUnmangledTemplateName(name);
         }

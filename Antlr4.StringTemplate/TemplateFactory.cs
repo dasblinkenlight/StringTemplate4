@@ -6,7 +6,7 @@ public class TemplateFactory : ITemplateFactory {
         new Template(content, delimiterStartChar, delimiterStopChar);
 
     public ITemplate CreateTemplateImplicit(string content, ITemplateGroup group) =>
-        new Template(content, group);
+        new Template(content, group as TemplateGroup);
 
     public TemplateGroupBuilder CreateTemplateGroup() => TemplateGroupBuilder.ForGroup();
 

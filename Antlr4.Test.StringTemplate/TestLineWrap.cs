@@ -30,6 +30,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using Antlr4.StringTemplate.Debug;
+
 namespace Antlr4.Test.StringTemplate;
 
 using System.Collections.Generic;
@@ -96,7 +98,7 @@ public class TestLineWrap : BaseTest {
         var group = _templateFactory.CreateTemplateGroupFile(Path.Combine(TmpDir, "t.stg")).Build();
 
         var x = _templateFactory.CreateTemplate("<\\n>{ <stuff; anchor, separator=\",\\n\"> }<\\n>");
-        x.SetGroup(group);
+        x.SetTemplateGroup(group);
         x.Add("stuff", "1");
         x.Add("stuff", "2");
         x.Add("stuff", "3");
