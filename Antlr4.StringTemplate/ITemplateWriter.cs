@@ -57,7 +57,7 @@ public interface ITemplateWriter
 
  void PushIndentation(string indent);
 
- string PopIndentation();
+ void PopIndentation();
 
  void PushAnchorPoint();
 
