@@ -35,7 +35,6 @@ using System;
 namespace Antlr4.Test.StringTemplate;
 
 using System.Collections.Generic;
-using Antlr4.StringTemplate;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Path = System.IO.Path;
 
@@ -339,7 +338,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestLengthStrip() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<length(strip(names))>"
         );
         e.Add("names", null);
@@ -354,7 +353,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestLengthStripList() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<length(strip(names))>"
         );
         e.Add("names", new List<string>([null, "Tom", null, null, "Sriram", null]));
@@ -364,7 +363,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestLengthStripArray() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<length(strip(names))>"
         );
         e.Add("names", new[] { null, "Tom", null, null, "Sriram", null });
@@ -375,7 +374,7 @@ public class TestFunctions : BaseTest {
     [TestMethod]
     public void TestCombinedOp() {
         // replace first of yours with first of mine
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[first(mine),rest(yours)]; separator=\", \">"
         );
         e.Add("mine", "1");
@@ -390,7 +389,7 @@ public class TestFunctions : BaseTest {
     [TestMethod]
     public void TestCombinedOpList() {
         // replace first of yours with first of mine
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[first(mine),rest(yours)]; separator=\", \">"
         );
         e.Add("mine", new List<string>(["1", "2", "3"]));
@@ -403,7 +402,7 @@ public class TestFunctions : BaseTest {
     [TestMethod]
     public void TestCombinedOpArray() {
         // replace first of yours with first of mine
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[first(mine),rest(yours)]; separator=\", \">"
         );
         e.Add("mine", new[] { "1", "2", "3" });
@@ -416,7 +415,7 @@ public class TestFunctions : BaseTest {
     [TestMethod]
     public void TestCombinedOpPrimitiveArray() {
         // replace first of yours with first of mine
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[first(mine),rest(yours)]; separator=\", \">"
         );
         e.Add("mine", new[] { 1, 2, 3 });
@@ -429,7 +428,7 @@ public class TestFunctions : BaseTest {
     [TestMethod]
     public void TestCatListAndSingleAttribute() {
         // replace first of yours with first of mine
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[mine,yours]; separator=\", \">"
         );
         e.Add("mine", "1");
@@ -443,7 +442,7 @@ public class TestFunctions : BaseTest {
     [TestMethod]
     public void TestCatListAndSingleAttribute2() {
         // replace first of yours with first of mine
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[mine,yours]; separator=\", \">"
         );
         e.Add("mine", new List<string>(["1", "2", "3"]));
@@ -455,7 +454,7 @@ public class TestFunctions : BaseTest {
     [TestMethod]
     public void TestCatArrayAndSingleAttribute() {
         // replace first of yours with first of mine
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[mine,yours]; separator=\", \">"
         );
         e.Add("mine", new[] { "1", "2", "3" });
@@ -467,7 +466,7 @@ public class TestFunctions : BaseTest {
     [TestMethod]
     public void TestCatPrimitiveArrayAndSingleAttribute() {
         // replace first of yours with first of mine
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[mine,yours]; separator=\", \">"
         );
         e.Add("mine", new[] { 1, 2, 3 });
@@ -502,7 +501,7 @@ public class TestFunctions : BaseTest {
         // two operands (from left to right) determine which way it
         // goes.  In this case, x+mine is a list so everything from their
         // to the right becomes list cat.
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[x,mine,y,yours,z]; separator=\", \">"
         );
         e.Add("mine", "1");
@@ -519,7 +518,7 @@ public class TestFunctions : BaseTest {
         // two operands (from left to right) determine which way it
         // goes.  In this case, x+mine is a list so everything from their
         // to the right becomes list cat.
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[x,mine,y,yours,z]; separator=\", \">"
         );
         e.Add("mine", new List<string>(["1", "2", "3"]));
@@ -534,7 +533,7 @@ public class TestFunctions : BaseTest {
         // two operands (from left to right) determine which way it
         // goes.  In this case, x+mine is a list so everything from their
         // to the right becomes list cat.
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[x,mine,y,yours,z]; separator=\", \">"
         );
         e.Add("mine", new[] { "1", "2", "3" });
@@ -549,7 +548,7 @@ public class TestFunctions : BaseTest {
         // two operands (from left to right) determine which way it
         // goes.  In this case, x+mine is a list so everything from their
         // to the right becomes list cat.
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<[x,mine,y,yours,z]; separator=\", \">"
         );
         e.Add("mine", new[] { 1, 2, 3 });
@@ -560,7 +559,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestNestedOp() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<first(rest(names))>" // gets 2nd element
         );
         e.Add("names", "Ter");
@@ -572,7 +571,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestNestedOpList() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<first(rest(names))>" // gets 2nd element
         );
         e.Add("names", new List<string>(["Ter", "Tom", "Sriram"]));
@@ -582,7 +581,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestNestedOpArray() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<first(rest(names))>" // gets 2nd element
         );
         e.Add("names", new[] { "Ter", "Tom", "Sriram" });
@@ -592,7 +591,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestNestedOpPrimitiveArray() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<first(rest(names))>" // gets 2nd element
         );
         e.Add("names", new[] { 0, 1, 2 });
@@ -602,7 +601,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestFirstWithOneAttributeOp() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<first(names)>"
         );
         e.Add("names", "Ter");
@@ -612,7 +611,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestLastWithOneAttributeOp() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<last(names)>"
         );
         e.Add("names", "Ter");
@@ -622,7 +621,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestLastWithLengthOneListAttributeOp() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<last(names)>"
         );
         e.Add("names", new List<string>() { "Ter" });
@@ -632,7 +631,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestLastWithLengthOneArrayAttributeOp() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<last(names)>"
         );
         e.Add("names", new[] { "Ter" });
@@ -642,7 +641,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestLastWithLengthOnePrimitiveArrayAttributeOp() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<last(names)>"
         );
         e.Add("names", new[] { 0 });
@@ -652,7 +651,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestRestWithOneAttributeOp() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<rest(names)>"
         );
         e.Add("names", "Ter");
@@ -661,7 +660,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestRestWithLengthOneListAttributeOp() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<rest(names)>"
         );
         e.Add("names", new List<string> { "Ter" });
@@ -670,7 +669,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestRestWithLengthOneArrayAttributeOp() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<rest(names)>"
         );
         e.Add("names", new[] { "Ter" });
@@ -679,7 +678,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestRestWithLengthOnePrimitiveArrayAttributeOp() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<rest(names)>"
         );
         e.Add("names", new[] { 0 });
@@ -688,7 +687,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestRepeatedRestOp() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<rest(names)>, <rest(names)>" // gets 2nd element
         );
         e.Add("names", "Ter");
@@ -699,7 +698,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestRepeatedRestOpList() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<rest(names)>, <rest(names)>" // gets 2nd element
         );
         e.Add("names", new List<string>(["Ter", "Tom"]));
@@ -709,7 +708,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestRepeatedRestOpArray() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<rest(names)>, <rest(names)>" // gets 2nd element
         );
         e.Add("names", new[] { "Ter", "Tom" });
@@ -719,7 +718,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestRepeatedRestOpPrimitiveArray() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<rest(names)>, <rest(names)>" // gets 2nd element
         );
         e.Add("names", new[] { 0, 1 });
@@ -729,7 +728,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestIncomingLists() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<rest(names)>, <rest(names)>" // gets 2nd element
         );
         e.Add("names", "Ter");
@@ -740,7 +739,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestFirstWithCatAttribute() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<first([names,phones])>"
         );
         e.Add("names", "Ter");
@@ -753,7 +752,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestFirstWithListOfMaps() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<first(maps).Ter>"
         );
         IDictionary<string, string> m1 = new Dictionary<string, string>();
@@ -773,7 +772,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestFirstWithListOfMaps2() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<first(maps):{ m | <m>!}>"
         );
         IDictionary<string,string> m1 = new Dictionary<string,string>();
@@ -791,7 +790,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestTrim() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<trim(name)>"
         );
         e.Add("name", " Ter  \n");
@@ -801,7 +800,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestStrlen() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<strlen(name)>"
         );
         e.Add("name", "012345");
@@ -811,7 +810,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestReverse() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<reverse(names); separator=\", \">"
         );
         e.Add("names", "Ter");
@@ -823,7 +822,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestReverseList() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<reverse(names); separator=\", \">"
         );
         e.Add("names", new List<string>(["Ter", "Tom", "Sriram"]));
@@ -833,7 +832,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestReverseArray() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<reverse(names); separator=\", \">"
         );
         e.Add("names", new[] { "Ter", "Tom", "Sriram" });
@@ -843,7 +842,7 @@ public class TestFunctions : BaseTest {
 
     [TestMethod]
     public void TestReversePrimitiveArray() {
-        var e = new Template(
+        var e = _templateFactory.CreateTemplate(
             "<reverse(names); separator=\", \">"
         );
         e.Add("names", new[] { 0, 1, 2 });

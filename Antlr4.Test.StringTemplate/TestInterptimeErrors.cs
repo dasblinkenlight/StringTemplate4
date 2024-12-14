@@ -32,7 +32,6 @@
 
 namespace Antlr4.Test.StringTemplate;
 
-using Antlr4.StringTemplate;
 using Antlr4.StringTemplate.Misc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Path = System.IO.Path;
@@ -195,9 +194,7 @@ public class TestInterptimeErrors : BaseTest {
     [TestMethod]
     public void TestParallelAttributeIterationWithMissingArgs() {
         var errors = new ErrorBuffer();
-        var group = new TemplateGroup {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroup().WithErrorListener(errors).Build();
         var e = _templateFactory.CreateTemplateImplicit(
             "<names,phones,salaries:{n,p | <n>@<p>}; separator=\", \">",
             group
@@ -220,9 +217,7 @@ public class TestInterptimeErrors : BaseTest {
     [TestMethod]
     public void TestStringTypeMismatch() {
         var errors = new ErrorBuffer();
-        var group = new TemplateGroup {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroup().WithErrorListener(errors).Build();
         var e = _templateFactory.CreateTemplateImplicit("<trim(s)>", group);
         e.Add("s", 34);
         e.Render(); // generate the error
@@ -233,9 +228,7 @@ public class TestInterptimeErrors : BaseTest {
     [TestMethod]
     public void TestStringTypeMismatch2() {
         var errors = new ErrorBuffer();
-        var group = new TemplateGroup {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroup().WithErrorListener(errors).Build();
         var e = _templateFactory.CreateTemplateImplicit("<strlen(s)>", group);
         e.Add("s", 34);
         e.Render(); // generate the error

@@ -27,4 +27,20 @@ internal static class TemplateDebugExtensions {
     public static void SetTemplateGroup(this ITemplate template, ITemplateGroup group) =>
         (template as Template)!.Group = group as TemplateGroup;
 
+    public static ITemplateGroup GetNativeGroup(this ITemplate template) => ((Template)template).impl.NativeGroup;
+
+    public static string GetNativeRepresentation(this ITemplate template) => ((Template)template).impl.ToString();
+
+    public static CompiledTemplate CompileTemplate(
+        this ITemplateFactory factory, string template,
+        ITemplateErrorListener listener = null, string name = null) {
+        var groupBuilder = factory.CreateTemplateGroup();
+        if (listener != null) {
+            groupBuilder.WithErrorListener(listener);
+        }
+        var compiler = new TemplateCompiler(groupBuilder.Build());
+        return name != null ? compiler.Compile(name, template) : compiler.Compile(template);
+    }
+
 }
+

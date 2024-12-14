@@ -416,7 +416,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestNewlineNormalizationInTemplateString() {
-        var st = new Template(
+        var st = _templateFactory.CreateTemplate(
             "Foo\r\n" +
             "Bar\n"
         );
@@ -429,7 +429,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestNewlineNormalizationInTemplateStringPC() {
-        var st = new Template(
+        var st = _templateFactory.CreateTemplate(
             "Foo\r\n" +
             "Bar\n"
         );
@@ -442,7 +442,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestNewlineNormalizationInAttribute() {
-        var st = new Template(
+        var st = _templateFactory.CreateTemplate(
             "Foo\r\n" +
             "<name>\n"
         );
@@ -456,7 +456,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestNullIterationLineGivesNoOutput() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "<items:{x|<x>}>\n" +
             "end\n");
@@ -467,7 +467,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestEmptyIterationLineGivesNoOutput() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "  <items:{x|<x>}>\n" +
             "end\n");
@@ -479,7 +479,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestCommentOnlyLineGivesNoOutput() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "<! ignore !>\n" +
             "end\n");
@@ -490,7 +490,7 @@ public class TestWhitespace : BaseTest {
 
     [TestMethod]
     public void TestCommentOnlyLineGivesNoOutput2() {
-        var t = new Template(
+        var t = _templateFactory.CreateTemplate(
             "begin\n" +
             "    <! ignore !>\n" +
             "end\n");

@@ -34,7 +34,6 @@ using System;
 
 namespace Antlr4.Test.StringTemplate;
 
-using Antlr4.StringTemplate;
 using Antlr4.StringTemplate.Debug;
 using Antlr4.StringTemplate.Misc;
 using Extensions;
@@ -205,9 +204,7 @@ public class TestOptions : BaseTest {
     [TestMethod]
     public void TestIllegalOption() {
         var errors = new ErrorBuffer();
-        var group = new TemplateGroup {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroup().WithErrorListener(errors).Build();
         group.DefineTemplate("test", "<name; bad=\"ugly\">", ["name"]);
         var st = group.FindTemplate("test");
         st.Add("name", "Ter");

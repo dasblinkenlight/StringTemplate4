@@ -32,7 +32,6 @@
 
 namespace Antlr4.Test.StringTemplate;
 
-using Antlr4.StringTemplate;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 
@@ -122,8 +121,8 @@ public class TestTemplateRawGroupDirectory : BaseTest {
         var a2 = "[<super.a()>]";
         WriteFile(dir2, "a.st", a2);
 
-        var group1 = new TemplateRawGroupDirectory(dir1);
-        var group2 = new TemplateRawGroupDirectory(dir2);
+        var group1 = _templateFactory.CreateRawGroupDirectory(dir1).Build();
+        var group2 = _templateFactory.CreateRawGroupDirectory(dir2).Build();
         group2.ImportTemplates(group1);
         var st = group2.FindTemplate("a");
         const string expected = "[dir1 a]";
