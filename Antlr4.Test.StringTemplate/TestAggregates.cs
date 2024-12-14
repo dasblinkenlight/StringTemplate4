@@ -32,7 +32,6 @@
 
 namespace Antlr4.Test.StringTemplate;
 
-using Antlr4.StringTemplate;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 [TestClass]

@@ -103,7 +103,8 @@ public abstract class BaseTest {
     }
 
     protected void CheckTokens(string template, string expected, char delimiterStartChar = '<', char delimiterStopChar = '>') {
-        var lexer = new TemplateLexer(TemplateGroup.DefaultErrorManager,
+        var lexer = new TemplateLexer(
+            TemplateGroup.DefaultErrorManager,
             new ANTLRStringStream(template),
             null,
             delimiterStartChar,

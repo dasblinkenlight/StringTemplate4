@@ -237,9 +237,7 @@ public class TestCoreBasics : BaseTest {
     public void TestNoSuchProp() {
         var errors = new ErrorBufferAllErrors();
         const string template = "<u.qqq>";
-        var group = new TemplateGroup {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroup().WithErrorListener(errors).Build();
         var st = _templateFactory.CreateTemplateImplicit(template, group);
         st.Add("u", new User(1, "parrt"));
         var result = st.Render();
@@ -252,9 +250,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestNullIndirectProp() {
         var errors = new ErrorBufferAllErrors();
-        var group = new TemplateGroup {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroup().WithErrorListener(errors).Build();
         const string template = "<u.(qqq)>";
         var st = _templateFactory.CreateTemplateImplicit(template, group);
         st.Add("u", new User(1, "parrt"));
@@ -269,11 +265,9 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestPropConvertsToString() {
         var errors = new ErrorBufferAllErrors();
-        var group = new TemplateGroup {
-            Listener = errors
-        };
+        var group = _templateFactory.CreateTemplateGroup().WithErrorListener(errors).Build();
         const string template = "<u.(name)>";
-        var st = new Template(template, group);
+        var st = _templateFactory.CreateTemplateImplicit(template, group);
         st.Add("u", new User(1, "parrt"));
         st.Add("name", 100);
         var result = st.Render();
@@ -286,8 +280,8 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestInclude() {
         const string template = "Load <box()>;";
-        var st = new Template(template);
-        st.impl.NativeGroup.DefineTemplate("box", "kewl\ndaddy");
+        var st = _templateFactory.CreateTemplate(template);
+        st.GetNativeGroup().DefineTemplate("box", "kewl\ndaddy");
         var expected = $"Load kewl{newline}daddy;";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -296,9 +290,9 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestIncludeWithArg() {
         const string template = "Load <box(\"arg\")>;";
-        var st = new Template(template);
-        st.impl.NativeGroup.DefineTemplate("box", "kewl <x> daddy", ["x"]);
-        TestContext.WriteLine(st.impl.ToString());
+        var st = _templateFactory.CreateTemplate(template);
+        st.GetNativeGroup().DefineTemplate("box", "kewl <x> daddy", ["x"]);
+        TestContext.WriteLine(st.GetNativeRepresentation());
         st.Add("name", "Ter");
         const string expected = "Load kewl arg daddy;";
         var result = st.Render();
@@ -308,9 +302,9 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestIncludeWithArg2() {
         const string template = "Load <box(\"arg\", foo())>;";
-        var st = new Template(template);
-        st.impl.NativeGroup.DefineTemplate("box", "kewl <x> <y> daddy", ["x", "y"]);
-        st.impl.NativeGroup.DefineTemplate("foo", "blech");
+        var st = _templateFactory.CreateTemplate(template);
+        st.GetNativeGroup().DefineTemplate("box", "kewl <x> <y> daddy", ["x", "y"]);
+        st.GetNativeGroup().DefineTemplate("foo", "blech");
         st.Add("name", "Ter");
         const string expected = "Load kewl arg blech daddy;";
         var result = st.Render();
@@ -320,9 +314,9 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestIncludeWithEmptySubtemplateArg() {
         const string template = "load <box({})>;";
-        var st = new Template(template);
-        st.impl.NativeGroup.DefineTemplate("box", "kewl <x> daddy", ["x"]);
-        TestContext.WriteLine(st.impl.ToString());
+        var st = _templateFactory.CreateTemplate(template);
+        st.GetNativeGroup().DefineTemplate("box", "kewl <x> daddy", ["x"]);
+        TestContext.WriteLine(st.GetNativeRepresentation());
         st.Add("name", "Ter");
         const string expected = "load kewl  daddy;";
         var result = st.Render();
@@ -332,9 +326,9 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestIncludeWithNestedArgs() {
         const string template = "Load <box(foo(\"arg\"))>;";
-        var st = new Template(template);
-        st.impl.NativeGroup.DefineTemplate("box", "kewl <y> daddy", ["y"]);
-        st.impl.NativeGroup.DefineTemplate("foo", "blech <x>", ["x"]);
+        var st = _templateFactory.CreateTemplate(template);
+        st.GetNativeGroup().DefineTemplate("box", "kewl <y> daddy", ["y"]);
+        st.GetNativeGroup().DefineTemplate("foo", "blech <x>", ["x"]);
         st.Add("name", "Ter");
         const string expected = "Load kewl blech arg daddy;";
         var result = st.Render();
@@ -661,7 +655,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestTrueCond() {
         const string template = "<if(name)>works<endif>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("name", "Ter");
         const string expected = "works";
         var result = st.Render();
@@ -671,7 +665,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestEmptyIFTemplate() {
         const string template = "<if(x)>fail<elseif(name)><endif>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("name", "Ter");
         var result = st.Render();
         Assert.AreEqual(string.Empty, result);
@@ -680,7 +674,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestCondParens() {
         const string template = "<if(!(x||y)&&!z)>works<endif>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         const string expected = "works";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -689,7 +683,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestFalseCond() {
         const string template = "<if(name)>works<endif>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         var result = st.Render();
         Assert.AreEqual(string.Empty, result);
     }
@@ -697,7 +691,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestFalseCond2() {
         const string template = "<if(name)>works<endif>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("name", null);
         var result = st.Render();
         Assert.AreEqual(string.Empty, result);
@@ -726,7 +720,7 @@ public class TestCoreBasics : BaseTest {
     public void TestElseIf2() {
         const string template =
             "<if(x)>fail1<elseif(y)>fail2<elseif(z)>works<else>fail3<endif>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("z", "blort");
         const string expected = "works";
         var result = st.Render();
@@ -737,7 +731,7 @@ public class TestCoreBasics : BaseTest {
     public void TestElseIf3() {
         const string template =
             "<if(x)><elseif(y)><elseif(z)>works<else><endif>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("z", "blort");
         const string expected = "works";
         var result = st.Render();
@@ -747,7 +741,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestNotTrueCond() {
         const string template = "<if(!name)>works<endif>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("name", "Ter");
         var result = st.Render();
         Assert.AreEqual(string.Empty, result);
@@ -756,7 +750,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestNotFalseCond() {
         const string template = "<if(!name)>works<endif>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         const string expected = "works";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -765,7 +759,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestParensInConditional() {
         const string template = "<if((a||b)&&(c||d))>works<endif>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("a", true);
         st.Add("b", true);
         st.Add("c", true);
@@ -778,7 +772,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestParensInConditional2() {
         const string template = "<if((!a||b)&&!(c||d))>broken<else>works<endif>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("a", true);
         st.Add("b", true);
         st.Add("c", true);
@@ -791,7 +785,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestTrueCondWithElse() {
         const string template = "<if(name)>works<else>fail<endif>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("name", "Ter");
         const string expected = "works";
         var result = st.Render();
@@ -801,7 +795,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestFalseCondWithElse() {
         const string template = "<if(name)>fail<else>works<endif>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         const string expected = "works";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -810,7 +804,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestElseIf() {
         const string template = "<if(name)>fail<elseif(id)>works<else>fail<endif>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("id", "2DF3DF");
         const string expected = "works";
         var result = st.Render();
@@ -820,7 +814,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestElseIfNoElseAllFalse() {
         const string template = "<if(name)>fail<elseif(id)>fail<endif>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         var result = st.Render();
         Assert.AreEqual(string.Empty, result);
     }
@@ -828,7 +822,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestElseIfAllExprFalse() {
         const string template = "<if(name)>fail<elseif(id)>fail<else>works<endif>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         const string expected = "works";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -837,7 +831,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestOr() {
         const string template = "<if(name||notThere)>works<else>fail<endif>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("name", "Ter");
         const string expected = "works";
         var result = st.Render();
@@ -847,7 +841,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestMapConditionAndEscapeInside() {
         var template = @"<if(m.name)>works \\<endif>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         IDictionary<string, string> m = new Dictionary<string, string>();
         m["name"] = "Ter";
         st.Add("m", m);
@@ -859,7 +853,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestAnd() {
         var template = "<if(name&&notThere)>fail<else>works<endif>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("name", "Ter");
         const string expected= "works";
         var result = st.Render();
@@ -869,7 +863,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestAndNot() {
         var template = "<if(name&&!notThere)>works<else>fail<endif>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         st.Add("name", "Ter");
         const string expected= "works";
         var result = st.Render();
@@ -878,7 +872,7 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestCharLiterals() {
-        var st = new Template(
+        var st = _templateFactory.CreateTemplate(
             "Foo <\\n><\\n><\\t> bar\n"
         );
         var sw = new StringWriter();
@@ -887,14 +881,14 @@ public class TestCoreBasics : BaseTest {
         const string expected1 = "Foo \n\n\t bar\n";     // expect \n in output
         Assert.AreEqual(expected1, result);
 
-        st = new Template($"Foo <\\n><\\t> bar{newline}");
+        st = _templateFactory.CreateTemplate($"Foo <\\n><\\t> bar{newline}");
         sw = new StringWriter();
         st.Write(new AutoIndentWriter(sw, "\n")); // force \n as newline
         const string expected2 = "Foo \n\t bar\n";     // expect \n in output
         result = sw.ToString();
         Assert.AreEqual(expected2, result);
 
-        st = new Template(@"Foo<\ >bar<\n>");
+        st = _templateFactory.CreateTemplate(@"Foo<\ >bar<\n>");
         sw = new StringWriter();
         st.Write(new AutoIndentWriter(sw, "\n")); // force \n as newline
         result = sw.ToString();
@@ -904,19 +898,19 @@ public class TestCoreBasics : BaseTest {
 
     [TestMethod]
     public void TestUnicodeLiterals() {
-        var st = new Template(
+        var st = _templateFactory.CreateTemplate(
             "Foo <\\uFEA5><\\n><\\u00C2> bar\n"
         );
         var expected1 = $"Foo \ufea5{newline}\u00C2 bar{newline}";
         var result = st.Render();
         Assert.AreEqual(expected1, result);
 
-        st = new Template($"Foo <\\uFEA5><\\n><\\u00C2> bar{newline}");
+        st = _templateFactory.CreateTemplate($"Foo <\\uFEA5><\\n><\\u00C2> bar{newline}");
         var expected2 = $"Foo \ufea5{newline}\u00C2 bar{newline}";
         result = st.Render();
         Assert.AreEqual(expected2, result);
 
-        st = new Template("Foo<\\ >bar<\\n>");
+        st = _templateFactory.CreateTemplate("Foo<\\ >bar<\\n>");
         var expected3 = $"Foo bar{newline}";
         result = st.Render();
         Assert.AreEqual(expected3, result);
@@ -925,7 +919,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestSubtemplateExpr() {
         const string template = "<{name\n}>";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         var expected = $"name{newline}";
         var result = st.Render();
         Assert.AreEqual(expected, result);
@@ -1073,8 +1067,11 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestArrayOfTemplates() {
         const string template = "<foo>!";
-        var st = new Template(template);
-        var t = new Template[] { new ("hi"), new ("mom") };
+        var st = _templateFactory.CreateTemplate(template);
+        var t = new [] {
+            _templateFactory.CreateTemplate("hi"),
+            _templateFactory.CreateTemplate("mom")
+        };
         st.Add("foo", t);
         const string expected = "himom!";
         var result = st.Render();
@@ -1084,10 +1081,13 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestArrayOfTemplatesInTemplate() {
         const string template = "<foo>!";
-        var st = new Template(template);
-        var t = new Template[] { new ("hi"), new ("mom") };
+        var st = _templateFactory.CreateTemplate(template);
+        var t = new[] {
+            _templateFactory.CreateTemplate("hi"),
+            _templateFactory.CreateTemplate("mom")
+        };
         st.Add("foo", t);
-        var wrapper = new Template("<x>");
+        var wrapper = _templateFactory.CreateTemplate("<x>");
         wrapper.Add("x", st);
         const string expected = "himom!";
         var result = wrapper.Render();
@@ -1097,7 +1097,7 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestListOfTemplates() {
         const string template = "<foo>!";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         var t = new List<Template> { new("hi"), new ("mom") };
         st.Add("foo", t);
         const string expected = "himom!";
@@ -1108,10 +1108,10 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void TestListOfTemplatesInTemplate() {
         const string template = "<foo>!";
-        var st = new Template(template);
+        var st = _templateFactory.CreateTemplate(template);
         var t = new List<Template> { new ("hi"), new ("mom") };
         st.Add("foo", t);
-        var wrapper = new Template("<x>");
+        var wrapper = _templateFactory.CreateTemplate("<x>");
         wrapper.Add("x", st);
         const string expected = "himom!";
         var result = wrapper.Render();
@@ -1121,19 +1121,19 @@ public class TestCoreBasics : BaseTest {
     [TestMethod]
     public void Playing() {
         const string template = "<a:t(x,y),u()>";
-        var st = new Template(template);
-        TestContext.WriteLine(st.impl.ToString());
+        var st = _templateFactory.CreateTemplate(template);
+        TestContext.WriteLine(st.GetNativeRepresentation());
     }
 
     [TestMethod]
     public void TestPrototype() {
-        var prototype = new Template("simple template");
+        var prototype = _templateFactory.CreateTemplate("simple template");
 
-        var st = new Template(prototype);
+        var st = _templateFactory.CopyTemplate(prototype);
         st.Add("arg1", "value");
         Assert.AreEqual("simple template", st.Render());
 
-        var st2 = new Template(prototype);
+        var st2 = _templateFactory.CopyTemplate(prototype);
         st2.Add("arg1", "value");
         Assert.AreEqual("simple template", st2.Render());
     }

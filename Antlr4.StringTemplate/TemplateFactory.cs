@@ -5,6 +5,8 @@ public class TemplateFactory : ITemplateFactory {
     public ITemplate CreateTemplate(string content, char delimiterStartChar = '<', char delimiterStopChar = '>') =>
         new Template(content, delimiterStartChar, delimiterStopChar);
 
+    public ITemplate CopyTemplate(ITemplate template) => new Template(prototype:(Template)template);
+
     public ITemplate CreateTemplateImplicit(string content, ITemplateGroup group) =>
         new Template(content, group as TemplateGroup);
 

@@ -43,7 +43,7 @@ public class TestModelAdaptors : BaseTest {
         return propertyName switch {
             "id" => ((User)o).id,
             "name" => ((User)o).Name,
-            _ => throw new TemplateNoSuchPropertyException(null, "User." + propertyName)
+            _ => throw new TemplateNoSuchPropertyException(null, $"User.{propertyName}")
         };
     }
 
@@ -51,7 +51,7 @@ public class TestModelAdaptors : BaseTest {
         return propertyName switch {
             "id" => "const id value",
             "name" => "const name value",
-            _ => throw new TemplateNoSuchPropertyException(null, "User." + propertyName)
+            _ => throw new TemplateNoSuchPropertyException(null, $"User.{propertyName}")
         };
     }
 

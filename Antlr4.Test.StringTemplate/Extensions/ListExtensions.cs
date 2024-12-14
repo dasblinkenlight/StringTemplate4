@@ -30,28 +30,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System.Collections.Generic;
+
 namespace Antlr4.Test.StringTemplate.Extensions;
 
-using Antlr4.StringTemplate;
-using Antlr4.StringTemplate.Debug;
-using CultureInfo = System.Globalization.CultureInfo;
-using IList = System.Collections.IList;
+using System.Linq;
 
 internal static class ListExtensions {
 
-    public static string ToListString(this IList list) {
-        var group = new TemplateGroup();
-        group.DefineTemplate("listTemplate", "[<list:{x|<x>}; separator=\", \">]", ["list"]);
-        group.RegisterRenderer(typeof(IList), new CollectionRenderer());
-        var st = group.FindTemplate("listTemplate");
-        st.Add("list", list);
-        return st.Render();
-    }
-
-    private class CollectionRenderer : IAttributeRenderer {
-        public string ToString(object o, string formatString, CultureInfo culture) {
-            return ((IList)o).ToListString();
-        }
-    }
+    public static string ToListString<T>(this IList<T> list) =>
+         $"[{string.Join(", ", list.Select(s => s.ToString()))}]";
 
 }

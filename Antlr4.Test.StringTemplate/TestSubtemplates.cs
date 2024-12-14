@@ -35,7 +35,6 @@ using Antlr4.StringTemplate.Debug;
 namespace Antlr4.Test.StringTemplate;
 
 using System.Collections.Generic;
-using Antlr4.StringTemplate;
 using Antlr4.StringTemplate.Misc;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Path = System.IO.Path;
@@ -215,9 +214,7 @@ public class TestSubtemplates : BaseTest {
     [TestMethod]
     public void TestEvalSTIteratingSubtemplateInSTFromAnotherGroup() {
         var errors = new ErrorBuffer();
-        var innerGroup = new TemplateGroup {
-            Listener = errors
-        };
+        var innerGroup = _templateFactory.CreateTemplateGroup().WithErrorListener(errors).Build();
         innerGroup.DefineTemplate("test", "<m:samegroup()>", ["m"]);
         innerGroup.DefineTemplate("samegroup", "hi ", ["x"]);
         var st = innerGroup.FindTemplate("test");
@@ -239,9 +236,7 @@ public class TestSubtemplates : BaseTest {
     [TestMethod]
     public void TestEvalSTIteratingSubtemplateInSTFromAnotherGroupSingleValue() {
         var errors = new ErrorBuffer();
-        var innerGroup = new TemplateGroup {
-            Listener = errors
-        };
+        var innerGroup = _templateFactory.CreateTemplateGroup().WithErrorListener(errors).Build();
         innerGroup.DefineTemplate("test", "<m:samegroup()>", ["m"]);
         innerGroup.DefineTemplate("samegroup", "hi ", ["x"]);
         var st = innerGroup.FindTemplate("test");
@@ -263,15 +258,11 @@ public class TestSubtemplates : BaseTest {
     [TestMethod]
     public void TestEvalSTFromAnotherGroup() {
         var errors = new ErrorBuffer();
-        var innerGroup = new TemplateGroup {
-            Listener = errors
-        };
+        var innerGroup = _templateFactory.CreateTemplateGroup().WithErrorListener(errors).Build();
         innerGroup.DefineTemplate("bob", "inner");
         var st = innerGroup.FindTemplate("bob");
 
-        var outerGroup = new TemplateGroup {
-            Listener = errors
-        };
+        var outerGroup = _templateFactory.CreateTemplateGroup().WithErrorListener(errors).Build();
         outerGroup.DefineTemplate("errorMessage", "<x>", ["x"]);
         outerGroup.DefineTemplate("bob", "outer"); // should not be visible to test() in innerGroup
         var outerST = outerGroup.FindTemplate("errorMessage");
