@@ -38,7 +38,7 @@ internal static class TemplateDebugExtensions {
         if (listener != null) {
             groupBuilder.WithErrorListener(listener);
         }
-        var compiler = new TemplateCompiler(groupBuilder.Build());
+        var compiler = new TemplateCompiler((TemplateGroup)groupBuilder.Build());
         return name != null ? compiler.Compile(name, template) : compiler.Compile(template);
     }
 

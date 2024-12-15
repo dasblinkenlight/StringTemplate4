@@ -76,17 +76,17 @@ public partial class TemplateCompiler
     /** Name subtemplates _sub1, _sub2, ... */
     public static int subtemplateCount;
 
-    public TemplateCompiler(ITemplateGroup group) {
-        Group = group as TemplateGroup ?? throw new ArgumentException(nameof(group));
+    internal TemplateCompiler(TemplateGroup group) {
+        _group = group ?? throw new ArgumentException(nameof(group));
     }
 
-    public TemplateGroup Group { get; }
+    private readonly TemplateGroup _group;
 
-    public ErrorManager ErrorManager => Group.ErrorManager;
+    public ErrorManager ErrorManager => _group.ErrorManager;
 
-    private char DelimiterStartChar => Group.DelimiterStartChar;
+    private char DelimiterStartChar => _group.DelimiterStartChar;
 
-    private char DelimiterStopChar => Group.DelimiterStopChar;
+    private char DelimiterStopChar => _group.DelimiterStopChar;
 
     public CompiledTemplate Compile(string template) {
         var code = Compile(null, null, null, template, null);
@@ -103,12 +103,12 @@ public partial class TemplateCompiler
 
     /** Compile full template with respect to a list of formal args. */
     public CompiledTemplate Compile(string srcName, string name, List<FormalArgument> args, string template, IToken templateToken) {
-        var @is = new ANTLRStringStream(template, srcName) {
+        var inputStream = new ANTLRStringStream(template, srcName) {
             name = srcName ?? name
         };
         var lexer = templateToken is { Type: GroupParser.BIGSTRING_NO_NL } ?
-            new TemplateLexerNoNewlines(ErrorManager, @is, templateToken, DelimiterStartChar, DelimiterStopChar) :
-            new TemplateLexer(ErrorManager, @is, templateToken, DelimiterStartChar, DelimiterStopChar);
+            new TemplateLexerNoNewlines(ErrorManager, inputStream, templateToken, DelimiterStartChar, DelimiterStopChar) :
+            new TemplateLexer(ErrorManager, inputStream, templateToken, DelimiterStartChar, DelimiterStopChar);
         var tokens = new CommonTokenStream(lexer);
         var p = new TemplateParser(tokens, ErrorManager, templateToken);
         IAstRuleReturnScope<CommonTree> r;
@@ -125,7 +125,6 @@ public partial class TemplateCompiler
             return impl;
         }
 
-        //System.out.println(((CommonTree)r.getTree()).toStringTree());
         var nodes = new CommonTreeNodeStream(r.Tree) {
             TokenStream = tokens
         };
@@ -134,7 +133,7 @@ public partial class TemplateCompiler
         CompiledTemplate impl2 = null;
         try {
             impl2 = gen.template(name, args);
-            impl2.NativeGroup = Group;
+            impl2.NativeGroup = _group;
             impl2.Template = template;
             impl2.Ast = r.Tree;
             impl2.Ast.SetUnknownTokenBoundaries();
