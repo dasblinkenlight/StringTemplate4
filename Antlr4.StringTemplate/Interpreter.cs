@@ -540,7 +540,7 @@ public sealed class Interpreter {
         var imported = self.impl.NativeGroup.LookupImportedTemplate(name);
         if (imported == null) {
             _errorManager.RuntimeError(frame, ErrorType.NO_IMPORTED_TEMPLATE, name);
-            st = self.Group.CreateStringTemplateInternally(new CompiledTemplate());
+            st = self.Group!.CreateStringTemplateInternally(new CompiledTemplate());
         } else {
             st = imported.NativeGroup.GetEmbeddedInstanceOf(frame, name);
             st.Group = group;
