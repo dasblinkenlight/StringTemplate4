@@ -30,6 +30,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System.Text.RegularExpressions;
+
 namespace Antlr4.StringTemplate.Misc;
 
 using StringBuilder = System.Text.StringBuilder;
@@ -89,13 +91,13 @@ public static class Utility
         return prefix;
     }
 
-    public static string ReplaceEscapes(string s)
-    {
-        s = s.Replace("\n", "\\\\n");
-        s = s.Replace("\r", "\\\\r");
-        s = s.Replace("\t", "\\\\t");
-        return s;
-    }
+    public static string ReplaceEscapes(string s) =>
+        Regex.Replace(s, "[\n\r\t]", match => match.Value switch {
+            "\n" => "\\n",
+            "\r" => "\\r",
+            "\t" => "\\t",
+            _ => match.Value
+        });
 
     /** Replace >\> with >> in s. Replace \>> unless prefix of \>>> with >>.
      *  Do NOT replace if it's &lt;\\&gt;
